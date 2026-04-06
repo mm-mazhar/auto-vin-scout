@@ -211,7 +211,7 @@ export default async function HeroSection() {
                 ...transitionVariants,
               }}
             >
-              <div className='mask-b-from-55% relative overflow-hidden px-2'>
+              <div className='mask-b-from-55% relative overflow-hidden px-2 pt-5 md:pt-7'>
                 <div className='absolute inset-x-8 top-10 -z-10 h-56 rounded-full bg-primary/10 blur-3xl' />
                 <div className='absolute left-12 top-28 -z-10 h-44 w-44 rounded-full bg-emerald-500/10 blur-3xl' />
                 <div className='absolute bottom-12 right-14 -z-10 h-52 w-52 rounded-full bg-sky-500/10 blur-3xl' />
@@ -231,76 +231,80 @@ export default async function HeroSection() {
                   </div>
                 </div>
 
-                <div className='relative mx-auto max-w-6xl'>
-                  <div className='pointer-events-none absolute -left-2 top-10 hidden w-56 rounded-2xl border border-border/60 bg-background/78 p-4 shadow-lg shadow-black/10 backdrop-blur xl:block'>
-                    <div className='flex items-center gap-3'>
-                      <ShieldCheck className='h-5 w-5 text-primary' />
-                      <div>
-                        <div className='text-xs uppercase tracking-[0.2em] text-muted-foreground'>
-                          Flood exposure
-                        </div>
-                        <div className='mt-1 text-sm font-semibold text-foreground'>
-                          Review recent storm history
+                <div className='relative mx-auto flex max-w-6xl flex-col gap-4 lg:gap-6'>
+                  <div className='hidden gap-4 md:grid md:grid-cols-2 xl:gap-6'>
+                    <div className='pointer-events-none rounded-2xl border border-border/60 bg-background/78 p-4 shadow-lg shadow-black/10 backdrop-blur'>
+                      <div className='flex items-center gap-3'>
+                        <ShieldCheck className='h-5 w-5 text-primary' />
+                        <div>
+                          <div className='text-xs uppercase tracking-[0.2em] text-muted-foreground'>
+                            Flood exposure
+                          </div>
+                          <div className='mt-1 text-sm font-semibold text-foreground'>
+                            Review recent storm history
+                          </div>
                         </div>
                       </div>
+                      <p className='mt-3 text-xs leading-5 text-muted-foreground'>
+                        Location and timing signals make this one worth a closer underbody inspection.
+                      </p>
                     </div>
-                    <p className='mt-3 text-xs leading-5 text-muted-foreground'>
-                      Location and timing signals make this one worth a closer underbody inspection.
-                    </p>
+
+                    <div className='pointer-events-none rounded-2xl border border-border/60 bg-background/78 p-4 shadow-lg shadow-black/10 backdrop-blur'>
+                      <div className='flex items-center gap-3'>
+                        <Building2 className='h-5 w-5 text-primary' />
+                        <div>
+                          <div className='text-xs uppercase tracking-[0.2em] text-muted-foreground'>
+                            Market movement
+                          </div>
+                          <div className='mt-1 text-sm font-semibold text-foreground'>
+                            3 relists and a price drop
+                          </div>
+                        </div>
+                      </div>
+                      <p className='mt-3 text-xs leading-5 text-muted-foreground'>
+                        Listing behavior suggests the seller has been adjusting to find the right buyer.
+                      </p>
+                    </div>
                   </div>
 
-                  <div className='pointer-events-none absolute -right-2 top-24 hidden w-56 rounded-2xl border border-border/60 bg-background/78 p-4 shadow-lg shadow-black/10 backdrop-blur xl:block'>
-                    <div className='flex items-center gap-3'>
-                      <Building2 className='h-5 w-5 text-primary' />
-                      <div>
-                        <div className='text-xs uppercase tracking-[0.2em] text-muted-foreground'>
-                          Market movement
+                  <div className='hidden justify-center lg:flex'>
+                    <div className='pointer-events-none w-full max-w-sm rounded-2xl border border-border/60 bg-background/82 p-4 shadow-lg shadow-black/10 backdrop-blur'>
+                      <div className='flex items-center justify-between gap-4'>
+                        <div>
+                          <div className='text-xs uppercase tracking-[0.2em] text-muted-foreground'>
+                            Buyer checklist
+                          </div>
+                          <div className='mt-1 text-sm font-semibold text-foreground'>
+                            Ready before you call the seller
+                          </div>
                         </div>
-                        <div className='mt-1 text-sm font-semibold text-foreground'>
-                          3 relists and a price drop
-                        </div>
+                        <Wrench className='h-5 w-5 shrink-0 text-primary' />
                       </div>
-                    </div>
-                    <p className='mt-3 text-xs leading-5 text-muted-foreground'>
-                      Listing behavior suggests the seller has been adjusting to find the right buyer.
-                    </p>
-                  </div>
-
-                  <div className='pointer-events-none absolute bottom-6 left-1/2 hidden w-72 -translate-x-1/2 rounded-2xl border border-border/60 bg-background/82 p-4 shadow-lg shadow-black/10 backdrop-blur lg:block'>
-                    <div className='flex items-center justify-between gap-4'>
-                      <div>
-                        <div className='text-xs uppercase tracking-[0.2em] text-muted-foreground'>
-                          Buyer checklist
-                        </div>
-                        <div className='mt-1 text-sm font-semibold text-foreground'>
-                          Ready before you call the seller
-                        </div>
-                      </div>
-                      <Wrench className='h-5 w-5 shrink-0 text-primary' />
                     </div>
                   </div>
 
                   <div className='inset-shadow-2xs ring-background dark:inset-shadow-white/20 relative overflow-hidden rounded-[2rem] border bg-background/85 p-4 shadow-lg shadow-zinc-950/15 ring-1'>
-                  <ShineBorder
-                    borderWidth={1}
-                    duration={20}
-                    shineColor={['var(--primary)']}
-                  />
-                  <Image
-                    className='bg-background relative hidden aspect-15/8 rounded-2xl object-contain object-top dark:block'
-                    src={HERO_DARK_IMAGE_PATH}
-                    alt='app screen'
-                    width='2700'
-                    height='1440'
-                    priority
-                  />
-                  <Image
-                    className='border-border/25 relative z-2 aspect-15/8 rounded-2xl border object-contain object-top dark:hidden'
-                    src={HERO_LIGHT_IMAGE_PATH}
-                    alt='app screen'
-                    width='2700'
-                    height='1440'
-                  />
+                    <ShineBorder
+                      borderWidth={1}
+                      duration={20}
+                      shineColor={['var(--primary)']}
+                    />
+                    <Image
+                      className='bg-background relative hidden aspect-15/8 rounded-2xl object-contain object-top dark:block'
+                      src={HERO_DARK_IMAGE_PATH}
+                      alt='app screen'
+                      width='2700'
+                      height='1440'
+                      priority
+                    />
+                    <Image
+                      className='border-border/25 relative z-2 aspect-15/8 rounded-2xl border object-contain object-top dark:hidden'
+                      src={HERO_LIGHT_IMAGE_PATH}
+                      alt='app screen'
+                      width='2700'
+                      height='1440'
+                    />
                   </div>
                 </div>
               </div>
