@@ -2,7 +2,6 @@
 
 'use client'
 import { Themetoggle } from '@/components/Themetoggle'
-import { ToastProvider } from '@/components/ToastProvider'
 import { Button } from '@/components/ui/button'
 import { ShineBorder } from '@/components/ui/shine-border'
 import { cn } from '@/lib/utils'
@@ -110,9 +109,7 @@ export const HeroHeader = ({ initialUser }: HeroHeaderProps) => {
                       </Button>
                       <LogoutButton />
                       
-                      <ToastProvider>
-                        <Themetoggle isAuthenticated={true} />
-                      </ToastProvider>
+                      <Themetoggle isAuthenticated={true} />
                     </>
                   ) : (
                     <>
@@ -157,9 +154,7 @@ export const HeroHeader = ({ initialUser }: HeroHeaderProps) => {
                           <span>Start VIN Check</span>
                         </Link>
                       </Button>
-                       <ToastProvider>
-                        <Themetoggle isAuthenticated={false} />
-                      </ToastProvider>
+                      <Themetoggle isAuthenticated={false} />
                     </>
                   )}
                 </div>

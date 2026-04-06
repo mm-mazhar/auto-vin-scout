@@ -139,15 +139,15 @@ export default function AboutUs1() {
               <BorderBeam
                 duration={8}
                 size={300}
-                className="via-primary/40 from-transparent to-transparent"
+                className="via-primary/25 from-transparent to-transparent"
               />
 
-              <div className="from-primary/20 to-primary/5 mb-6 inline-flex aspect-square h-16 w-16 flex-1 items-center justify-center rounded-2xl bg-gradient-to-br backdrop-blur-sm">
-                <Rocket className="text-primary h-8 w-8" />
+              <div className="from-primary/12 to-primary/[0.03] mb-6 inline-flex aspect-square h-16 w-16 flex-1 items-center justify-center rounded-2xl bg-gradient-to-br backdrop-blur-sm">
+                <Rocket className="text-primary/85 h-8 w-8" />
               </div>
 
               <div className="space-y-4">
-                <h2 className="from-primary/90 to-primary/70 mb-4 bg-gradient-to-r bg-clip-text text-3xl font-bold text-transparent">
+                <h2 className="from-primary/75 to-primary/55 mb-4 bg-gradient-to-r bg-clip-text text-3xl font-bold text-transparent">
                   Our Mission
                 </h2>
 
@@ -164,14 +164,14 @@ export default function AboutUs1() {
               <BorderBeam
                 duration={8}
                 size={300}
-                className="from-transparent via-primary/40 to-transparent"
+                className="from-transparent via-primary/25 to-transparent"
                 reverse
               />
-              <div className="mb-6 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 backdrop-blur-sm">
-                <Target className="h-8 w-8 text-primary" />
+              <div className="mb-6 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-primary/12 to-primary/[0.03] backdrop-blur-sm">
+                <Target className="h-8 w-8 text-primary/85" />
               </div>
 
-              <h2 className="mb-4 bg-gradient-to-r from-primary/90 to-primary/70 bg-clip-text text-3xl font-bold text-transparent">
+              <h2 className="mb-4 bg-gradient-to-r from-primary/75 to-primary/55 bg-clip-text text-3xl font-bold text-transparent">
                 Our Vision
               </h2>
 
@@ -223,7 +223,8 @@ export default function AboutUs1() {
                     title={value.title}
                     description={value.description}
                     variant={'theme'}
-                    glowEffect={true}
+                    className="[&>div:last-child]:opacity-60 [&>div:last-child>div]:blur-[52px]"
+                    glowEffect={false}
                     size="lg"
                     flat={false}
                   />
