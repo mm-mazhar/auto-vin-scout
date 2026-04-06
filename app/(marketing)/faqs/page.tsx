@@ -2,6 +2,7 @@
 
 import { FaqList } from '@/app/(marketing)/_components/FaqList';
 import {
+  MARKETING_ALIGNED_CONTAINER_WIDTH,
   MARKETING_CONTENT_SECTION_BOTTOM_SPACING,
   MARKETING_CONTENT_SECTION_TOP_SPACING,
   PageSection,
@@ -18,6 +19,7 @@ export default function FaqPage() {
   return (
     <PageSection
       className={`bg-background ${MARKETING_CONTENT_SECTION_TOP_SPACING} ${MARKETING_CONTENT_SECTION_BOTTOM_SPACING}`}
+      containerClassName={MARKETING_ALIGNED_CONTAINER_WIDTH}
     >
       <div className='flex flex-col items-center space-y-6 px-4'>
         <Badge

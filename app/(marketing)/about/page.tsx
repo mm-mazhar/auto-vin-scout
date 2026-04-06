@@ -5,6 +5,7 @@
 import { BorderBeam } from '@/app/(marketing)/_components/ui/border-beam';
 import { CardHoverEffect } from '@/app/(marketing)/_components/ui/pulse-card';
 import {
+  MARKETING_ALIGNED_CONTAINER_WIDTH,
   MARKETING_CONTENT_SECTION_BOTTOM_SPACING,
   MARKETING_CONTENT_SECTION_TOP_SPACING,
   PageSection,
@@ -95,6 +96,7 @@ export default function AboutUs1() {
   return (
     <PageSection
       className={`relative overflow-hidden ${MARKETING_CONTENT_SECTION_TOP_SPACING} ${MARKETING_CONTENT_SECTION_BOTTOM_SPACING}`}
+      containerClassName={MARKETING_ALIGNED_CONTAINER_WIDTH}
     >
 
       <div className="relative z-10 flex flex-col items-center space-y-6 px-4">
