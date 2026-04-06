@@ -217,16 +217,16 @@ export default async function HeroSection() {
                 <div className='absolute bottom-12 right-14 -z-10 h-52 w-52 rounded-full bg-sky-500/10 blur-3xl' />
 
                 <div className='mx-auto mb-5 flex max-w-5xl flex-wrap items-center justify-center gap-3 text-xs font-medium text-muted-foreground'>
-                  <div className='rounded-full border border-border/60 bg-background/70 px-3 py-2 backdrop-blur'>
+                  <div className='font-bold rounded-full border border-border/60 bg-background/70 px-3 py-2 backdrop-blur'>
                     NHTSA decode
                   </div>
-                  <div className='rounded-full border border-border/60 bg-background/70 px-3 py-2 backdrop-blur'>
+                  <div className='font-bold rounded-full border border-border/60 bg-background/70 px-3 py-2 backdrop-blur'>
                     Recall context
                   </div>
-                  <div className='rounded-full border border-border/60 bg-background/70 px-3 py-2 backdrop-blur'>
+                  <div className='font-bold rounded-full border border-border/60 bg-background/70 px-3 py-2 backdrop-blur'>
                     Market timeline
                   </div>
-                  <div className='rounded-full border border-border/60 bg-background/70 px-3 py-2 backdrop-blur'>
+                  <div className='font-bold rounded-full border border-border/60 bg-background/70 px-3 py-2 backdrop-blur'>
                     Flood exposure signals
                   </div>
                 </div>
@@ -344,7 +344,7 @@ export default async function HeroSection() {
               className='absolute inset-0 pointer-events-none opacity-40'
               style={{
                 background: 'radial-gradient(ellipse 100% 60% at 50% 40%, rgba(255,255,255,0.06), transparent 70%)'                
-              }}
+              }}              
             />
             
             <div className='mx-auto max-w-3xl text-center relative z-10'>
@@ -424,8 +424,7 @@ export default async function HeroSection() {
                 background: 'radial-gradient(ellipse 100% 60% at 50% 40%, rgba(255,255,255,0.06), transparent 70%)'
               }}
             />
-            
-            <div className='mx-auto max-w-3xl text-center relative z-10'>
+           <div className='mx-auto max-w-3xl text-center relative z-10'>
               <h2 className='text-3xl font-bold tracking-tight md:text-4xl'>
                 Who this is for
               </h2>
