@@ -1,0 +1,135 @@
+// prisma/schema.prisma
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"  
+}
+
+datasource db {
+  provider  = "postgresql"  
+}
+
+model User {
+  id               String        @id @unique  // This will be the Supabase Auth user UUID
+  name             String?
+  email            String        @unique
+  
+  colorScheme      String        @default("theme-green")
+  themePreference  String        @default("dark")
+
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  memberships OrganizationMember[]
+  invites     OrganizationInvite[]
+}
+
+model Subscription {
+  stripeSubscriptionId String   @id @unique
+  interval             String
+  status               String
+  planId               String
+  currentPeriodStart   Int
+  currentPeriodEnd     Int
+  periodEndReminderSent Boolean @default(false)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+  organization         Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organizationId       String?       @unique
+
+  @@index([status])
+  @@index([planId])
+  @@index([createdAt(sort: Desc)])
+  @@index([organizationId])
+}
+
+enum OrganizationRole {
+  OWNER
+  ADMIN
+  MEMBER
+}
+
+enum InviteStatus {
+  PENDING
+  ACCEPTED
+  REVOKED
+  EXPIRED
+}
+
+model Organization {
+  id          String   @id @default(cuid())
+  name        String   @db.VarChar(20)
+  slug        String   @unique
+
+  // Billing (Moved from User)
+  stripeCustomerId             String?   @unique
+  isPrimary                    Boolean   @default(false)
+  credits                      Int       @default(5)
+  creditsReminderThresholdSent Boolean   @default(false)
+  lastFreeRefillAt             DateTime  @default(now())
+
+  subscription Subscription?
+
+  deletedAt   DateTime? // Soft Delete
+  
+  members     OrganizationMember[]
+  projects    Project[]
+  invites     OrganizationInvite[]
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([slug])
+}
+
+model OrganizationMember {
+  id             String           @id @default(cuid())
+  organizationId String
+  userId         String
+  role           OrganizationRole @default(MEMBER)
+  
+  organization   Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  @@unique([organizationId, userId])
+  @@index([userId])
+}
+
+model Project {
+  id             String       @id @default(cuid())
+  name           String       @db.VarChar(20)
+  slug           String
+  organizationId String
+  
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@unique([organizationId, slug])
+  @@index([organizationId])
+}
+
+model OrganizationInvite {
+  id             String       @id @default(cuid())
+  email          String
+  organizationId String
+  role           OrganizationRole @default(MEMBER)
+  status         InviteStatus     @default(PENDING)
+  token          String       @unique
+  expiresAt      DateTime
+  
+  inviterId      String
+  inviter        User         @relation(fields: [inviterId], references: [id])
+  
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@index([email])
+  @@index([organizationId])
+}

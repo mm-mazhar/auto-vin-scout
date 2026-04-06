@@ -1,0 +1,8 @@
+// tsconfig.check.json
+
+{
+  "extends": "./tsconfig.json",
+  "include": ["lib/orpc/**/*"]
+}
+
+// npx tsc -p tsconfig.check.json --noEmit

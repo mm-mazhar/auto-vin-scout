@@ -1,0 +1,16 @@
+import { defineConfig, globalIgnores } from "eslint/config";
+import nextConfig from "eslint-config-next";
+
+const eslintConfig = defineConfig([
+  ...nextConfig,
+  globalIgnores([
+    ".next/**",
+    "out/**",
+    "build/**",
+    "next-env.d.ts",
+    ".history/**",
+    "node_modules/**",
+  ]),
+]);
+
+export default eslintConfig;

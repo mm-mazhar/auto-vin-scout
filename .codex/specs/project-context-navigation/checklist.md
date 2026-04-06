@@ -1,0 +1,8 @@
+- [x] `switchProject` action sets the `current-project-id` cookie correctly.
+- [x] Sidebar displays "Dashboard" as a standalone link.
+- [x] Sidebar displays a "Project" section with a switcher and sub-links.
+- [x] Project Switcher lists all projects for the current organization.
+- [x] Selecting a project updates the UI and persists the selection (cookie).
+- [x] `/dashboard/data` displays the name/ID of the currently selected project.
+- [x] `/dashboard/documents` displays the name/ID of the currently selected project.
+- [x] If no cookie is set, the first project is selected by default.
