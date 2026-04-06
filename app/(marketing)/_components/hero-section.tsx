@@ -185,13 +185,13 @@ export default async function HeroSection() {
                 {user ? (
                   <Button asChild size='lg' variant='default' className='font-bold px-5'>
                     <Link href='/dashboard'>
-                      <span className='text-nowrap'>Go to Dashboard</span>
+                      <span className='text-nowrap'>Dashboard</span>
                     </Link>
                   </Button>
                 ) : (
                   <Button asChild size='lg' variant='default' className='font-bold px-5'>
                     <Link href='/get-started'>
-                      <span className='text-nowrap'>Go To Dashboard</span>
+                      <span className='text-nowrap'>Start VIN Check</span>
                     </Link>
                   </Button>
                 )}
@@ -212,7 +212,75 @@ export default async function HeroSection() {
               }}
             >
               <div className='mask-b-from-55% relative overflow-hidden px-2'>
-                <div className='inset-shadow-2xs ring-background dark:inset-shadow-white/20 relative mx-auto max-w-6xl overflow-hidden rounded-2xl border bg-background p-4 shadow-lg shadow-zinc-950/15 ring-1'>
+                <div className='absolute inset-x-8 top-10 -z-10 h-56 rounded-full bg-primary/10 blur-3xl' />
+                <div className='absolute left-12 top-28 -z-10 h-44 w-44 rounded-full bg-emerald-500/10 blur-3xl' />
+                <div className='absolute bottom-12 right-14 -z-10 h-52 w-52 rounded-full bg-sky-500/10 blur-3xl' />
+
+                <div className='mx-auto mb-5 flex max-w-5xl flex-wrap items-center justify-center gap-3 text-xs font-medium text-muted-foreground'>
+                  <div className='rounded-full border border-border/60 bg-background/70 px-3 py-2 backdrop-blur'>
+                    NHTSA decode
+                  </div>
+                  <div className='rounded-full border border-border/60 bg-background/70 px-3 py-2 backdrop-blur'>
+                    Recall context
+                  </div>
+                  <div className='rounded-full border border-border/60 bg-background/70 px-3 py-2 backdrop-blur'>
+                    Market timeline
+                  </div>
+                  <div className='rounded-full border border-border/60 bg-background/70 px-3 py-2 backdrop-blur'>
+                    Flood exposure signals
+                  </div>
+                </div>
+
+                <div className='relative mx-auto max-w-6xl'>
+                  <div className='pointer-events-none absolute -left-2 top-10 hidden w-56 rounded-2xl border border-border/60 bg-background/78 p-4 shadow-lg shadow-black/10 backdrop-blur xl:block'>
+                    <div className='flex items-center gap-3'>
+                      <ShieldCheck className='h-5 w-5 text-primary' />
+                      <div>
+                        <div className='text-xs uppercase tracking-[0.2em] text-muted-foreground'>
+                          Flood exposure
+                        </div>
+                        <div className='mt-1 text-sm font-semibold text-foreground'>
+                          Review recent storm history
+                        </div>
+                      </div>
+                    </div>
+                    <p className='mt-3 text-xs leading-5 text-muted-foreground'>
+                      Location and timing signals make this one worth a closer underbody inspection.
+                    </p>
+                  </div>
+
+                  <div className='pointer-events-none absolute -right-2 top-24 hidden w-56 rounded-2xl border border-border/60 bg-background/78 p-4 shadow-lg shadow-black/10 backdrop-blur xl:block'>
+                    <div className='flex items-center gap-3'>
+                      <Building2 className='h-5 w-5 text-primary' />
+                      <div>
+                        <div className='text-xs uppercase tracking-[0.2em] text-muted-foreground'>
+                          Market movement
+                        </div>
+                        <div className='mt-1 text-sm font-semibold text-foreground'>
+                          3 relists and a price drop
+                        </div>
+                      </div>
+                    </div>
+                    <p className='mt-3 text-xs leading-5 text-muted-foreground'>
+                      Listing behavior suggests the seller has been adjusting to find the right buyer.
+                    </p>
+                  </div>
+
+                  <div className='pointer-events-none absolute bottom-6 left-1/2 hidden w-72 -translate-x-1/2 rounded-2xl border border-border/60 bg-background/82 p-4 shadow-lg shadow-black/10 backdrop-blur lg:block'>
+                    <div className='flex items-center justify-between gap-4'>
+                      <div>
+                        <div className='text-xs uppercase tracking-[0.2em] text-muted-foreground'>
+                          Buyer checklist
+                        </div>
+                        <div className='mt-1 text-sm font-semibold text-foreground'>
+                          Ready before you call the seller
+                        </div>
+                      </div>
+                      <Wrench className='h-5 w-5 shrink-0 text-primary' />
+                    </div>
+                  </div>
+
+                  <div className='inset-shadow-2xs ring-background dark:inset-shadow-white/20 relative overflow-hidden rounded-[2rem] border bg-background/85 p-4 shadow-lg shadow-zinc-950/15 ring-1'>
                   <ShineBorder
                     borderWidth={1}
                     duration={20}
@@ -233,12 +301,13 @@ export default async function HeroSection() {
                     width='2700'
                     height='1440'
                   />
+                  </div>
                 </div>
               </div>
             </AnimatedGroup>
           </PageSection>
 
-          <PageSection className='pt-0 -mt-20 md:-mt-32 relative z-10 pb-8 md:pb-12'>
+          {/* <PageSection className='pt-0 -mt-20 md:-mt-32 relative z-10 pb-8 md:pb-12'>
             <div className='flex flex-wrap items-center justify-center gap-6 px-6 text-base text-muted-foreground'>
               <span className='uppercase tracking-wide text-[0.8rem] font-semibold text-muted-foreground/85'>
                 Built on
@@ -261,7 +330,7 @@ export default async function HeroSection() {
                 </div>
               </div>
             </div>
-          </PageSection>
+          </PageSection> */}
 
           {/* SECTION 1: Features */}
           <PageSection id='features' className='bg-background py-6 md:py-10 relative overflow-hidden'>
@@ -276,10 +345,10 @@ export default async function HeroSection() {
             
             <div className='mx-auto max-w-3xl text-center relative z-10'>
               <h2 className='text-3xl font-bold tracking-tight md:text-4xl'>
-                Everything you need for a real SaaS
+                VIN intelligence for smarter used-car decisions
               </h2>
               <p className='mt-4 text-muted-foreground'>
-                Stop wiring the same infrastructure from scratch. This kit focuses on the hard, boring parts so you can focus on your product.
+                Auto VIN Scout starts with public data, marketplace signals, and transparent scoring so buyers can spot risk before they commit to the wrong car.
               </p>
             </div>
 
@@ -287,11 +356,13 @@ export default async function HeroSection() {
               <div className={cn(glassCardBase, GLASS_CARD)}>
                 <div className='flex items-center gap-3'>
                   <Rocket className='h-6 w-6 shrink-0 text-primary' />
-                  <h3 className='text-sm font-semibold tracking-tight'>Launch in days, not months</h3>
+                  <h2 className='text-sm font-semibold tracking-tight'>
+                    VIN decode and first-pass risk
+                  </h2>
                 </div>
                 <ul className='mt-3 list-disc space-y-2 pl-5 text-sm text-muted-foreground'>
-                  <li>Prewired auth, billing, and dashboard flows.</li>
-                  <li>kip boilerplate setup and ship usable features faster.</li>
+                  <li>Decode make, model, trim, engine, and core specs using NHTSA data.</li>
+                  <li>Show a quick risk teaser before a buyer spends money on a deeper report.</li>
                 </ul>
             </div>
 
@@ -299,41 +370,41 @@ export default async function HeroSection() {
               <div className={cn(glassCardBase, GLASS_CARD)}>
                 <div className='flex items-center gap-3'>
                   <Building2 className='h-6 w-6 shrink-0 text-primary' />
-                  <h3 className='text-sm font-semibold tracking-tight'>
-                    Multi-tenant out of the box
-                  </h3>
+                  <h2 className='text-sm font-semibold tracking-tight'>
+                    Marketplace history that adds context
+                  </h2>
                 </div>
                 <ul className='mt-3 list-disc space-y-2 pl-5 text-sm text-muted-foreground'>
                   <li>
-                    Organizations, members, and roles modeled for you.
+                    Track price changes, relists, and time-on-market across major listing sources.
                   </li>
-                  <li>Designed to work cleanly with row-level security.</li>
+                  <li>Spot asking prices that do not match local market behavior.</li>
                 </ul>
               </div>
 
               <div className={cn(glassCardBase, GLASS_CARD)}>
                 <div className='flex items-center gap-3'>
                   <ShieldCheck className='h-6 w-6 shrink-0 text-primary' />
-                  <h3 className='text-sm font-semibold tracking-tight'>
-                    Built-in auth, billing, RBAC
-                  </h3>
+                  <h2 className='text-sm font-semibold tracking-tight'>
+                    Flood and recall exposure signals
+                  </h2>
                 </div>
                 <ul className='mt-3 list-disc space-y-2 pl-5 text-sm text-muted-foreground'>
-                  <li>Supabase Auth for signup, login, and sessions.</li>
-                  <li>Stripe subscriptions, credits, and role-based access control.</li>
+                  <li>Blend FEMA hazard proximity with recent disaster data for exposure scoring.</li>
+                  <li>Surface model-level recall density so buyers know what to inspect first.</li>
                 </ul>
               </div>
 
               <div className={cn(glassCardBase, GLASS_CARD)}>
                 <div className='flex items-center gap-3'>
                   <Wrench className='h-6 w-6 shrink-0 text-primary' />
-                  <h3 className='text-sm font-semibold tracking-tight'>
-                    Production-grade patterns
-                  </h3>
+                  <h2 className='text-sm font-semibold tracking-tight'>
+                    Buyer guidance you can actually use
+                  </h2>
                 </div>
                 <ul className='mt-3 list-disc space-y-2 pl-5 text-sm text-muted-foreground'>
-                  <li>Structured API layer and error handling.</li>
-                  <li>Patterns oriented toward long-term maintainability.</li>
+                  <li>Turn detected risks into inspection questions and seller negotiation prompts.</li>
+                  <li>Keep missing data visible so the report stays honest and trustworthy.</li>
                 </ul>
               </div>
             </div>
@@ -355,7 +426,7 @@ export default async function HeroSection() {
                 Who this is for
               </h2>
               <p className='mt-4 text-muted-foreground'>
-                Whether you are validating an idea or standardizing client projects, this kit gives you a solid SaaS foundation.
+                Built for people making real used-car decisions, especially when the seller has more information than the buyer.
               </p>
             </div>
 
@@ -364,12 +435,12 @@ export default async function HeroSection() {
                 <div className='flex items-center gap-3'>
                   <Lightbulb className='h-6 w-6 shrink-0 text-primary' />
                   <h3 className='text-sm font-semibold tracking-tight'>
-                    Solo founders
+                    First-time used-car buyers
                   </h3>
                 </div>
                 <ul className='mt-3 list-disc space-y-2 pl-5 text-sm text-muted-foreground'>
-                  <li>Avoid rebuilding auth, billing, and dashboards.</li>
-                  <li>Focus on your core idea and customer value.</li>
+                  <li>Get plain-language risk signals before spending thousands on the wrong vehicle.</li>
+                  <li>Know which issues deserve a mechanic follow-up and which are mostly noise.</li>
                 </ul>
               </div>
 
@@ -377,12 +448,12 @@ export default async function HeroSection() {
                 <div className='flex items-center gap-3'>
                   <Briefcase className='h-6 w-6 shrink-0 text-primary' />
                   <h3 className='text-sm font-semibold tracking-tight'>
-                    Agencies shipping SaaS for clients
+                    Remote shoppers and marketplace hunters
                   </h3>
                 </div>
                 <ul className='mt-3 list-disc space-y-2 pl-5 text-sm text-muted-foreground'>
-                  <li>Start every project from a proven multi-tenant template.</li>
-                  <li>Deliver more value per engagement with less setup time.</li>
+                  <li>Screen out risky listings before booking travel, delivery, or a third-party inspection.</li>
+                  <li>See whether listing behavior and price movement feel consistent over time.</li>
                 </ul>
               </div>
 
@@ -390,12 +461,12 @@ export default async function HeroSection() {
                 <div className='flex items-center gap-3'>
                   <FlaskConical className='h-6 w-6 shrink-0 text-primary' />
                   <h3 className='text-sm font-semibold tracking-tight'>
-                    Product teams validating new ideas
+                    Families buying on a budget
                   </h3>
                 </div>
                 <ul className='mt-3 list-disc space-y-2 pl-5 text-sm text-muted-foreground'>
-                  <li>Prototype with real orgs, roles, and subscriptions.</li>
-                  <li>Test pricing and onboarding flows early.</li>
+                  <li>Reduce the odds of inheriting flood, recall, or overpriced inventory problems.</li>
+                  <li>Focus limited inspection time on the areas most likely to hide costly surprises.</li>
                 </ul>
               </div>
 
@@ -403,14 +474,14 @@ export default async function HeroSection() {
                 <div className='flex items-center gap-3'>
                   <Microscope className='h-6 w-6 shrink-0 text-primary' />
                   <h3 className='text-sm font-semibold tracking-tight'>
-                    Developers wanting a production-ready template
+                    Independent inspectors and small dealers
                   </h3>
                 </div>
                 <ul className='mt-3 list-disc space-y-2 pl-5 text-sm text-muted-foreground'>
                   <li>
-                    Study a full-stack reference implementation.
+                    Use the report as a structured starting point for client conversations.
                   </li>
-                  <li>Reuse patterns instead of stitching together examples.</li>
+                  <li>Bring faster context into sourcing, trade-in, and pre-purchase decisions.</li>
                 </ul>
               </div>
             </div>
@@ -432,7 +503,7 @@ export default async function HeroSection() {
                 How it works
               </h2>
               <p className='mt-4 text-muted-foreground'>
-                Go from clone to charging customers in three straightforward steps.
+                Start with a VIN lookup, review the signals, and only go deeper when the vehicle earns a closer look.
               </p>
             </div>
 
@@ -443,15 +514,13 @@ export default async function HeroSection() {
                     1
                   </div>
                   <h3 className='text-sm font-semibold tracking-tight'>
-                    Clone and configure environment
+                    Start with a VIN lookup
                   </h3>
                 </div>
                 <ul className='mt-3 list-disc space-y-2 pl-5 text-sm text-muted-foreground'>
-                  <li>
-                    Clone the repo and install dependencies.
-                  </li>
-                  <li>Configure environment vars and secrets.</li>
-                  <li>Connect your database and Supabase project.</li>
+                  <li>Enter a VIN to decode the vehicle identity and key factory specs.</li>
+                  <li>Normalize the record with cached NHTSA vPIC data.</li>
+                  <li>See model-level recall counts immediately.</li>
                 </ul>
               </div>
 
@@ -461,15 +530,13 @@ export default async function HeroSection() {
                     2
                   </div>
                   <h3 className='text-sm font-semibold tracking-tight'>
-                    Customize domain logic and UI
+                    Review the risk teaser
                   </h3>
                 </div>
                 <ul className='mt-3 list-disc space-y-2 pl-5 text-sm text-muted-foreground'>
-                  <li>Plug in your product-specific features and flows.</li>
-                  <li>Adjust data models to match your domain.</li>
-                  <li>
-                    Refine marketing copy and visual branding.
-                  </li>
+                  <li>Compare the asking price and listing behavior against marketplace history.</li>
+                  <li>Flag flood exposure probability using FEMA and disaster signals.</li>
+                  <li>Surface a quick buy-with-caution versus investigate-further view.</li>
                 </ul>
               </div>
 
@@ -479,17 +546,13 @@ export default async function HeroSection() {
                     3
                   </div>
                   <h3 className='text-sm font-semibold tracking-tight'>
-                    Deploy and start charging
+                    Unlock the full intelligence report
                   </h3>
                 </div>
                 <ul className='mt-3 list-disc space-y-2 pl-5 text-sm text-muted-foreground'>
-                  <li>Deploy to your preferred hosting platform.</li>
-                  <li>
-                    Wire up Stripe for payments and subscriptions.
-                  </li>
-                  <li>
-                    Invite your first customers and iterate.
-                  </li>
+                  <li>Spend a credit to generate deeper scoring and report drivers.</li>
+                  <li>Inspect the market timeline, pricing context, recall details, and risk breakdown.</li>
+                  <li>Use the buyer guidance checklist to prepare for calls, inspections, and negotiations.</li>
                 </ul>
               </div>
             </div>
@@ -497,7 +560,7 @@ export default async function HeroSection() {
             <div className='mt-12 font-bold flex justify-center md:mt-16'>
               <Button asChild size='lg'>
                 <Link href={user ? '/dashboard' : '/get-started'}>
-                  <span>{user ? 'Go to Dashboard' : 'Get Started'}</span>
+                  <span>{user ? 'Dashboard' : 'Start VIN Check'}</span>
                 </Link>
               </Button>
             </div>
@@ -507,10 +570,10 @@ export default async function HeroSection() {
           <PageSection className='bg-background py-6 md:py-10 relative overflow-hidden'>
             <div className='mx-auto max-w-3xl text-center'>
               <h2 className='text-3xl font-bold tracking-tight md:text-4xl'>
-                What people are saying
+                What buyers told us they need
               </h2>
               <p className='mt-4 text-muted-foreground'>
-                People use this kit to skip boilerplate and focus on the parts of their SaaS that actually differentiate.
+                The product is shaped around the real purchase anxiety behind used cars: hidden damage, bad pricing, and not knowing what to verify next.
               </p>
             </div>
 
@@ -609,6 +672,79 @@ export default async function HeroSection() {
                 ))}
               </div>
             )}
+          </PageSection>
+
+          <PageSection className='bg-background py-6 md:py-10 relative overflow-hidden'>
+            <div
+              aria-hidden
+              className='absolute inset-0 pointer-events-none opacity-40'
+              style={{
+                background: 'radial-gradient(ellipse 100% 60% at 50% 40%, rgba(255,255,255,0.06), transparent 70%)'
+              }}
+            />
+
+            <div className='mx-auto max-w-3xl text-center relative z-10'>
+              <h2 className='text-3xl font-bold tracking-tight md:text-4xl'>
+                Upcoming features
+              </h2>
+              <p className='mt-4 text-muted-foreground'>
+                Once the public-data foundation is proven, the next release expands into official history, stronger verification, and dealer-grade tooling.
+              </p>
+            </div>
+
+            <div className='mx-auto mt-10 grid w-full max-w-6xl gap-8 md:mt-12 md:grid-cols-2 relative z-10'>
+              <div className={cn(glassCardBase, GLASS_CARD)}>
+                <div className='flex items-center gap-3'>
+                  <ShieldCheck className='h-6 w-6 shrink-0 text-primary' />
+                  <h3 className='text-sm font-semibold tracking-tight'>
+                    Official title and odometer history
+                  </h3>
+                </div>
+                <ul className='mt-3 list-disc space-y-2 pl-5 text-sm text-muted-foreground'>
+                  <li>Integrate NMVTIS for official title brands such as salvage, rebuilt, or junk.</li>
+                  <li>Bring verified odometer readings into the report instead of relying on derived signals alone.</li>
+                </ul>
+              </div>
+
+              <div className={cn(glassCardBase, GLASS_CARD)}>
+                <div className='flex items-center gap-3'>
+                  <Building2 className='h-6 w-6 shrink-0 text-primary' />
+                  <h3 className='text-sm font-semibold tracking-tight'>
+                    Insurance and theft indicators
+                  </h3>
+                </div>
+                <ul className='mt-3 list-disc space-y-2 pl-5 text-sm text-muted-foreground'>
+                  <li>Connect NICB VINCheck style signals for theft confirmation and salvage indicators.</li>
+                  <li>Close some of the biggest trust gaps that public sources alone cannot resolve.</li>
+                </ul>
+              </div>
+
+              <div className={cn(glassCardBase, GLASS_CARD)}>
+                <div className='flex items-center gap-3'>
+                  <Microscope className='h-6 w-6 shrink-0 text-primary' />
+                  <h3 className='text-sm font-semibold tracking-tight'>
+                    Stronger mileage verification
+                  </h3>
+                </div>
+                <ul className='mt-3 list-disc space-y-2 pl-5 text-sm text-muted-foreground'>
+                  <li>Layer in time-series odometer signals from commercial inspection partners.</li>
+                  <li>Improve fraud detection when listing mileage does not fit the vehicle timeline.</li>
+                </ul>
+              </div>
+
+              <div className={cn(glassCardBase, GLASS_CARD)}>
+                <div className='flex items-center gap-3'>
+                  <Briefcase className='h-6 w-6 shrink-0 text-primary' />
+                  <h3 className='text-sm font-semibold tracking-tight'>
+                    Market forecasting and dealer tools
+                  </h3>
+                </div>
+                <ul className='mt-3 list-disc space-y-2 pl-5 text-sm text-muted-foreground'>
+                  <li>Add depreciation analytics based on historical model performance and local market behavior.</li>
+                  <li>Expand into white-label workflows for dealerships evaluating inventory or sharing transparency reports.</li>
+                </ul>
+              </div>
+            </div>
           </PageSection>
           
           

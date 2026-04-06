@@ -1,7 +1,6 @@
 // app/(marketing)/_components/header.tsx
 
 'use client'
-import { createClient } from '@/app/lib/supabase/client'
 import { Themetoggle } from '@/components/Themetoggle'
 import { ToastProvider } from '@/components/ToastProvider'
 import { Button } from '@/components/ui/button'
@@ -16,47 +15,18 @@ import SiteLogo from './Sitelogo'
 
 const menuItems = [
   { name: 'Features', href: '/#features' },
-  { name: 'Solution', href: '#link' },
-  { name: 'Pricing', href: '/#pricing' },
+  { name: 'How It Works', href: '/#how-it-works' },
+  { name: 'FAQs', href: '/faqs' },
   { name: 'About', href: '/about' },
 ]
 
-export const HeroHeader = () => {
+interface HeroHeaderProps {
+  initialUser: User | null
+}
+
+export const HeroHeader = ({ initialUser }: HeroHeaderProps) => {
   const [menuState, setMenuState] = React.useState(false)
   const [isScrolled, setIsScrolled] = React.useState(false)
-
-  const [user, setUser] = React.useState<User | null>(null)
-  const [isLoading, setIsLoading] = React.useState(true)
-
-  React.useEffect(() => {
-    const getUser = async () => {
-      const supabase = await createClient()
-      const { data } = await supabase.auth.getUser()
-      setUser(data.user)
-      setIsLoading(false)
-    }
-
-    getUser()
-  }, [])
-
-  React.useEffect(() => {
-    const setup = async () => {
-      const supabase = await createClient()
-      const { data: listener } = supabase.auth.onAuthStateChange(
-        (_event, session) => {
-          setUser(session?.user ?? null)
-        }
-      )
-      return () => listener.subscription.unsubscribe()
-    }
-    const cleanupPromise = setup()
-    return () => {
-      // Ensure cleanup when component unmounts
-      cleanupPromise.then((cleanup) => {
-        if (typeof cleanup === 'function') cleanup()
-      })
-    }
-  }, [])
 
   React.useEffect(() => {
     const handleScroll = () => {
@@ -94,7 +64,7 @@ export const HeroHeader = () => {
               </button>
             </div>
 
-            <div className='absolute inset-0 m-auto hidden size-fit lg:block'>
+            <div className='hidden flex-1 justify-center lg:flex'>
               <ul className='flex gap-8 text-sm'>
                 {menuItems.map((item, index) => (
                   <li key={index}>
@@ -124,15 +94,15 @@ export const HeroHeader = () => {
                   ))}
                 </ul>
               </div>
-              {isLoading ? null : (
-                <div className='flex w-full flex-col space-y-3 sm:flex-row sm:gap-3 sm:space-y-0 md:w-fit'>
-                  {user ? (
+              <div className='flex w-full flex-col space-y-3 sm:flex-row sm:gap-3 sm:space-y-0 md:w-fit'>
+                  {initialUser ? (
                     <>
                       <Button
                         asChild
                         variant='default'
                         size='sm'
                         // className={cn(isScrolled && 'lg:hidden')}
+                        // className={cn('font-bold')}
                       >
                         <Link href='/dashboard'>
                           <span>Dashboard</span>
@@ -161,10 +131,10 @@ export const HeroHeader = () => {
                         asChild
                         variant='default'
                         size='sm'
-                        className={cn(isScrolled && 'lg:hidden')}
+                        className={cn(isScrolled && 'lg:hidden', 'font-bold')}
                       >
                         <Link href='/get-started'>
-                          <span>Get Started</span>
+                          <span>Start VIN Check</span>
                         </Link>
                       </Button>
                       {/* <Button
@@ -181,10 +151,10 @@ export const HeroHeader = () => {
                         asChild
                         size='sm'
                         variant='default'
-                        className={cn(isScrolled ? 'lg:inline-flex' : 'hidden')}
+                        className={cn(isScrolled ? 'lg:inline-flex' : 'hidden', 'font-bold')}
                       >
                         <Link href='/get-started'>
-                          <span>Get Started</span>
+                          <span>Start VIN Check</span>
                         </Link>
                       </Button>
                        <ToastProvider>
@@ -193,7 +163,6 @@ export const HeroHeader = () => {
                     </>
                   )}
                 </div>
-              )}
             </div>
           </div>
         </div>

@@ -8,6 +8,9 @@ interface PageSectionProps extends React.HTMLAttributes<HTMLElement> {
   as?: React.ElementType
 }
 
+export const MARKETING_CONTENT_SECTION_TOP_SPACING = 'pt-28 md:pt-32'
+export const MARKETING_CONTENT_SECTION_BOTTOM_SPACING = 'pb-4 md:pb-6'
+
 export function PageSection({
   children,
   className,
@@ -16,10 +19,8 @@ export function PageSection({
 }: PageSectionProps) {
   return (
     <Component
-      // ✅ FIX: Reduced 'md:py-32' to 'md:py-24'. 
-      // This shrinks the gap on FAQs/Terms pages by 32px.
       className={cn(
-        'w-full py-16 md:py-24', 
+        'w-full py-16 md:py-24',
         className
       )}
       {...props}

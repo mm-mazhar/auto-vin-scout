@@ -4,7 +4,11 @@
 
 import { BorderBeam } from '@/app/(marketing)/_components/ui/border-beam';
 import { CardHoverEffect } from '@/app/(marketing)/_components/ui/pulse-card';
-import { PageSection } from '@/components/page-section';
+import {
+  MARKETING_CONTENT_SECTION_BOTTOM_SPACING,
+  MARKETING_CONTENT_SECTION_TOP_SPACING,
+  PageSection,
+} from '@/components/page-section';
 import { Badge } from '@/components/ui/badge';
 // Spotlight removed (background animation disabled)
 import { motion, useInView } from 'framer-motion';
@@ -89,9 +93,11 @@ export default function AboutUs1() {
   const valuesInView = useInView(valuesRef, { once: true, amount: 0.3 });
 
   return (
-    <PageSection className="relative overflow-hidden pt-28 md:pt-36">
+    <PageSection
+      className={`relative overflow-hidden ${MARKETING_CONTENT_SECTION_TOP_SPACING} ${MARKETING_CONTENT_SECTION_BOTTOM_SPACING}`}
+    >
 
-      <div className="flex flex-col items-center relative z-10 space-y-8 px-4">
+      <div className="relative z-10 flex flex-col items-center space-y-6 px-4">
         <Badge
                   variant="outline"
                   className="border-primary mb-4 px-3 py-1 text-xs font-medium tracking-wider uppercase"
@@ -103,12 +109,12 @@ export default function AboutUs1() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, ease: 'easeOut' }}
-          className="mx-auto mb-8 max-w-2xl text-center"
+          className="mx-auto mb-6 max-w-2xl text-center"
         >
-          <h1 className="from-foreground/80 via-foreground to-foreground/80 bg-gradient-to-r bg-clip-text mt-6 text-4xl font-bold tracking-tight text-transparent sm:text-5xl md:text-6xl">
+          <h1 className="from-foreground/80 via-foreground to-foreground/80 mt-3 bg-gradient-to-r bg-clip-text text-4xl font-bold tracking-tight text-transparent sm:text-5xl md:text-6xl">
             {aboutData.title}
           </h1>
-          <p className="text-muted-foreground mt-6 text-xl">
+          <p className="text-muted-foreground mt-4 text-xl">
             {aboutData.subtitle}
           </p>
         </motion.div>
@@ -173,7 +179,7 @@ export default function AboutUs1() {
           </motion.div>
         </div>
 
-        <div ref={valuesRef} className="mb-8">
+        <div ref={valuesRef}>
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={

@@ -38,10 +38,10 @@ export function formatPrice(
 
 // ✅ SOCIALS AND SEO
 export const NEXT_PUBLIC_SITE_NAME = `Auto VIN Scout` as string
-export const APP_SLOGAN = `⚡ Buy your next car with total confidence.` as string
-export const APP_DESCRIPTION = `Probabilistic risk assessment based on over numerous market factors.` as string
+export const APP_SLOGAN = `⚡ VIN intelligence for smarter used-car buying.` as string
+export const APP_DESCRIPTION = `Check a VIN before you trust the listing.` as string
 export const APP_DESCRIPTION_LONG =
-  `A comprehensive decision support system that aggregates NHTSA data, market behavior, and environmental hazards to give you a clear 'buy' or 'avoid' signal for any VIN.` as string
+  `Decode the vehicle, compare listing behavior against the market, and review flood and recall signals in one report built for buyers who want clearer next steps.` as string
 export const KEYWORDS_LST: string[] = [
   'Saas,Next.js',
   'TypeScript',
@@ -206,39 +206,39 @@ export type Testimonial = {
 export const TESTIMONIALS: Testimonial[] = [
   {
     quote:
-      '“Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.”',
-    name: 'John Doe',
-    title: 'CEO, Company',
+      '“If a VIN tool can tell me a truck spent weeks being relisted in a flood-prone county, that saves me from a six-hour drive.”',
+    name: 'Marcus T.',
+    title: 'Used truck shopper',
   },
   {
     quote:
-      '“Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.”',
-    name: 'Jason L.',
-    title: 'CTO, Company',
+      '“The recall count is useful, but the inspection checklist is what makes this practical. It tells me what to ask before I pay a mechanic.”',
+    name: 'Priya S.',
+    title: 'First-time buyer',
   },
   {
     quote:
-      '“Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.”',
-    name: 'Nina P.',
-    title: 'CTO, Company',
+      '“I like that it uses probability language instead of pretending it knows everything. That makes the report feel more trustworthy.”',
+    name: 'Daniel R.',
+    title: 'Remote marketplace buyer',
   },
   {
     quote:
-      '“Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.”',
-    name: 'Mark D.',
-    title: 'CTO, Company',
+      '“A quick free decode with a gated deeper report is exactly how I want to triage the dozens of listings I review each week.”',
+    name: 'Jasmine L.',
+    title: 'Independent auto broker',
   },
   {
     quote:
-      '“Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.”',
-    name: 'Ayesha K.',
-    title: 'CTO, Company',
+      '“Most VIN tools dump data on you. I need something that tells me where the real risk is and what I should verify next.”',
+    name: 'Kevin M.',
+    title: 'Family SUV shopper',
   },
   {
     quote:
-      '“Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.”',
-    name: 'Luis R.',
-    title: 'CTO, Company',
+      '“Market pricing plus flood and recall signals would be enough for me to decide which cars deserve a paid inspection.”',
+    name: 'Elena G.',
+    title: 'Budget-conscious buyer',
   },
 ]
 

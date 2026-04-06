@@ -2,7 +2,11 @@
 
 "use client"
 
-import { PageSection } from '@/components/page-section'
+import {
+  MARKETING_CONTENT_SECTION_BOTTOM_SPACING,
+  MARKETING_CONTENT_SECTION_TOP_SPACING,
+  PageSection,
+} from '@/components/page-section'
 import { useToast } from '@/components/ToastProvider'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -27,8 +31,10 @@ export default function ContactPage() {
   }
 
   return (
-    <PageSection className='pt-28 md:pt-36'>
-      <div className='flex flex-col items-center space-y-8 px-4'>
+    <PageSection
+      className={`${MARKETING_CONTENT_SECTION_TOP_SPACING} ${MARKETING_CONTENT_SECTION_BOTTOM_SPACING}`}
+    >
+      <div className='flex flex-col items-center space-y-6 px-4'>
         <Badge
                   variant="outline"
                   className="border-primary mb-4 px-3 py-1 text-xs font-medium tracking-wider uppercase"
@@ -36,8 +42,8 @@ export default function ContactPage() {
                   Contact
                 </Badge>
         <div className='flex flex-col items-center space-y-2'>
-          <h1 className='mt-6 text-3xl font-bold'>Contact Us</h1>
-          <p className='mt-8 text-muted-foreground'>
+          <h1 className='mt-3 text-3xl font-bold'>Contact Us</h1>
+          <p className='mt-4 text-muted-foreground'>
             Contact the support team at {NEXT_PUBLIC_SITE_NAME}.
           </p>
         </div>
