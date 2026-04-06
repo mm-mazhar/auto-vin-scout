@@ -11,7 +11,9 @@ interface PageSectionProps extends React.HTMLAttributes<HTMLElement> {
 
 export const MARKETING_CONTENT_SECTION_TOP_SPACING = 'pt-28 md:pt-32'
 export const MARKETING_CONTENT_SECTION_BOTTOM_SPACING = 'pb-4 md:pb-6'
-export const MARKETING_ALIGNED_CONTAINER_WIDTH = 'max-w-6xl'
+export const MARKETING_ALIGNED_CONTAINER_WIDTH = 'max-w-8xl'
+export const MARKETING_ALIGNED_CONTENT_WIDTH = 'mx-auto w-full max-w-6xl'
+export const MARKETING_ALIGNED_PROSE_WIDTH = 'mx-auto w-full max-w-6xl'
 
 export function PageSection({
   children,

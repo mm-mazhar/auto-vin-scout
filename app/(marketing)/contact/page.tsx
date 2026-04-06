@@ -4,6 +4,7 @@
 
 import {
   MARKETING_ALIGNED_CONTAINER_WIDTH,
+  MARKETING_ALIGNED_CONTENT_WIDTH,
   MARKETING_CONTENT_SECTION_BOTTOM_SPACING,
   MARKETING_CONTENT_SECTION_TOP_SPACING,
   PageSection,
@@ -50,7 +51,9 @@ export default function ContactPage() {
           </p>
         </div>
 
-        <div className='relative overflow-hidden rounded-2xl border p-4 shadow-sm ring-1 ring-border md:p-6'>
+        <div
+          className={`relative w-full overflow-hidden rounded-2xl border p-4 shadow-sm ring-1 ring-border md:p-6 ${MARKETING_ALIGNED_CONTENT_WIDTH}`}
+        >
           <ShineBorder borderWidth={1} duration={20} shineColor={['var(--primary)']} />
           <div className='grid grid-cols-1 gap-6 md:grid-cols-3'>
             <div className='space-y-8'>

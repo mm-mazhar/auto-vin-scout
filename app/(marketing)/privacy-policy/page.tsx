@@ -2,6 +2,7 @@
 
 import {
   MARKETING_ALIGNED_CONTAINER_WIDTH,
+  MARKETING_ALIGNED_PROSE_WIDTH,
   MARKETING_CONTENT_SECTION_BOTTOM_SPACING,
   MARKETING_CONTENT_SECTION_TOP_SPACING,
   PageSection,
@@ -22,7 +23,9 @@ export default function PrivacyPolicyPage() {
                   Privacy
                 </Badge>
         <h1 className='mt-3 text-3xl font-bold'>Privacy Policy</h1>
-        <div className='mt-3 space-y-4 text-sm text-muted-foreground text-justify'>
+        <div
+          className={`mt-3 space-y-4 text-sm text-muted-foreground text-justify ${MARKETING_ALIGNED_PROSE_WIDTH}`}
+        >
           <p>
             
           Vestibulum ante ipsum primis in faucibus orci luctus et ultrices

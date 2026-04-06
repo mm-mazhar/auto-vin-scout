@@ -6,6 +6,7 @@ import { BorderBeam } from '@/app/(marketing)/_components/ui/border-beam';
 import { CardHoverEffect } from '@/app/(marketing)/_components/ui/pulse-card';
 import {
   MARKETING_ALIGNED_CONTAINER_WIDTH,
+  MARKETING_ALIGNED_CONTENT_WIDTH,
   MARKETING_CONTENT_SECTION_BOTTOM_SPACING,
   MARKETING_CONTENT_SECTION_TOP_SPACING,
   PageSection,
@@ -122,7 +123,7 @@ export default function AboutUs1() {
         </motion.div>
 
         {/* Mission & Vision Section */}
-        <div ref={missionRef} className="relative mx-auto mb-8 max-w-7xl">
+        <div ref={missionRef} className={`relative mb-8 ${MARKETING_ALIGNED_CONTENT_WIDTH}`}>
           <motion.div
             initial={{ opacity: 0, y: 40 }}
             animate={
@@ -181,7 +182,7 @@ export default function AboutUs1() {
           </motion.div>
         </div>
 
-        <div ref={valuesRef}>
+        <div ref={valuesRef} className={MARKETING_ALIGNED_CONTENT_WIDTH}>
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={

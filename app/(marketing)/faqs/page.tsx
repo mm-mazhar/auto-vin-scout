@@ -3,6 +3,7 @@
 import { FaqList } from '@/app/(marketing)/_components/FaqList';
 import {
   MARKETING_ALIGNED_CONTAINER_WIDTH,
+  MARKETING_ALIGNED_CONTENT_WIDTH,
   MARKETING_CONTENT_SECTION_BOTTOM_SPACING,
   MARKETING_CONTENT_SECTION_TOP_SPACING,
   PageSection,
@@ -43,9 +44,11 @@ export default function FaqPage() {
          Ideally, wrap this in Suspense if it fetches data, 
          but even as is, it decouples the header rendering from the JS load.
       */}
-      <FaqList />
+      <div className={MARKETING_ALIGNED_CONTENT_WIDTH}>
+        <FaqList />
+      </div>
 
-      <div className='mt-6 text-center'>
+      <div className='mx-auto mt-6 w-full max-w-3xl text-center'>
         <p className='text-muted-foreground mb-4'>
           Need help with a specific VIN or report question?
         </p>
