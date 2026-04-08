@@ -133,7 +133,7 @@ export const PRICING_PLANS: PricingPlan[] = [
     title: 'Basic Report',
     price: '29.99',
     priceSuffix: ' one-time',
-    description: `Deep dive into a few vehicle. Credits: ${CREDITS_BASIC}`,
+    description: `Deep dive into few vehicles. Credits: ${CREDITS_BASIC}`,
     credits: CREDITS_BASIC,
     features: ['vPIC VIN Decode', 'Market Anomalies', 'Local Market Band', 'FEMA Flood Zones', 'Basic Inspection Checklist'],
     stripePriceId: STRIPE_PRICE_ID_basic,

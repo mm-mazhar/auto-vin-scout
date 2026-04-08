@@ -163,117 +163,121 @@ export default async function BillingPage() {
           </Card>
         ) : null}
 
-        {!isSubActive && basicPlan ? (
-          <Card className='rounded-lg border'>
-            <CardHeader className='p-2'>
-              <div className='flex items-center justify-between'>
-                <div>
-                  <CardTitle className='text-sm'>
-                    {hasBasicCredits ? basicPlan.title : `Purchase ${basicPlan.title}`}
-                  </CardTitle>
-                  <CardDescription className='text-xs'>{basicPlan.description}</CardDescription>
-                </div>
-                <div className='flex items-center gap-2'>
-                  {hasBasicCredits ? (
-                    <span className='text-[10px] px-2 py-0.5 rounded-full bg-primary/15 text-primary border border-primary/30'>
-                      Current Plan
-                    </span>
-                  ) : null}
-                  <UpgradeSubscriptionButton
-                    planId={PLAN_IDS.basic}
-                    hasActiveSubscription={isSubActive}
-                    ctaLabel={hasBasicCredits ? 'Buy Again' : 'Purchase'}
-                  />
-                </div>
-              </div>
-            </CardHeader>
-            <div className='border-t mx-2'></div>
-            <CardContent className='px-2 pb-2'>
-              <ul className='text-xs space-y-1'>
-                {basicPlan.features.slice(0, 4).map((f, i) => (
-                  <li key={i} className='flex items-center gap-2'>
-                    <span>•</span>
-                    <span>{f}</span>
-                  </li>
-                ))}
-              </ul>
-            </CardContent>
-          </Card>
-        ) : null}
+        {showNonSubscriptionUpgradeCards ? (
+          <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
+            {basicPlan ? (
+              <Card className='rounded-lg border'>
+                <CardHeader className='p-2'>
+                  <div className='flex items-center justify-between'>
+                    <div>
+                      <CardTitle className='text-sm'>
+                        {hasBasicCredits ? basicPlan.title : `Purchase ${basicPlan.title}`}
+                      </CardTitle>
+                      <CardDescription className='text-xs'>{basicPlan.description}</CardDescription>
+                    </div>
+                    <div className='flex items-center gap-2'>
+                      {hasBasicCredits ? (
+                        <span className='text-[10px] px-2 py-0.5 rounded-full bg-primary/15 text-primary border border-primary/30'>
+                          Current Plan
+                        </span>
+                      ) : null}
+                      <UpgradeSubscriptionButton
+                        planId={PLAN_IDS.basic}
+                        hasActiveSubscription={isSubActive}
+                        ctaLabel={hasBasicCredits ? 'Buy Again' : 'Purchase'}
+                      />
+                    </div>
+                  </div>
+                </CardHeader>
+                <div className='border-t mx-2'></div>
+                <CardContent className='px-2 pb-2'>
+                  <ul className='text-xs space-y-1'>
+                    {basicPlan.features.slice(0, 4).map((f, i) => (
+                      <li key={i} className='flex items-center gap-2'>
+                        <span>•</span>
+                        <span>{f}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+              </Card>
+            ) : null}
 
-        {showNonSubscriptionUpgradeCards && proPlan ? (
-          <Card className='rounded-lg border'>
-            <CardHeader className='p-2'>
-              <div className='flex items-center justify-between'>
-                <div>
-                  <CardTitle className='text-sm'>Upgrade to {proPlan.title}</CardTitle>
-                  <CardDescription className='text-xs'>{proPlan.description}</CardDescription>
-                </div>
-                <UpgradeSubscriptionButton planId={PLAN_IDS.pro} hasActiveSubscription={isSubActive} />
-              </div>
-            </CardHeader>
-            <div className='border-t mx-2'></div>
-            <CardContent className='px-2 pb-2'>
-              <ul className='text-xs space-y-1'>
-                {proPlan.features.slice(0, 4).map((f, i) => (
-                  <li key={i} className='flex items-center gap-2'>
-                    <span>•</span>
-                    <span>{f}</span>
-                  </li>
-                ))}
-              </ul>
-            </CardContent>
-          </Card>
-        ) : null}
+            {proPlan ? (
+              <Card className='rounded-lg border'>
+                <CardHeader className='p-2'>
+                  <div className='flex items-center justify-between'>
+                    <div>
+                      <CardTitle className='text-sm'>Upgrade to {proPlan.title}</CardTitle>
+                      <CardDescription className='text-xs'>{proPlan.description}</CardDescription>
+                    </div>
+                    <UpgradeSubscriptionButton planId={PLAN_IDS.pro} hasActiveSubscription={isSubActive} />
+                  </div>
+                </CardHeader>
+                <div className='border-t mx-2'></div>
+                <CardContent className='px-2 pb-2'>
+                  <ul className='text-xs space-y-1'>
+                    {proPlan.features.slice(0, 4).map((f, i) => (
+                      <li key={i} className='flex items-center gap-2'>
+                        <span>•</span>
+                        <span>{f}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+              </Card>
+            ) : null}
 
-        {showNonSubscriptionUpgradeCards && dealerCorePlan ? (
-          <Card className='rounded-lg border'>
-            <CardHeader className='p-2'>
-              <div className='flex items-center justify-between'>
-                <div>
-                  <CardTitle className='text-sm'>Upgrade to {dealerCorePlan.title}</CardTitle>
-                  <CardDescription className='text-xs'>{dealerCorePlan.description}</CardDescription>
-                </div>
-                <UpgradeSubscriptionButton planId={PLAN_IDS.dealercore} hasActiveSubscription={isSubActive} />
-              </div>
-            </CardHeader>
-            <div className='border-t mx-2'></div>
-            <CardContent className='px-2 pb-2'>
-              <ul className='text-xs space-y-1'>
-                {dealerCorePlan.features.slice(0, 4).map((f, i) => (
-                  <li key={i} className='flex items-center gap-2'>
-                    <span>•</span>
-                    <span>{f}</span>
-                  </li>
-                ))}
-              </ul>
-            </CardContent>
-          </Card>
-        ) : null}
+            {dealerCorePlan ? (
+              <Card className='rounded-lg border'>
+                <CardHeader className='p-2'>
+                  <div className='flex items-center justify-between'>
+                    <div>
+                      <CardTitle className='text-sm'>Upgrade to {dealerCorePlan.title}</CardTitle>
+                      <CardDescription className='text-xs'>{dealerCorePlan.description}</CardDescription>
+                    </div>
+                    <UpgradeSubscriptionButton planId={PLAN_IDS.dealercore} hasActiveSubscription={isSubActive} />
+                  </div>
+                </CardHeader>
+                <div className='border-t mx-2'></div>
+                <CardContent className='px-2 pb-2'>
+                  <ul className='text-xs space-y-1'>
+                    {dealerCorePlan.features.slice(0, 4).map((f, i) => (
+                      <li key={i} className='flex items-center gap-2'>
+                        <span>•</span>
+                        <span>{f}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+              </Card>
+            ) : null}
 
-        {showNonSubscriptionUpgradeCards && dealerPlusPlan ? (
-          <Card className='rounded-lg border'>
-            <CardHeader className='p-2'>
-              <div className='flex items-center justify-between'>
-                <div>
-                  <CardTitle className='text-sm'>Upgrade to {dealerPlusPlan.title}</CardTitle>
-                  <CardDescription className='text-xs'>{dealerPlusPlan.description}</CardDescription>
-                </div>
-                <UpgradeSubscriptionButton planId={PLAN_IDS.dealerplus} hasActiveSubscription={isSubActive} />
-              </div>
-            </CardHeader>
-            <div className='border-t mx-2'></div>
-            <CardContent className='px-2 pb-2'>
-              <ul className='text-xs space-y-1'>
-                {dealerPlusPlan.features.slice(0, 4).map((f, i) => (
-                  <li key={i} className='flex items-center gap-2'>
-                    <span>•</span>
-                    <span>{f}</span>
-                  </li>
-                ))}
-              </ul>
-            </CardContent>
-          </Card>
+            {dealerPlusPlan ? (
+              <Card className='rounded-lg border'>
+                <CardHeader className='p-2'>
+                  <div className='flex items-center justify-between'>
+                    <div>
+                      <CardTitle className='text-sm'>Upgrade to {dealerPlusPlan.title}</CardTitle>
+                      <CardDescription className='text-xs'>{dealerPlusPlan.description}</CardDescription>
+                    </div>
+                    <UpgradeSubscriptionButton planId={PLAN_IDS.dealerplus} hasActiveSubscription={isSubActive} />
+                  </div>
+                </CardHeader>
+                <div className='border-t mx-2'></div>
+                <CardContent className='px-2 pb-2'>
+                  <ul className='text-xs space-y-1'>
+                    {dealerPlusPlan.features.slice(0, 4).map((f, i) => (
+                      <li key={i} className='flex items-center gap-2'>
+                        <span>•</span>
+                        <span>{f}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+              </Card>
+            ) : null}
+          </div>
         ) : null}
 
         {/* TOP ROW: Edit Subscription + Upgrade + Renew */}

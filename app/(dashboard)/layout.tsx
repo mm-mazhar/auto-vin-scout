@@ -14,7 +14,7 @@ import { slugify } from '@/lib/utils'
 import { unstable_noStore as noStore } from 'next/cache'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
-import { ReactNode } from 'react'
+import { type CSSProperties, ReactNode } from 'react'
 
 
 export const dynamic = 'force-dynamic'
@@ -178,7 +178,10 @@ async function DashboardGroupLayout({ children }: { children: ReactNode }) {
   return (
     <QueryProvider>
       <ToastProvider>
-        <SidebarProvider defaultOpen={initialOpen}>
+        <SidebarProvider
+          defaultOpen={initialOpen}
+          style={{ '--sidebar-width-icon': '3.25rem' } as CSSProperties}
+        >
           <div className="flex min-h-screen w-full bg-background">
             {requireFirstRunRename && mappedCurrentOrg && (
               <FirstRunRenameOrgDialog

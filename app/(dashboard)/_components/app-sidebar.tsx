@@ -6,6 +6,7 @@ import * as React from 'react'
 
 import { NavMain } from '@/app/(dashboard)/_components/nav-main'
 import { NavUser } from '@/app/(dashboard)/_components/nav-user'
+import { ProjectSwitcher } from '@/app/(dashboard)/_components/project-switcher'
 import {
   Sidebar,
   SidebarContent,
@@ -14,7 +15,6 @@ import {
   SidebarRail,
 } from '@/app/(dashboard)/_components/sidebar'
 import { TeamSwitcher } from '@/app/(dashboard)/_components/team-switcher'
-import { ProjectSwitcher } from '@/app/(dashboard)/_components/project-switcher'
 import { type PlanId } from '@/lib/constants'
 import { ChartNoAxesCombined, Database, FileText } from 'lucide-react'
 import { usePathname } from 'next/navigation'
@@ -76,7 +76,7 @@ export function AppSidebar({
 
   return (
     <Sidebar collapsible='icon' {...props}>
-      <SidebarHeader>
+      <SidebarHeader className='pt-4'>
         <TeamSwitcher
           organizations={organizations || []}
           currentOrganization={currentOrganization || null}
@@ -95,7 +95,7 @@ export function AppSidebar({
           <NavMain items={mappedProjectItems} label="Project" />
         )}
       </SidebarContent>
-      <SidebarFooter>
+      <SidebarFooter className='pb-4'>
         <NavUser
           user={finalUser}
           currentPlanId={currentPlanId}

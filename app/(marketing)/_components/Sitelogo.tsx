@@ -14,7 +14,7 @@ const SiteLogo = () => {
     <Link
       href='/'
       aria-label='home'
-      className='group flex min-w-0 items-center justify-center gap-2'
+      className='group flex min-w-0 items-center justify-center gap-1'
     >
       <span className='relative flex items-center justify-center transition-transform duration-200 group-hover:scale-[1.03]'>
         <span
