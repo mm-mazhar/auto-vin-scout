@@ -4,19 +4,19 @@ import { AnimatedGroup } from '@/app/(marketing)/_components/ui/animated-group'
 import AnimatedShinyText from '@/app/(marketing)/_components/ui/animated-shiny-text'
 import { HyperText } from '@/app/(marketing)/_components/ui/hyper-text'
 import TextEffect from '@/app/(marketing)/_components/ui/text-effect'
-import { PageSection } from '@/components/page-section'
+import { MARKETING_SURFACE_MAX_WIDTH, PageSection } from '@/components/page-section'
 import PricingComponent from '@/components/PricingComponent'
 import { Button } from '@/components/ui/button'
 import { ShineBorder } from '@/components/ui/shine-border'
 import {
-  Briefcase,
-  Building2,
-  FlaskConical,
-  Lightbulb,
-  Microscope,
-  Rocket,
-  ShieldCheck,
-  Wrench
+    Briefcase,
+    Building2,
+    FlaskConical,
+    Lightbulb,
+    Microscope,
+    Rocket,
+    ShieldCheck,
+    Wrench
 } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -24,17 +24,17 @@ import Link from 'next/link'
 import prisma from '@/app/lib/db'
 import { createClient } from '@/app/lib/supabase/server'
 import {
-  APP_DESCRIPTION,
-  APP_DESCRIPTION_LONG,
-  APP_SLOGAN,
-  GLASS_CARD,
-  PLAN_IDS,
-  PRICE_HEADING,
-  PRICING_PLANS,
-  TESTIMONIALS,
-  TESTIMONIAL_TICKER_ENABLED,
-  type PlanId,
-  type PricingPlan,
+    APP_DESCRIPTION,
+    APP_DESCRIPTION_LONG,
+    APP_SLOGAN,
+    GLASS_CARD,
+    PLAN_IDS,
+    PRICE_HEADING,
+    PRICING_PLANS,
+    TESTIMONIALS,
+    TESTIMONIAL_TICKER_ENABLED,
+    type PlanId,
+    type PricingPlan,
 } from '@/lib/constants'
 import { cn } from '@/lib/utils'
 
@@ -104,6 +104,7 @@ export default async function HeroSection() {
   const glassCardBase = 'flex flex-col rounded-2xl p-5 text-left shadow-sm'
   const glassCardFlexBetween =
     'flex h-full flex-col justify-between rounded-2xl p-6 text-left shadow-sm'
+  const alignedSurfaceWidth = MARKETING_SURFACE_MAX_WIDTH
 
   return (
     <>
@@ -234,7 +235,7 @@ export default async function HeroSection() {
                   </div>
                 </div>
 
-                <div className='relative mx-auto flex max-w-6xl flex-col gap-4 lg:gap-6'>
+                <div className={cn('relative mx-auto flex flex-col gap-4 lg:gap-6', alignedSurfaceWidth)}>
                   <div className='hidden gap-4 md:grid md:grid-cols-2 xl:gap-6'>
                     <div className='pointer-events-none rounded-2xl border border-border/60 bg-background/78 p-4 shadow-lg shadow-black/10 backdrop-blur'>
                       <div className='flex items-center gap-3'>
@@ -359,7 +360,7 @@ export default async function HeroSection() {
               </p>
             </div>
 
-            <div className='mx-auto mt-10 grid w-full max-w-6xl gap-8 md:mt-12 md:grid-cols-2 relative z-10'>
+            <div className={cn('relative z-10 mx-auto mt-10 grid w-full gap-8 md:mt-12 md:grid-cols-2', alignedSurfaceWidth)}>
               <div className={cn(glassCardBase, GLASS_CARD)}>
                 <div className='flex items-center gap-3'>
                   <Rocket className='h-6 w-6 shrink-0 text-primary' />
@@ -436,7 +437,7 @@ export default async function HeroSection() {
               </p>
             </div>
 
-            <div className='mx-auto mt-10 grid w-full max-w-6xl gap-8 md:mt-12 md:grid-cols-2 relative z-10'>
+            <div className={cn('relative z-10 mx-auto mt-10 grid w-full gap-8 md:mt-12 md:grid-cols-2', alignedSurfaceWidth)}>
               <div className={cn(glassCardBase, GLASS_CARD)}>
                 <div className='flex items-center gap-3'>
                   <Lightbulb className='h-6 w-6 shrink-0 text-primary' />
@@ -513,7 +514,7 @@ export default async function HeroSection() {
               </p>
             </div>
 
-            <div className='mx-auto mt-10 grid w-full max-w-6xl gap-8 md:mt-12 md:grid-cols-3 relative z-10'>
+            <div className={cn('relative z-10 mx-auto mt-10 grid w-full gap-8 md:mt-12 md:grid-cols-3', alignedSurfaceWidth)}>
               <div className={cn(glassCardBase, GLASS_CARD)}>
                 <div className='flex items-center gap-3'>
                   <div className='flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold uppercase tracking-wide text-primary'>
@@ -584,7 +585,7 @@ export default async function HeroSection() {
             </div>
 
             {TESTIMONIAL_TICKER_ENABLED ? (
-              <div className='mx-auto mt-10 w-full max-w-6xl md:mt-12'>
+              <div className={cn('mx-auto mt-10 w-full md:mt-12', alignedSurfaceWidth)}>
                 <div className='testimonial-ticker relative overflow-hidden'>
                   {/* MOBILE: swipe carousel */}
                   <div className='md:hidden'>
@@ -698,7 +699,7 @@ export default async function HeroSection() {
               </p>
             </div>
 
-            <div className='mx-auto mt-10 grid w-full max-w-6xl gap-8 md:mt-12 md:grid-cols-2 relative z-10'>
+            <div className={cn('relative z-10 mx-auto mt-10 grid w-full gap-8 md:mt-12 md:grid-cols-2', alignedSurfaceWidth)}>
               <div className={cn(glassCardBase, GLASS_CARD)}>
                 <div className='flex items-center gap-3'>
                   <ShieldCheck className='h-6 w-6 shrink-0 text-primary' />

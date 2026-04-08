@@ -1,17 +1,18 @@
 // app/(marketing)/_components/footer.tsx
 
 import SiteLogo from '@/app/(marketing)/_components/Sitelogo'
+import { MARKETING_SURFACE_MAX_WIDTH } from '@/components/page-section'
 import { Button } from '@/components/ui/button'
 import { ShineBorder } from '@/components/ui/shine-border'
 import { APP_DESCRIPTION_LONG, NEXT_PUBLIC_SITE_NAME, SOCIAL_LINKS } from '@/lib/constants'
 import Link from 'next/link'
 import { FaLinkedinIn } from 'react-icons/fa6'
 import {
-  SiFacebook,
-  SiInstagram,
-  SiTiktok,
-  SiX,
-  SiYoutube,
+    SiFacebook,
+    SiInstagram,
+    SiTiktok,
+    SiX,
+    SiYoutube,
 } from 'react-icons/si'
 
 const links = [
@@ -31,7 +32,9 @@ export default function FooterSection({ isAuthenticated = false }: FooterSection
     <footer className='w-full pt-2 pb-8 md:pt-4 md:pb-8'>
       <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
         <div className='flex flex-col items-center text-center'>
-          <div className='relative mb-10 w-full max-w-6xl overflow-hidden rounded-[2rem] border border-border/70 bg-background/80 px-6 py-8 shadow-lg shadow-black/5 backdrop-blur md:px-10 md:py-10'>
+          <div
+            className={`relative mb-10 w-full overflow-hidden rounded-[2rem] border border-border/70 bg-background/80 px-6 py-8 shadow-lg shadow-black/5 backdrop-blur md:px-10 md:py-10 ${MARKETING_SURFACE_MAX_WIDTH}`}
+          >
             <ShineBorder borderWidth={1} duration={20} shineColor={['var(--primary)']} />
             <div
               aria-hidden

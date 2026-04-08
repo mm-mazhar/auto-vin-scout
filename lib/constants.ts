@@ -133,9 +133,9 @@ export const PRICING_PLANS: PricingPlan[] = [
     title: 'Basic Report',
     price: '29.99',
     priceSuffix: ' one-time',
-    description: 'Deep dive into a single vehicle.',
+    description: `Deep dive into a few vehicle. Credits: ${CREDITS_BASIC}`,
     credits: CREDITS_BASIC,
-    features: ['Full Phase 1 Access', 'Local Market Band', 'Basic Inspection Checklist'],
+    features: ['vPIC VIN Decode', 'Market Anomalies', 'Local Market Band', 'FEMA Flood Zones', 'Basic Inspection Checklist'],
     stripePriceId: STRIPE_PRICE_ID_basic,
   },
   {
@@ -143,7 +143,7 @@ export const PRICING_PLANS: PricingPlan[] = [
     title: 'Pro Plan',
     price: '59.99',
     priceSuffix: '/mo',
-    description: 'For power buyers and flippers.',
+    description: `For power buyers/flippers. Credits: ${CREDITS_PRO}`,
     credits: CREDITS_PRO,
     features: [
       'Everything in Basic',
@@ -158,7 +158,7 @@ export const PRICING_PLANS: PricingPlan[] = [
     title: 'Dealer Core',
     price: '199.99',
     priceSuffix: '/mo',
-    description: 'For small used car lots.',
+    description: `For small used car lots. Credits: ${CREDITS_DEALERCORE}`,
     credits: CREDITS_DEALERCORE,
     features: [
       'Everything in Pro',
@@ -172,7 +172,7 @@ export const PRICING_PLANS: PricingPlan[] = [
     title: 'Dealer Plus',
     price: '499.99',
     priceSuffix: '/mo',
-    description: 'For franchise dealers.',
+    description: `For franchise dealers. Credits: ${CREDITS_DEALERPLUS}`,
     credits: CREDITS_DEALERPLUS,
     features: [
       'Everything in Dealer Core',

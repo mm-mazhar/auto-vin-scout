@@ -2,6 +2,7 @@
 
 'use client'
 import { Themetoggle } from '@/components/Themetoggle'
+import { MARKETING_SURFACE_MAX_WIDTH } from '@/components/page-section'
 import { Button } from '@/components/ui/button'
 import { ShineBorder } from '@/components/ui/shine-border'
 import { cn } from '@/lib/utils'
@@ -42,7 +43,7 @@ export const HeroHeader = ({ initialUser }: HeroHeaderProps) => {
       >
         <div
           className={cn(
-            'mx-auto mt-1 max-w-6xl px-5 rounded-2xl border border-transparent relative overflow-hidden',
+            `mx-auto mt-1 px-5 rounded-2xl border border-transparent relative overflow-hidden ${MARKETING_SURFACE_MAX_WIDTH}`,
             isScrolled && 'bg-background/50 backdrop-blur-lg border'
           )}
         >

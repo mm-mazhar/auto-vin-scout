@@ -2,6 +2,7 @@
 
 'use client'
 
+import { MARKETING_SURFACE_MAX_WIDTH } from '@/components/page-section'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -132,7 +133,12 @@ export default function PricingComponent({
   }
 
   return (
-    <div className={cn(mode === 'marketing' ? 'mx-auto max-w-6xl' : 'w-full', gridColsClass)}>
+    <div
+      className={cn(
+        mode === 'marketing' ? `mx-auto ${MARKETING_SURFACE_MAX_WIDTH}` : 'w-full',
+        gridColsClass
+      )}
+    >
       {visiblePlans.map((plan) => (
         <Card
           key={plan.id}
@@ -175,7 +181,7 @@ export default function PricingComponent({
               className={`relative flex items-baseline ${priceTextSizeClass} font-extrabold`}
             >
               {formatPrice(plan.price)}
-              <span className='ml-1 text-xl text-muted-foreground'>
+              <span className='ml-1 text-xl text-muted-foreground text-[13px]'>
                 {plan.priceSuffix}
               </span>
             </div>
