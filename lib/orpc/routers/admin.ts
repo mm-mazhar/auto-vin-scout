@@ -37,10 +37,11 @@ export const adminRouter = {
 
       // Get pricing plans
       const proPlan = PRICING_PLANS.find(p => p.id === PLAN_IDS.pro)
-      const proPlusPlan = PRICING_PLANS.find(p => p.id === PLAN_IDS.proplus)
+      const dealerCorePlan = PRICING_PLANS.find(p => p.id === PLAN_IDS.dealercore)
+      const dealerPlusPlan = PRICING_PLANS.find(p => p.id === PLAN_IDS.dealerplus)
 
       // Fetch counts in parallel
-      const [totalUsers, totalOrgs, proSubCount, proPlusSubCount] = await Promise.all([
+      const [totalUsers, totalOrgs, proSubCount, dealerCoreSubCount, dealerPlusSubCount] = await Promise.all([
         db.user.count(),
         db.organization.count({ where: { deletedAt: null } }),
         proPlan 
@@ -48,17 +49,23 @@ export const adminRouter = {
               where: { status: 'active', planId: proPlan.stripePriceId } 
             })
           : Promise.resolve(0),
-        proPlusPlan 
+        dealerCorePlan
           ? db.subscription.count({ 
-              where: { status: 'active', planId: proPlusPlan.stripePriceId } 
+              where: { status: 'active', planId: dealerCorePlan.stripePriceId }
+            })
+          : Promise.resolve(0),
+        dealerPlusPlan
+          ? db.subscription.count({
+              where: { status: 'active', planId: dealerPlusPlan.stripePriceId }
             })
           : Promise.resolve(0),
       ])
 
       // Calculate revenue
       const proRevenue = proSubCount * Number(proPlan?.price || 0)
-      const proPlusRevenue = proPlusSubCount * Number(proPlusPlan?.price || 0)
-      const totalRevenue = proRevenue + proPlusRevenue
+      const dealerCoreRevenue = dealerCoreSubCount * Number(dealerCorePlan?.price || 0)
+      const dealerPlusRevenue = dealerPlusSubCount * Number(dealerPlusPlan?.price || 0)
+      const totalRevenue = proRevenue + dealerCoreRevenue + dealerPlusRevenue
 
       // Growth percentage (last 30 days)
       const thirtyDaysAgo = new Date()
@@ -74,9 +81,11 @@ export const adminRouter = {
         totalUsers,
         totalOrgs,
         activeProCount: proSubCount,
-        activeProPlusCount: proPlusSubCount,
+        activeDealerCoreCount: dealerCoreSubCount,
+        activeDealerPlusCount: dealerPlusSubCount,
         proRevenue,
-        proPlusRevenue,
+        dealerCoreRevenue,
+        dealerPlusRevenue,
         totalRevenue,
         growthPercentage,
         health: { database: dbStatus, latency },
@@ -533,9 +542,10 @@ export const adminRouter = {
       }
 
       const proPlan = PRICING_PLANS.find(p => p.id === PLAN_IDS.pro)
-      const proPlusPlan = PRICING_PLANS.find(p => p.id === PLAN_IDS.proplus)
+      const dealerCorePlan = PRICING_PLANS.find(p => p.id === PLAN_IDS.dealercore)
+      const dealerPlusPlan = PRICING_PLANS.find(p => p.id === PLAN_IDS.dealerplus)
 
-      const [subRevenueRowsPro, subRevenueRowsProPlus, userGrowthRows] = await Promise.all([
+      const [subRevenueRowsPro, subRevenueRowsDealerCore, subRevenueRowsDealerPlus, userGrowthRows] = await Promise.all([
         proPlan
           ? db.$queryRaw<{ month: Date; count: bigint }[]>`
               SELECT date_trunc('month', "createdAt") AS month, COUNT(*)::bigint AS count
@@ -547,13 +557,24 @@ export const adminRouter = {
               ORDER BY month
             `
           : Promise.resolve([] as { month: Date; count: bigint }[]),
-        proPlusPlan
+        dealerCorePlan
           ? db.$queryRaw<{ month: Date; count: bigint }[]>`
               SELECT date_trunc('month', "createdAt") AS month, COUNT(*)::bigint AS count
               FROM "Subscription"
               WHERE "status" = 'active'
                 AND "createdAt" >= ${twelveMonthsAgo}
-                AND "planId" = ${proPlusPlan.stripePriceId}
+                AND "planId" = ${dealerCorePlan.stripePriceId}
+              GROUP BY month
+              ORDER BY month
+            `
+          : Promise.resolve([] as { month: Date; count: bigint }[]),
+        dealerPlusPlan
+          ? db.$queryRaw<{ month: Date; count: bigint }[]>`
+              SELECT date_trunc('month', "createdAt") AS month, COUNT(*)::bigint AS count
+              FROM "Subscription"
+              WHERE "status" = 'active'
+                AND "createdAt" >= ${twelveMonthsAgo}
+                AND "planId" = ${dealerPlusPlan.stripePriceId}
               GROUP BY month
               ORDER BY month
             `
@@ -578,14 +599,25 @@ export const adminRouter = {
         }
       })
 
-      subRevenueRowsProPlus.forEach(row => {
+      subRevenueRowsDealerCore.forEach(row => {
         const d = new Date(row.month)
         const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
         const index = monthIndexMap[key]
         if (index === undefined) return
         const count = Number(row.count)
-        if (proPlusPlan) {
-          revenueData[index].value += count * Number(proPlusPlan.price)
+        if (dealerCorePlan) {
+          revenueData[index].value += count * Number(dealerCorePlan.price)
+        }
+      })
+
+      subRevenueRowsDealerPlus.forEach(row => {
+        const d = new Date(row.month)
+        const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+        const index = monthIndexMap[key]
+        if (index === undefined) return
+        const count = Number(row.count)
+        if (dealerPlusPlan) {
+          revenueData[index].value += count * Number(dealerPlusPlan.price)
         }
       })
 

@@ -82,20 +82,26 @@ export const APP_PHONE_1 = `+1 xxx xxxx` as string
 export const APP_PHONE_2 = `+1 xxx xxxx` as string
 
 // ✅ Pricing
+export const STRIPE_PRICE_ID_basic = (process.env.STRIPE_PRICE_ID_basic || '') as string
 export const STRIPE_PRICE_ID_pro = (process.env.STRIPE_PRICE_ID_pro || '') as string
-export const STRIPE_PRICE_ID_proplus = (process.env.STRIPE_PRICE_ID_proplus || '') as string
+export const STRIPE_PRICE_ID_dealercore = (process.env.STRIPE_PRICE_ID_dealercore || '') as string
+export const STRIPE_PRICE_ID_dealerplus = (process.env.STRIPE_PRICE_ID_dealerplus || '') as string
 
 // A new type definition for a pricing plan
 export const PRICE_HEADING = `Flexible plans, no hidden complexity` as string
 export const PLAN_IDS = {
-  free: 'RZ5wzP!PwpF%gj',       // random generated
-  pro: 'X6t!RNJPq#7Jdb',       // random generated
-  proplus: 'Y9vLm#K2sP!Q4w'    // random generated
+  free: 'free_plan',
+  basic: 'basic_report',
+  pro: 'pro_plan',
+  dealercore: 'dealer_core',
+  dealerplus: 'dealer_plus',
 } as const
 
-export const CREDITS_FREE: number = 5
-export const CREDITS_PRO: number = 50
-export const CREDITS_PROPLUS: number = 100
+export const CREDITS_FREE: number = 0
+export const CREDITS_BASIC: number = 3
+export const CREDITS_PRO: number = 10
+export const CREDITS_DEALERCORE: number = 100
+export const CREDITS_DEALERPLUS: number = 200
 
 export type PlanId = (typeof PLAN_IDS)[keyof typeof PLAN_IDS]
 
@@ -110,53 +116,72 @@ export type PricingPlan = {
   stripePriceId?: string // Optional because 'Free' plan has no Stripe ID
 }
 
-// Define the three plans using the new type
+// Define the plans using the pricing strategy
 export const PRICING_PLANS: PricingPlan[] = [
   {
     id: PLAN_IDS.free,
     title: 'Free',
     price: '0',
-    priceSuffix: '/mo',
-    description: 'Lorem ipsum dolor sit amet',
+    priceSuffix: '',
+    description: 'Create an account to save your search history.',
     credits: CREDITS_FREE,
-    features: [
-      'Lorem ipsum dolor sit amet, consetetur sadipscing',
-      'Lorem ipsum dolor sit amet, consetetur sadipscing',
-      'Lorem ipsum dolor sit amet, consetetur sadipscing',
-      'Lorem ipsum dolor sit amet, consetetur sadipscing',
-    ],
+    features: ['Account Creation', 'Save Search History'],
     stripePriceId: undefined,
   },
   {
+    id: PLAN_IDS.basic,
+    title: 'Basic Report',
+    price: '29.99',
+    priceSuffix: ' one-time',
+    description: 'Deep dive into a single vehicle.',
+    credits: CREDITS_BASIC,
+    features: ['Full Phase 1 Access', 'Local Market Band', 'Basic Inspection Checklist'],
+    stripePriceId: STRIPE_PRICE_ID_basic,
+  },
+  {
     id: PLAN_IDS.pro,
-    title: 'Pro',
-    price: '9.99',
+    title: 'Pro Plan',
+    price: '59.99',
     priceSuffix: '/mo',
-    description: 'Lorem ipsum dolor sit amet',
+    description: 'For power buyers and flippers.',
     credits: CREDITS_PRO,
     features: [
-      'Lorem ipsum dolor sit amet, consetetur sadipscing',
-      'Lorem ipsum dolor sit amet, consetetur sadipscing',
-      'Lorem ipsum dolor sit amet, consetetur sadipscing',
-      'Lorem ipsum dolor sit amet, consetetur sadipscing',
+      'Everything in Basic',
+      'Title Branding & Salvage Records',
+      'Auction / Wholesale Data',
+      'Legal & Title Verification',
     ],
     stripePriceId: STRIPE_PRICE_ID_pro,
   },
   {
-    id: PLAN_IDS.proplus,
-    title: 'Pro Plus',
-    price: '19.99',
+    id: PLAN_IDS.dealercore,
+    title: 'Dealer Core',
+    price: '199.99',
     priceSuffix: '/mo',
-    description: 'Lorem ipsum dolor sit amet',
-    credits: CREDITS_PROPLUS,
+    description: 'For small used car lots.',
+    credits: CREDITS_DEALERCORE,
     features: [
-      'Lorem ipsum dolor sit amet, consetetur sadipscing',
-      'Lorem ipsum dolor sit amet, consetetur sadipscingr',
-      'Lorem ipsum dolor sit amet, consetetur sadipscingl',
-      'Lorem ipsum dolor sit amet, consetetur sadipscing',
+      'Everything in Pro',
+      'Inventory Risk Scoring',
+      'Wholesale Signals',
     ],
-    stripePriceId: STRIPE_PRICE_ID_proplus,
-  },  
+    stripePriceId: STRIPE_PRICE_ID_dealercore,
+  },
+  {
+    id: PLAN_IDS.dealerplus,
+    title: 'Dealer Plus',
+    price: '499.99',
+    priceSuffix: '/mo',
+    description: 'For franchise dealers.',
+    credits: CREDITS_DEALERPLUS,
+    features: [
+      'Everything in Dealer Core',
+      'Priority Title Checks',
+      'Full Predictive Engine',
+      'Depreciation Forecasts',
+    ],
+    stripePriceId: STRIPE_PRICE_ID_dealerplus,
+  },
 ]
 
 export const RENEWAL_REMINDER_DAYS_BEFORE = 3

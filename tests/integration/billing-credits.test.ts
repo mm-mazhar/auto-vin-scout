@@ -125,7 +125,7 @@ describe('Billing, Credits & Subscriptions', () => {
     createdUserIds.length = 0
   })
 
-  describe('Test 3.1: Pro/Pro Plus Subscription', () => {
+  describe('Test 3.1: Plan Credits and Purchases', () => {
     it('should create Pro subscription and add credits to organization', async () => {
       const { org, subscription, plan } = await setupOrganizationWithSubscription(PLAN_IDS.pro)
 
@@ -152,11 +152,11 @@ describe('Billing, Credits & Subscriptions', () => {
       expect(finalOrg?.credits).toBe(CREDITS_FREE + plan.credits)
     })
 
-    it('should create Pro Plus subscription with correct credits', async () => {
-      const { org, subscription, plan } = await setupOrganizationWithSubscription(PLAN_IDS.proplus)
+    it('should create Dealer Plus subscription with correct credits', async () => {
+      const { org, subscription, plan } = await setupOrganizationWithSubscription(PLAN_IDS.dealerplus)
 
       expect(subscription.planId).toBe(plan.stripePriceId)
-      expect(plan.credits).toBe(100) // Pro Plus gives 100 credits
+      expect(plan.credits).toBe(200)
 
       // Simulate webhook adding credits
       await testDb.organization.update({
@@ -167,7 +167,35 @@ describe('Billing, Credits & Subscriptions', () => {
       const finalOrg = await testDb.organization.findUnique({
         where: { id: org.id },
       })
-      expect(finalOrg?.credits).toBe(CREDITS_FREE + 100)
+      expect(finalOrg?.credits).toBe(CREDITS_FREE + 200)
+    })
+
+    it('should increment credits for one-time Basic Report purchases', async () => {
+      const { owner } = await setupOrganizationWithSubscription(PLAN_IDS.pro)
+      void owner
+      const basicPlan = PRICING_PLANS.find((p) => p.id === PLAN_IDS.basic)
+      if (!basicPlan) throw new Error('Basic plan not found')
+
+      await testDb.organization.update({
+        where: { id: organizationId },
+        data: {
+          credits: { increment: basicPlan.credits },
+          creditsReminderThresholdSent: false,
+        },
+      })
+
+      await testDb.organization.update({
+        where: { id: organizationId },
+        data: {
+          credits: { increment: basicPlan.credits },
+          creditsReminderThresholdSent: false,
+        },
+      })
+
+      const updatedOrg = await testDb.organization.findUnique({
+        where: { id: organizationId },
+      })
+      expect(updatedOrg?.credits).toBe(CREDITS_FREE + basicPlan.credits * 2)
     })
 
     it('should allow subscription renewal when credits are low', async () => {
@@ -193,13 +221,13 @@ describe('Billing, Credits & Subscriptions', () => {
     it('should upgrade from Pro to Pro Plus', async () => {
       const { org } = await setupOrganizationWithSubscription(PLAN_IDS.pro)
 
-      const proPlusPlan = PRICING_PLANS.find(p => p.id === PLAN_IDS.proplus)!
+      const dealerPlusPlan = PRICING_PLANS.find(p => p.id === PLAN_IDS.dealerplus)!
 
       // Simulate upgrade by updating subscription
       await testDb.subscription.update({
         where: { organizationId: org.id },
         data: {
-          planId: proPlusPlan.stripePriceId,
+          planId: dealerPlusPlan.stripePriceId,
         },
       })
 
@@ -207,7 +235,7 @@ describe('Billing, Credits & Subscriptions', () => {
         where: { organizationId: org.id },
       })
 
-      expect(updatedSubscription?.planId).toBe(proPlusPlan.stripePriceId)
+      expect(updatedSubscription?.planId).toBe(dealerPlusPlan.stripePriceId)
     })
   })
 
@@ -236,17 +264,17 @@ describe('Billing, Credits & Subscriptions', () => {
       const { org: org1 } = await setupOrganizationWithSubscription(PLAN_IDS.pro)
       const org2 = await setupSecondOrganization()
 
-      // Create Pro Plus subscription for second org
-      const proPlusPlan = PRICING_PLANS.find(p => p.id === PLAN_IDS.proplus)
-      if (!proPlusPlan?.stripePriceId) {
-        throw new Error('Pro Plus plan not found or has no Stripe price ID')
+      // Create Dealer Plus subscription for second org
+      const dealerPlusPlan = PRICING_PLANS.find(p => p.id === PLAN_IDS.dealerplus)
+      if (!dealerPlusPlan?.stripePriceId) {
+        throw new Error('Dealer Plus plan not found or has no Stripe price ID')
       }
       
       await testDb.subscription.create({
         data: {
           organizationId: org2.id,
           stripeSubscriptionId: `sub_test_2_${Date.now()}`,
-          planId: proPlusPlan.stripePriceId,
+          planId: dealerPlusPlan.stripePriceId,
           status: 'active',
           interval: 'month',
           currentPeriodStart: Math.floor(Date.now() / 1000),
@@ -265,7 +293,7 @@ describe('Billing, Credits & Subscriptions', () => {
       })
 
       expect(org1WithSub?.subscription?.planId).toBe(PRICING_PLANS.find(p => p.id === PLAN_IDS.pro)?.stripePriceId)
-      expect(org2WithSub?.subscription?.planId).toBe(proPlusPlan.stripePriceId)
+      expect(org2WithSub?.subscription?.planId).toBe(dealerPlusPlan.stripePriceId)
     })
   })
 
@@ -445,7 +473,7 @@ describe('Billing, Credits & Subscriptions', () => {
       const { org } = await setupOrganizationWithSubscription(PLAN_IDS.pro)
 
       const initialCredits = CREDITS_FREE
-      const creditsToAdd = 50
+      const creditsToAdd = 10
 
       await testDb.organization.update({
         where: { id: org.id },
@@ -472,7 +500,7 @@ describe('Billing, Credits & Subscriptions', () => {
       await testDb.organization.update({
         where: { id: org.id },
         data: { 
-          credits: { increment: 50 },
+          credits: { increment: 10 },
           creditsReminderThresholdSent: false 
         },
       })

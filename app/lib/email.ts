@@ -131,6 +131,7 @@ export async function sendPaymentConfirmationEmail(params: PaymentEmailParams) {
     : null
     
   const billingUrl = ctx.origin ? new URL('/dashboard/billing', ctx.origin).href : '#'
+  const invoiceUrl = /^https?:\/\//.test(params.invoiceUrl) ? params.invoiceUrl : billingUrl
   
   const subject = `Payment Confirmation${params.orgName ? ` - ${params.orgName}` : ''}`
 
@@ -169,7 +170,7 @@ export async function sendPaymentConfirmationEmail(params: PaymentEmailParams) {
         </div>
 
         <div style="display:flex;gap:12px;flex-wrap:wrap">
-          <a href="${params.invoiceUrl}" target="_blank" style="display:inline-block;background-color:#2563eb;color:#ffffff;font-weight:600;text-decoration:none;padding:12px 24px;border-radius:6px;font-size:14px;margin-top:16px;text-align:center;margin-right:12px">View Invoice</a>
+          <a href="${invoiceUrl}" target="_blank" style="display:inline-block;background-color:#2563eb;color:#ffffff;font-weight:600;text-decoration:none;padding:12px 24px;border-radius:6px;font-size:14px;margin-top:16px;text-align:center;margin-right:12px">View Invoice</a>
           <a href="${billingUrl}" target="_blank" style="display:inline-block;background-color:#2563eb;color:#ffffff;font-weight:600;text-decoration:none;padding:12px 24px;border-radius:6px;font-size:14px;margin-top:16px;text-align:center;">Manage Subscription</a>
         </div>
       </div>

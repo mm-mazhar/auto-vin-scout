@@ -3,7 +3,7 @@
 import prisma from '@/app/lib/db'
 import { sendCancellationEmail, sendPaymentConfirmationEmail } from '@/app/lib/email'
 import { stripe } from '@/app/lib/stripe'
-import { ENABLE_EMAILS, PRICING_PLANS } from '@/lib/constants'
+import { ENABLE_EMAILS, LOCAL_SITE_URL, PRICING_PLANS, PRODUCTION_URL } from '@/lib/constants'
 import { headers } from 'next/headers'
 import Stripe from 'stripe'
 
@@ -168,6 +168,72 @@ export async function POST(req: Request) {
           },
         })
         console.log(`[Stripe Webhook] 💾 Subscription record saved`)
+      }
+
+      if (session.mode === 'payment' && session.payment_status === 'paid') {
+        console.log(`[Stripe Webhook] 💳 Processing one-time payment for session: ${session.id}`)
+
+        try {
+          if (!orgId) throw new Error('No orgId found for one-time payment')
+
+          const lineItems = await stripe.checkout.sessions.listLineItems(session.id)
+          const priceId = lineItems.data[0]?.price?.id
+          const plan = PRICING_PLANS.find((pl) => pl.stripePriceId === priceId)
+
+          if (plan && plan.credits > 0) {
+            const updatedOrg = await prisma.organization.update({
+              where: { id: orgId },
+              data: {
+                credits: { increment: plan.credits },
+                creditsReminderThresholdSent: false,
+              },
+              select: { name: true, credits: true },
+            })
+            console.log(`[Stripe Webhook] ✅ Added ${plan.credits} one-time credits to ${orgId}. New balance: ${updatedOrg.credits}`)
+
+            if (ENABLE_EMAILS) {
+              const owner = await getOrgOwner(orgId)
+              const to = session.customer_details?.email || owner?.email
+              if (to) {
+                let invoiceUrl = ''
+                const paymentIntentId =
+                  typeof session.payment_intent === 'string' ? session.payment_intent : null
+                if (paymentIntentId) {
+                  try {
+                    const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId, {
+                      expand: ['latest_charge'],
+                    })
+                    const latestCharge = paymentIntent.latest_charge
+                    if (latestCharge && typeof latestCharge !== 'string') {
+                      invoiceUrl = latestCharge.receipt_url || ''
+                    }
+                  } catch (receiptError) {
+                    console.warn('[Stripe Webhook] ⚠️ Failed to resolve one-time receipt URL:', receiptError)
+                  }
+                }
+
+                const billingUrl =
+                  process.env.NODE_ENV === 'production'
+                    ? `${PRODUCTION_URL}/dashboard/billing`
+                    : `${LOCAL_SITE_URL}/dashboard/billing`
+
+                await sendPaymentConfirmationEmail({
+                  to,
+                  name: owner?.name || 'Customer',
+                  orgName: updatedOrg.name,
+                  amountPaid: session.amount_total || 0,
+                  currency: session.currency || 'usd',
+                  invoiceUrl: invoiceUrl || billingUrl,
+                  planTitle: plan.title,
+                  periodEnd: null,
+                  finalCredits: updatedOrg.credits,
+                })
+              }
+            }
+          }
+        } catch (error) {
+          console.error('[Stripe Webhook] ❌ Error processing one-time payment credits:', error)
+        }
       }
 
       console.log(`[Stripe Webhook] ✅ Checkout completed successfully`)

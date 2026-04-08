@@ -64,7 +64,7 @@ model Organization {
   // Billing (Moved from User)
   stripeCustomerId             String?   @unique
   isPrimary                    Boolean   @default(false)
-  credits                      Int       @default(5)
+  credits                      Int       @default(0)
   creditsReminderThresholdSent Boolean   @default(false)
   lastFreeRefillAt             DateTime  @default(now())
 

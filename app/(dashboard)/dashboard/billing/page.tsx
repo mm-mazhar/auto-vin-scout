@@ -82,13 +82,23 @@ export default async function BillingPage() {
 
   const isSubActive = data.status === 'active'
 
+  const basicPlan = PRICING_PLANS.find((p) => p.id === PLAN_IDS.basic)
   const proPlan = PRICING_PLANS.find((p) => p.id === PLAN_IDS.pro)
-  const proPlusPlan = PRICING_PLANS.find((p) => p.id === PLAN_IDS.proplus)
+  const dealerCorePlan = PRICING_PLANS.find((p) => p.id === PLAN_IDS.dealercore)
+  const dealerPlusPlan = PRICING_PLANS.find((p) => p.id === PLAN_IDS.dealerplus)
 
   const showRenewal = isSubActive && (data.org.credits < SUBSCRIPTION_RENEWAL_CREDIT_THRESHOLD)
-  const showUpgrade = resolvedCurrent === PLAN_IDS.pro && proPlusPlan
+  const upgradeTargetPlan = resolvedCurrent === PLAN_IDS.pro ? dealerCorePlan : resolvedCurrent === PLAN_IDS.dealercore ? dealerPlusPlan : null
+  const showUpgrade = isSubActive && !!upgradeTargetPlan
+  const hasBasicCredits = !isSubActive && data.org.credits > 0
+  const showNonSubscriptionUpgradeCards = !isSubActive
+  const showBillingDetails = isSubActive || hasBasicCredits
 
-  const currentForState: PlanId | null = isSubActive ? resolvedCurrent : null
+  const currentForState: PlanId | null = isSubActive
+    ? resolvedCurrent
+    : hasBasicCredits
+      ? PLAN_IDS.basic
+      : PLAN_IDS.free
   const isFreeTierBilling = currentForState === null || currentForState === PLAN_IDS.free
 
   let invoices: {
@@ -100,7 +110,7 @@ export default async function BillingPage() {
     number: string | null;
     created: number | null;
   }[] = []
-  if (isSubActive && data.org.stripeCustomerId) {
+  if (data.org.stripeCustomerId) {
     const list = await stripe.invoices.list({ customer: data.org.stripeCustomerId, limit: 12 })
     invoices = list.data.map((inv) => ({
       id: inv.id,
@@ -123,21 +133,75 @@ export default async function BillingPage() {
           </Link>
         </div>
 
+        <Card className='rounded-lg border border-primary/40 bg-primary/5'>
+          <CardHeader className='p-2'>
+            <CardTitle className='text-sm'>Available Credits</CardTitle>
+            <CardDescription className='text-xs'>
+              Credits are consumed as you run reports and checks.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className='px-2 pb-2'>
+            <p className='text-2xl font-semibold'>{data.org.credits}</p>
+          </CardContent>
+        </Card>
+
         {isFreeTierBilling ? (
           <Card className='rounded-lg border bg-muted/30'>
             <CardHeader className='p-2'>
               <div className='flex items-center justify-between'>
-                <CardTitle className='text-sm'>Free plan</CardTitle>
+                <CardTitle className='text-sm'>{hasBasicCredits ? 'Basic Report' : 'Free'}</CardTitle>
                 <span className='text-[10px] px-2 py-0.5 rounded-full bg-primary/15 text-primary border border-primary/30'>
-                  Current
+                  Current state
                 </span>
               </div>
-              <CardDescription className='text-xs'>Free for all users</CardDescription>
+              <CardDescription className='text-xs'>
+                {hasBasicCredits
+                  ? 'No active subscription. You can buy Basic credits again anytime or upgrade to a recurring plan.'
+                  : 'No active subscription. Purchase Basic credits anytime or upgrade to a recurring plan.'}
+              </CardDescription>
             </CardHeader>
           </Card>
         ) : null}
 
-        {isFreeTierBilling && proPlan ? (
+        {!isSubActive && basicPlan ? (
+          <Card className='rounded-lg border'>
+            <CardHeader className='p-2'>
+              <div className='flex items-center justify-between'>
+                <div>
+                  <CardTitle className='text-sm'>
+                    {hasBasicCredits ? basicPlan.title : `Purchase ${basicPlan.title}`}
+                  </CardTitle>
+                  <CardDescription className='text-xs'>{basicPlan.description}</CardDescription>
+                </div>
+                <div className='flex items-center gap-2'>
+                  {hasBasicCredits ? (
+                    <span className='text-[10px] px-2 py-0.5 rounded-full bg-primary/15 text-primary border border-primary/30'>
+                      Current Plan
+                    </span>
+                  ) : null}
+                  <UpgradeSubscriptionButton
+                    planId={PLAN_IDS.basic}
+                    hasActiveSubscription={isSubActive}
+                    ctaLabel={hasBasicCredits ? 'Buy Again' : 'Purchase'}
+                  />
+                </div>
+              </div>
+            </CardHeader>
+            <div className='border-t mx-2'></div>
+            <CardContent className='px-2 pb-2'>
+              <ul className='text-xs space-y-1'>
+                {basicPlan.features.slice(0, 4).map((f, i) => (
+                  <li key={i} className='flex items-center gap-2'>
+                    <span>•</span>
+                    <span>{f}</span>
+                  </li>
+                ))}
+              </ul>
+            </CardContent>
+          </Card>
+        ) : null}
+
+        {showNonSubscriptionUpgradeCards && proPlan ? (
           <Card className='rounded-lg border'>
             <CardHeader className='p-2'>
               <div className='flex items-center justify-between'>
@@ -162,21 +226,46 @@ export default async function BillingPage() {
           </Card>
         ) : null}
 
-        {isFreeTierBilling && proPlusPlan ? (
+        {showNonSubscriptionUpgradeCards && dealerCorePlan ? (
           <Card className='rounded-lg border'>
             <CardHeader className='p-2'>
               <div className='flex items-center justify-between'>
                 <div>
-                  <CardTitle className='text-sm'>Upgrade to {proPlusPlan.title}</CardTitle>
-                  <CardDescription className='text-xs'>{proPlusPlan.description}</CardDescription>
+                  <CardTitle className='text-sm'>Upgrade to {dealerCorePlan.title}</CardTitle>
+                  <CardDescription className='text-xs'>{dealerCorePlan.description}</CardDescription>
                 </div>
-                <UpgradeSubscriptionButton planId={PLAN_IDS.proplus} hasActiveSubscription={isSubActive} />
+                <UpgradeSubscriptionButton planId={PLAN_IDS.dealercore} hasActiveSubscription={isSubActive} />
               </div>
             </CardHeader>
             <div className='border-t mx-2'></div>
             <CardContent className='px-2 pb-2'>
               <ul className='text-xs space-y-1'>
-                {proPlusPlan.features.slice(0, 4).map((f, i) => (
+                {dealerCorePlan.features.slice(0, 4).map((f, i) => (
+                  <li key={i} className='flex items-center gap-2'>
+                    <span>•</span>
+                    <span>{f}</span>
+                  </li>
+                ))}
+              </ul>
+            </CardContent>
+          </Card>
+        ) : null}
+
+        {showNonSubscriptionUpgradeCards && dealerPlusPlan ? (
+          <Card className='rounded-lg border'>
+            <CardHeader className='p-2'>
+              <div className='flex items-center justify-between'>
+                <div>
+                  <CardTitle className='text-sm'>Upgrade to {dealerPlusPlan.title}</CardTitle>
+                  <CardDescription className='text-xs'>{dealerPlusPlan.description}</CardDescription>
+                </div>
+                <UpgradeSubscriptionButton planId={PLAN_IDS.dealerplus} hasActiveSubscription={isSubActive} />
+              </div>
+            </CardHeader>
+            <div className='border-t mx-2'></div>
+            <CardContent className='px-2 pb-2'>
+              <ul className='text-xs space-y-1'>
+                {dealerPlusPlan.features.slice(0, 4).map((f, i) => (
                   <li key={i} className='flex items-center gap-2'>
                     <span>•</span>
                     <span>{f}</span>
@@ -240,16 +329,16 @@ export default async function BillingPage() {
                 <CardHeader className='p-2'>
                   <div className='flex items-center justify-between'>
                     <div>
-                      <CardTitle className='text-sm'>Upgrade to {proPlusPlan.title}</CardTitle>
-                      <CardDescription className='text-xs'>{proPlusPlan.description}</CardDescription>
+                      <CardTitle className='text-sm'>Upgrade to {upgradeTargetPlan?.title}</CardTitle>
+                      <CardDescription className='text-xs'>{upgradeTargetPlan?.description}</CardDescription>
                     </div>
-                    <UpgradeSubscriptionButton planId={PLAN_IDS.proplus} hasActiveSubscription={isSubActive} />
+                    <UpgradeSubscriptionButton planId={upgradeTargetPlan?.id ?? PLAN_IDS.dealerplus} hasActiveSubscription={isSubActive} />
                   </div>
                 </CardHeader>
                 <div className='border-t mx-2'></div>
                 <CardContent className='px-2 pb-2'>
                   <ul className='text-xs space-y-1'>
-                    {proPlusPlan.features.slice(0, 4).map((f, i) => (
+                    {upgradeTargetPlan?.features.slice(0, 4).map((f, i) => (
                       <li key={i} className='flex items-center gap-2'>
                         <span>•</span>
                         <span>{f}</span>
@@ -263,7 +352,7 @@ export default async function BillingPage() {
         ) : null}
 
         {/* SECOND ROW: Billing Details + Invoice History (full width) */}
-        {isSubActive ? (
+        {showBillingDetails ? (
           <Card className='rounded-lg border'>
             <CardHeader className='p-2'>
               <CardTitle className='text-sm'>Billing Details</CardTitle>
@@ -280,7 +369,7 @@ export default async function BillingPage() {
                 </div>
                 <div className='space-y-1'>
                   <span className='text-xs text-muted-foreground'>Status</span>
-                  <p className='text-xs capitalize'>{data.status}</p>
+                  <p className='text-xs capitalize'>{isSubActive ? data.status : 'Basic Report'}</p>
                 </div>
                 <div className='space-y-1'>
                   <span className='text-xs text-muted-foreground'>Current Period End</span>
@@ -330,7 +419,7 @@ export default async function BillingPage() {
                     </TableBody>
                   </Table>
                 ) : (
-                  <div className='text-xs text-muted-foreground'>No subscription invoices found.</div>
+                  <div className='text-xs text-muted-foreground'>No billing records found.</div>
                 )}
               </div>
             </CardContent>

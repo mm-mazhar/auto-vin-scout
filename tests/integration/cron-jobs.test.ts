@@ -1,7 +1,7 @@
 // tests/integration/cron-jobs.test.ts
 
 import * as emailModule from '@/app/lib/email'
-import { CREDIT_REMINDER_THRESHOLD, CREDITS_FREE, FREE_REFILL_DAYS, RENEWAL_REMINDER_DAYS_BEFORE, SOFT_DELETE_RETENTION_DAYS } from '@/lib/constants'
+import { CREDIT_REMINDER_THRESHOLD, RENEWAL_REMINDER_DAYS_BEFORE, SOFT_DELETE_RETENTION_DAYS } from '@/lib/constants'
 import { OrganizationService } from '@/lib/services/organization-service'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { testDb, TestUtils } from './setup'
@@ -383,150 +383,7 @@ describe('CRON Jobs & Automated Alerts', () => {
     })
   })
 
-  describe('Test 7.3: Daily Maintenance (Refill & Cleanup)', () => {
-    it('should refill credits for primary organization after 1 month', async () => {
-      // Setup: Set lastFreeRefillAt to 2 months ago and credits to 1
-      const twoMonthsAgo = new Date()
-      twoMonthsAgo.setMonth(twoMonthsAgo.getMonth() - 2)
-      
-      await testDb.organization.update({
-        where: { id: primaryOrg.id },
-        data: {
-          credits: 1,
-          lastFreeRefillAt: twoMonthsAgo,
-          isPrimary: true,
-        },
-      })
-
-      // Simulate the refill logic - update credits for primary orgs without active subscriptions
-      await testDb.organization.update({
-        where: { id: primaryOrg.id },
-        data: {
-          credits: CREDITS_FREE,
-          lastFreeRefillAt: new Date(),
-          creditsReminderThresholdSent: false,
-        },
-      })
-
-      // Verify credits were refilled
-      const updatedOrg = await testDb.organization.findUnique({
-        where: { id: primaryOrg.id },
-      })
-      expect(updatedOrg?.credits).toBe(CREDITS_FREE)
-      expect(updatedOrg?.creditsReminderThresholdSent).toBe(false)
-    })
-
-    itIf(MULTI_ORG_ENABLED)('should NOT refill credits for secondary organization', async () => {
-      // Setup: Set lastFreeRefillAt to 2 months ago for secondary org
-      const twoMonthsAgo = new Date()
-      twoMonthsAgo.setMonth(twoMonthsAgo.getMonth() - 2)
-      
-      await testDb.organization.update({
-        where: { id: secondaryOrg.id },
-        data: {
-          credits: 0,
-          lastFreeRefillAt: twoMonthsAgo,
-          isPrimary: false, // Secondary org
-        },
-      })
-
-      // Simulate the refill logic (only for primary orgs)
-      await testDb.$executeRaw`
-        UPDATE "Organization"
-        SET 
-          "credits" = ${CREDITS_FREE},
-          "lastFreeRefillAt" = NOW(),
-          "creditsReminderThresholdSent" = false
-        FROM "Organization" o
-        LEFT JOIN "Subscription" s ON s."organizationId" = o.id
-        WHERE 
-          "Organization".id = o.id
-          AND o."deletedAt" IS NULL
-          AND NOT EXISTS (
-            SELECT 1
-            FROM "Subscription" s2
-            WHERE s2."organizationId" = o.id
-              AND s2.status = 'active'
-          )
-          AND o.credits < ${CREDITS_FREE}
-          AND o."isPrimary" = true
-          AND (
-            o."lastFreeRefillAt" < NOW() - make_interval(days => ${FREE_REFILL_DAYS})
-            OR 
-            (o."lastFreeRefillAt" IS NULL AND o."createdAt" < NOW() - make_interval(days => ${FREE_REFILL_DAYS}))
-          )
-      `
-
-      // Verify credits were NOT refilled for secondary org
-      const updatedOrg = await testDb.organization.findUnique({
-        where: { id: secondaryOrg.id },
-      })
-      expect(updatedOrg?.credits).toBe(0) // Should remain 0
-    })
-
-    it('should NOT refill credits for organizations with active subscriptions', async () => {
-      // Setup: Create an active subscription and set old lastFreeRefillAt
-      const twoMonthsAgo = new Date()
-      twoMonthsAgo.setMonth(twoMonthsAgo.getMonth() - 2)
-      
-      await testDb.organization.update({
-        where: { id: primaryOrg.id },
-        data: {
-          credits: 1,
-          lastFreeRefillAt: twoMonthsAgo,
-          isPrimary: true,
-        },
-      })
-
-      const uniqueSubId = `sub_active_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
-      await testDb.subscription.create({
-        data: {
-          stripeSubscriptionId: uniqueSubId,
-          planId: 'price_test_pro',
-          status: 'active', // Active subscription
-          interval: 'month',
-          currentPeriodStart: Math.floor(Date.now() / 1000),
-          currentPeriodEnd: Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60,
-          organization: {
-            connect: { id: primaryOrg.id },
-          },
-        },
-      })
-
-      // Simulate the refill logic (excludes orgs with active subscriptions)
-      await testDb.$executeRaw`
-        UPDATE "Organization"
-        SET 
-          "credits" = ${CREDITS_FREE},
-          "lastFreeRefillAt" = NOW(),
-          "creditsReminderThresholdSent" = false
-        FROM "Organization" o
-        LEFT JOIN "Subscription" s ON s."organizationId" = o.id
-        WHERE 
-          "Organization".id = o.id
-          AND o."deletedAt" IS NULL
-          AND NOT EXISTS (
-            SELECT 1
-            FROM "Subscription" s2
-            WHERE s2."organizationId" = o.id
-              AND s2.status = 'active'
-          )
-          AND o.credits < ${CREDITS_FREE}
-          AND o."isPrimary" = true
-          AND (
-            o."lastFreeRefillAt" < NOW() - make_interval(days => ${FREE_REFILL_DAYS})
-            OR 
-            (o."lastFreeRefillAt" IS NULL AND o."createdAt" < NOW() - make_interval(days => ${FREE_REFILL_DAYS}))
-          )
-      `
-
-      // Verify credits were NOT refilled
-      const updatedOrg = await testDb.organization.findUnique({
-        where: { id: primaryOrg.id },
-      })
-      expect(updatedOrg?.credits).toBe(1) // Should remain 1
-    })
-
+  describe('Test 7.3: Daily Maintenance (Cleanup)', () => {
     itIf(MULTI_ORG_ENABLED)('should hard delete organizations deleted 30+ days ago', async () => {
       const deletedOrg = secondaryOrg
       const olderThanRetentionDays = SOFT_DELETE_RETENTION_DAYS + 1
@@ -580,56 +437,6 @@ describe('CRON Jobs & Automated Alerts', () => {
       })
       expect(orgAfterCleanup).not.toBeNull()
       expect(orgAfterCleanup?.deletedAt).not.toBeNull()
-    })
-
-    it('should NOT refill credits if already at free amount or more', async () => {
-      // Setup: Set credits to free amount and old lastFreeRefillAt
-      const twoMonthsAgo = new Date()
-      twoMonthsAgo.setMonth(twoMonthsAgo.getMonth() - 2)
-      
-      await testDb.organization.update({
-        where: { id: primaryOrg.id },
-        data: {
-          credits: CREDITS_FREE,
-          lastFreeRefillAt: twoMonthsAgo,
-          isPrimary: true,
-        },
-      })
-
-      // Simulate the refill logic (only refills if credits < CREDITS_FREE)
-      await testDb.$executeRaw`
-        UPDATE "Organization"
-        SET 
-          "credits" = ${CREDITS_FREE},
-          "lastFreeRefillAt" = NOW(),
-          "creditsReminderThresholdSent" = false
-        FROM "Organization" o
-        LEFT JOIN "Subscription" s ON s."organizationId" = o.id
-        WHERE 
-          "Organization".id = o.id
-          AND o."deletedAt" IS NULL
-          AND NOT EXISTS (
-            SELECT 1
-            FROM "Subscription" s2
-            WHERE s2."organizationId" = o.id
-              AND s2.status = 'active'
-          )
-          AND o.credits < ${CREDITS_FREE}
-          AND o."isPrimary" = true
-          AND (
-            o."lastFreeRefillAt" < NOW() - make_interval(days => ${FREE_REFILL_DAYS})
-            OR 
-            (o."lastFreeRefillAt" IS NULL AND o."createdAt" < NOW() - make_interval(days => ${FREE_REFILL_DAYS}))
-          )
-      `
-
-      // Verify credits remain at the free amount and lastFreeRefillAt was NOT updated
-      const updatedOrg = await testDb.organization.findUnique({
-        where: { id: primaryOrg.id },
-      })
-      expect(updatedOrg?.credits).toBe(CREDITS_FREE)
-      // lastFreeRefillAt should still be the old date (not updated)
-      expect(updatedOrg?.lastFreeRefillAt?.getTime()).toBeLessThanOrEqual(twoMonthsAgo.getTime())
     })
   })
 })

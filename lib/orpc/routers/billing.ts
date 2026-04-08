@@ -15,7 +15,13 @@ import {
 /**
  * Plan ID validation schema - uses the actual PLAN_IDS values
  */
-const planIdSchema = z.enum([PLAN_IDS.free, PLAN_IDS.pro, PLAN_IDS.proplus] as const)
+const planIdSchema = z.enum([
+  PLAN_IDS.free,
+  PLAN_IDS.basic,
+  PLAN_IDS.pro,
+  PLAN_IDS.dealercore,
+  PLAN_IDS.dealerplus,
+] as const)
 
 export const billingRouter = {
   /**
@@ -53,13 +59,14 @@ export const billingRouter = {
         ? PRODUCTION_URL 
         : LOCAL_SITE_URL
 
+      const isOneTime = plan.id === PLAN_IDS.basic
       const url = await getStripeSession({
         priceId: plan.stripePriceId,
         domainUrl: origin,
         customerId: org.stripeCustomerId ?? undefined,
         organizationId: context.orgId,
         userId: context.user.id,
-        mode: 'subscription',
+        mode: isOneTime ? 'payment' : 'subscription',
       })
 
       return { url }

@@ -61,9 +61,10 @@ async function getAdminData() {
   }
 
   const proPlan = PRICING_PLANS.find(p => p.id === PLAN_IDS.pro);
-  const proPlusPlan = PRICING_PLANS.find(p => p.id === PLAN_IDS.proplus);
+  const dealerCorePlan = PRICING_PLANS.find(p => p.id === PLAN_IDS.dealercore);
+  const dealerPlusPlan = PRICING_PLANS.find(p => p.id === PLAN_IDS.dealerplus);
 
-  const [subRevenueRowsPro, subRevenueRowsProPlus, userGrowthRows] = await Promise.all([
+  const [subRevenueRowsPro, subRevenueRowsDealerCore, subRevenueRowsDealerPlus, userGrowthRows] = await Promise.all([
     proPlan
       ? prisma.$queryRaw<{ month: Date; count: bigint }[]>`
           SELECT date_trunc('month', "createdAt") AS month, COUNT(*)::bigint AS count
@@ -75,13 +76,24 @@ async function getAdminData() {
           ORDER BY month
         `
       : Promise.resolve([] as { month: Date; count: bigint }[]),
-    proPlusPlan
+    dealerCorePlan
       ? prisma.$queryRaw<{ month: Date; count: bigint }[]>`
           SELECT date_trunc('month', "createdAt") AS month, COUNT(*)::bigint AS count
           FROM "Subscription"
           WHERE "status" = 'active'
             AND "createdAt" >= ${twelveMonthsAgo}
-            AND "planId" = ${proPlusPlan.stripePriceId}
+            AND "planId" = ${dealerCorePlan.stripePriceId}
+          GROUP BY month
+          ORDER BY month
+        `
+      : Promise.resolve([] as { month: Date; count: bigint }[]),
+    dealerPlusPlan
+      ? prisma.$queryRaw<{ month: Date; count: bigint }[]>`
+          SELECT date_trunc('month', "createdAt") AS month, COUNT(*)::bigint AS count
+          FROM "Subscription"
+          WHERE "status" = 'active'
+            AND "createdAt" >= ${twelveMonthsAgo}
+            AND "planId" = ${dealerPlusPlan.stripePriceId}
           GROUP BY month
           ORDER BY month
         `
@@ -106,14 +118,25 @@ async function getAdminData() {
     }
   });
 
-  subRevenueRowsProPlus.forEach(row => {
+  subRevenueRowsDealerCore.forEach(row => {
     const d = new Date(row.month);
     const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
     const index = monthIndexMap[key];
     if (index === undefined) return;
     const count = Number(row.count);
-    if (proPlusPlan) {
-      revenueData[index].value += count * Number(proPlusPlan.price);
+    if (dealerCorePlan) {
+      revenueData[index].value += count * Number(dealerCorePlan.price);
+    }
+  });
+
+  subRevenueRowsDealerPlus.forEach(row => {
+    const d = new Date(row.month);
+    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    const index = monthIndexMap[key];
+    if (index === undefined) return;
+    const count = Number(row.count);
+    if (dealerPlusPlan) {
+      revenueData[index].value += count * Number(dealerPlusPlan.price);
     }
   });
 
@@ -169,9 +192,11 @@ async function getAdminData() {
   const totalOrgs = await prisma.organization.count({ where: { deletedAt: null } });
   
   let proRevenue = 0;
-  let proPlusRevenue = 0;
+  let dealerCoreRevenue = 0;
+  let dealerPlusRevenue = 0;
   let activeProCount = 0;
-  let activeProPlusCount = 0;
+  let activeDealerCoreCount = 0;
+  let activeDealerPlusCount = 0;
 
   if (proPlan) {
     const proSubCountRows = await prisma.$queryRaw<{ count: bigint }[]>`
@@ -185,19 +210,31 @@ async function getAdminData() {
     proRevenue = activeProCount * Number(proPlan.price);
   }
 
-  if (proPlusPlan) {
-    const proPlusSubCountRows = await prisma.$queryRaw<{ count: bigint }[]>`
+  if (dealerCorePlan) {
+    const dealerCoreSubCountRows = await prisma.$queryRaw<{ count: bigint }[]>`
       SELECT COUNT(*)::bigint AS count
       FROM "Subscription"
       WHERE "status" = 'active'
-        AND "planId" = ${proPlusPlan.stripePriceId}
+        AND "planId" = ${dealerCorePlan.stripePriceId}
     `;
-    const proPlusSubCount = proPlusSubCountRows.length > 0 ? Number(proPlusSubCountRows[0].count) : 0;
-    activeProPlusCount = proPlusSubCount;
-    proPlusRevenue = activeProPlusCount * Number(proPlusPlan.price);
+    const dealerCoreSubCount = dealerCoreSubCountRows.length > 0 ? Number(dealerCoreSubCountRows[0].count) : 0;
+    activeDealerCoreCount = dealerCoreSubCount;
+    dealerCoreRevenue = activeDealerCoreCount * Number(dealerCorePlan.price);
+  }
+
+  if (dealerPlusPlan) {
+    const dealerPlusSubCountRows = await prisma.$queryRaw<{ count: bigint }[]>`
+      SELECT COUNT(*)::bigint AS count
+      FROM "Subscription"
+      WHERE "status" = 'active'
+        AND "planId" = ${dealerPlusPlan.stripePriceId}
+    `;
+    const dealerPlusSubCount = dealerPlusSubCountRows.length > 0 ? Number(dealerPlusSubCountRows[0].count) : 0;
+    activeDealerPlusCount = dealerPlusSubCount;
+    dealerPlusRevenue = activeDealerPlusCount * Number(dealerPlusPlan.price);
   }
   
-  const totalRevenue = proRevenue + proPlusRevenue;
+  const totalRevenue = proRevenue + dealerCoreRevenue + dealerPlusRevenue;
 
   // Growth %
   const thirtyDaysAgo = new Date(); 
@@ -208,7 +245,18 @@ async function getAdminData() {
     : '100';
 
   return {
-    stats: { totalUsers, totalOrgs, activeProCount, activeProPlusCount, proRevenue, proPlusRevenue, totalRevenue, growthPercentage },
+    stats: {
+      totalUsers,
+      totalOrgs,
+      activeProCount,
+      activeDealerCoreCount,
+      activeDealerPlusCount,
+      proRevenue,
+      dealerCoreRevenue,
+      dealerPlusRevenue,
+      totalRevenue,
+      growthPercentage,
+    },
     revenueChart: revenueData,
     userChart: userData,
     recentActivity: activityList,
@@ -223,12 +271,13 @@ export default async function AdminDashboardPage() {
   const { stats } = data;
 
   const cardStats = [
-    { title: 'Total Revenue', value: formatCurrency(stats.totalRevenue), change: 'Lifetime est.', changeType: 'positive' as const, icon: DollarSign, color: 'text-green-500', bgColor: 'bg-green-500/10' },
+    { title: 'Total MRR', value: formatCurrency(stats.totalRevenue), change: 'Pro + Dealer Core + Dealer Plus', changeType: 'positive' as const, icon: DollarSign, color: 'text-green-500', bgColor: 'bg-green-500/10' },
     { title: 'Pro (MRR)', value: formatCurrency(stats.proRevenue), change: `${stats.activeProCount} subs`, changeType: 'positive' as const, icon: Layers, color: 'text-indigo-500', bgColor: 'bg-indigo-500/10' },
-    { title: 'Pro Plus (MRR)', value: formatCurrency(stats.proPlusRevenue), change: 'Active Pro Plus Subs', changeType: 'positive' as const, icon: CreditCard, color: 'text-purple-500', bgColor: 'bg-purple-500/10' },
+    { title: 'Dealer Core (MRR)', value: formatCurrency(stats.dealerCoreRevenue), change: `${stats.activeDealerCoreCount} subs`, changeType: 'positive' as const, icon: CreditCard, color: 'text-purple-500', bgColor: 'bg-purple-500/10' },
+    { title: 'Dealer Plus (MRR)', value: formatCurrency(stats.dealerPlusRevenue), change: `${stats.activeDealerPlusCount} subs`, changeType: 'positive' as const, icon: CreditCard, color: 'text-fuchsia-500', bgColor: 'bg-fuchsia-500/10' },
     { title: 'Total Users', value: stats.totalUsers.toLocaleString(), change: `+${stats.growthPercentage}% (30d)`, changeType: 'positive' as const, icon: Users, color: 'text-blue-500', bgColor: 'bg-blue-500/10' },
     { title: 'Active Organizations', value: stats.totalOrgs.toLocaleString(), change: 'Workspaces', changeType: 'positive' as const, icon: Activity, color: 'text-orange-500', bgColor: 'bg-orange-500/10' },
-    { title: 'Active Subscriptions', value: (stats.activeProCount + stats.activeProPlusCount).toLocaleString(), change: 'Pro + Pro Plus', changeType: 'positive' as const, icon: Banknote, color: 'text-emerald-500', bgColor: 'bg-emerald-500/10' },
+    { title: 'Active Subscriptions', value: (stats.activeProCount + stats.activeDealerCoreCount + stats.activeDealerPlusCount).toLocaleString(), change: 'Pro + Dealer Core + Dealer Plus', changeType: 'positive' as const, icon: Banknote, color: 'text-emerald-500', bgColor: 'bg-emerald-500/10' },
   ];
 
   return (

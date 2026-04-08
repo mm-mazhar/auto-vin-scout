@@ -118,7 +118,16 @@ export function TopBar({
         {usageInfo ? (
           (() => {
             const id = usageInfo.currentPlanId
-            const base = id === PLAN_IDS.proplus ? 'Pro Plus' : id === PLAN_IDS.pro ? 'Pro' : 'Free'
+            const base =
+              id === PLAN_IDS.dealerplus
+                ? 'Dealer Plus'
+                : id === PLAN_IDS.dealercore
+                  ? 'Dealer Core'
+                  : id === PLAN_IDS.pro
+                    ? 'Pro Plan'
+                    : id === PLAN_IDS.basic
+                      ? 'Basic Report'
+                      : 'Free'
             return (
               <Badge className='h-8 px-3 text-sm font-medium leading-none'>
                 {base}

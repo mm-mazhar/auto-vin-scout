@@ -17,8 +17,10 @@ export async function GET() {
       credits: p.credits
     })),
     envVars: {
+      STRIPE_PRICE_ID_basic: process.env.STRIPE_PRICE_ID_basic ? 'SET' : 'NOT SET',
       STRIPE_PRICE_ID_pro: process.env.STRIPE_PRICE_ID_pro ? 'SET' : 'NOT SET',
-      STRIPE_PRICE_ID_proplus: process.env.STRIPE_PRICE_ID_proplus ? 'SET' : 'NOT SET',
+      STRIPE_PRICE_ID_dealercore: process.env.STRIPE_PRICE_ID_dealercore ? 'SET' : 'NOT SET',
+      STRIPE_PRICE_ID_dealerplus: process.env.STRIPE_PRICE_ID_dealerplus ? 'SET' : 'NOT SET',
     }
   })
 }

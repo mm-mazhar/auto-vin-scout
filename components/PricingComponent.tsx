@@ -35,18 +35,12 @@ export default function PricingComponent({
   void proExhausted
   const isBillingFreeState =
     mode === 'billing' && (currentPlanId === null || currentPlanId === PLAN_IDS.free)
-  const visiblePlans =
-    mode === 'billing' &&
-    (currentPlanId === PLAN_IDS.pro || currentPlanId === PLAN_IDS.proplus)
-      ? PRICING_PLANS.filter((p) => p.id !== PLAN_IDS.free)
-      : PRICING_PLANS
+  const visiblePlans = PRICING_PLANS.filter((p) => p.id !== PLAN_IDS.free)
 
   const gridColsClass =
     mode === 'marketing'
-      ? 'grid grid-cols-1 md:grid-cols-3 gap-2 justify-items-center justify-center'
-      : `grid grid-cols-1 ${
-          visiblePlans.length === 2 ? 'md:grid-cols-2' : 'md:grid-cols-3'
-        } gap-2 justify-items-stretch`
+      ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2 justify-items-center justify-center'
+      : 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2 justify-items-stretch'
 
   const headerPaddingClass =
     mode === 'billing' ? 'p-2' : isBillingFreeState ? 'p-6' : 'p-4'
@@ -80,113 +74,32 @@ export default function PricingComponent({
         )
       }
 
-      if (isAuthenticated && currentPlanId === null) {
-        if (plan.id === PLAN_IDS.free) {
-          return (
-            <Button className={btnClass} asChild>
-              <Link href='/dashboard'>Go to Dashboard</Link>
-            </Button>
-          )
-        }
-        if (plan.id === PLAN_IDS.pro) {
-          return (
-            <Button className={btnClass} asChild>
-              <Link href='/dashboard/billing'>Subscribe, go to Billing</Link>
-            </Button>
-          )
-        }
+      if (isCurrent) {
         return (
           <Button className={btnClass} asChild>
-            <Link href='/dashboard/billing'>Upgrade, go to Billing</Link>
+            <Link href='/dashboard/billing'>Current Plan</Link>
           </Button>
         )
       }
 
-      if (currentPlanId === PLAN_IDS.free) {
-        if (plan.id === PLAN_IDS.free) {
-          return (
-            <Button className={btnClass} asChild>
-              <Link href='/dashboard'>Go to Dashboard</Link>
-            </Button>
-          )
-        }
-        if (plan.id === PLAN_IDS.pro) {
-          return (
-            <Button className={btnClass} asChild>
-              <Link href='/dashboard/billing'>Subscribe, go to Billing</Link>
-            </Button>
-          )
-        }
+      if (currentPlanId === null || currentPlanId === PLAN_IDS.free) {
+        const label = plan.id === PLAN_IDS.basic ? 'Purchase, go to Billing' : 'Upgrade, go to Billing'
         return (
           <Button className={btnClass} asChild>
-            <Link href='/dashboard/billing'>Upgrade, go to Billing</Link>
+            <Link href='/dashboard/billing'>{label}</Link>
           </Button>
         )
       }
 
-      if (currentPlanId === PLAN_IDS.pro) {
-        if (plan.id === PLAN_IDS.free) {
-          return (
-            <Button className={btnClass} disabled>
-              Current Plan Unavailable
-            </Button>
-          )
-        }
-        if (plan.id === PLAN_IDS.pro) {
-          return (
-            <Button className={btnClass} asChild>
-              <Link href='/dashboard'>Go To Dashboard</Link>
-            </Button>
-          )
-        }
-        return (
-          <Button className={btnClass} asChild>
-            <Link href='/dashboard/billing'>Upgrade, go to Billing</Link>
-          </Button>
-        )
-      }
-
-      if (currentPlanId === PLAN_IDS.proplus) {
-        if (plan.id === PLAN_IDS.proplus) {
-          return (
-            <Button className={btnClass} asChild>
-              <Link href='/dashboard'>Go to Dashboard</Link>
-            </Button>
-          )
-        }
-        if (plan.id === PLAN_IDS.free) {
-          return (
-            <Button className={btnClass} asChild>
-              <Link href='/dashboard'>Go to Dashboard</Link>
-            </Button>
-          )
-        }
-        if (plan.id === PLAN_IDS.pro) {
-          return (
-            <Button className={btnClass} asChild>
-              <Link href='/dashboard/billing'>Subscribe, go to Billing</Link>
-            </Button>
-          )
-        }
-      }
-    }
-
-    if (plan.id === PLAN_IDS.free) {
-      if (currentPlanId === PLAN_IDS.pro || currentPlanId === PLAN_IDS.proplus) {
-        return (
-          <Button className={btnClass} disabled>
-            Current Plan Unavailable
-          </Button>
-        )
-      }
       return (
         <Button className={btnClass} asChild>
-          <Link href='/dashboard'>Go to Dashboard</Link>
+          <Link href='/dashboard/billing'>Upgrade, go to Billing</Link>
         </Button>
       )
     }
 
     if (onSubscribeAction) {
+      const isOneTimeBasic = plan.id === PLAN_IDS.basic
       if (isCurrent) {
         return (
           <Button className={btnClass} asChild>
@@ -194,7 +107,11 @@ export default function PricingComponent({
           </Button>
         )
       }
-      const label = (currentPlanId ? 'Upgrade' : 'Subscribe')
+      const label = isOneTimeBasic
+        ? `Purchase (${plan.credits} Credits)`
+        : currentPlanId
+          ? 'Upgrade'
+          : 'Subscribe'
       return (
         <form action={onSubscribeAction} className='w-full'>
           <input type='hidden' name='planId' value={plan.id} />
@@ -220,10 +137,10 @@ export default function PricingComponent({
         <Card
           key={plan.id}
           className={`flex flex-col relative overflow-hidden ${
-            mode === 'marketing'
-              ? 'w-full max-w-sm mx-2 h-full' // <--- Added h-full for marketing
-              : 'w-full h-fit'
-          }`}
+          mode === 'marketing'
+          ? 'w-full max-w-sm mx-2 h-full min-h-[400px] md:min-h-[410px] lg:min-h-[420px]'
+          : 'w-full h-fit min-h-[360px] md:min-h-[370px]'
+        }`}
         >
           {mode === 'marketing' ? (
             <ShineBorder borderWidth={1} duration={20} shineColor={['var(--primary)']} />
@@ -234,18 +151,10 @@ export default function PricingComponent({
             <div className='flex items-center justify-between'>
               <CardTitle className={mode === 'billing' ? 'text-base' : ''}>{plan.title}</CardTitle>
               {(() => {
-                const showFree = plan.id === PLAN_IDS.free && (
-                  (mode === 'marketing' && isAuthenticated && (currentPlanId === null || currentPlanId === PLAN_IDS.free)) ||
-                  (mode === 'billing' && (currentPlanId === null || currentPlanId === PLAN_IDS.free))
-                )
-                if (showFree) {
-                  return (
-                    <span className='text-[10px] px-2 py-0.5 rounded-full bg-primary/15 text-primary border border-primary/30'>
-                      Activated
-                    </span>
-                  )
-                }
-                const showPro = plan.id === PLAN_IDS.proplus && currentPlanId === PLAN_IDS.proplus && (mode === 'marketing' || mode === 'billing')
+                const showPro =
+                  plan.id === PLAN_IDS.dealerplus &&
+                  currentPlanId === PLAN_IDS.dealerplus &&
+                  (mode === 'marketing' || mode === 'billing')
                 if (showPro) {
                   return (
                     <span className='text-[10px] px-2 py-0.5 rounded-full bg-primary/15 text-primary border border-primary/30'>

@@ -13,9 +13,10 @@ import { useState } from 'react'
 type Props = {
   planId: PlanId
   hasActiveSubscription: boolean
+  ctaLabel?: string
 }
 
-export function UpgradeSubscriptionButton({ planId, hasActiveSubscription }: Props) {
+export function UpgradeSubscriptionButton({ planId, hasActiveSubscription, ctaLabel = 'Upgrade now' }: Props) {
   const [open, setOpen] = useState(false)
   const { show } = useToast()
 
@@ -41,7 +42,7 @@ export function UpgradeSubscriptionButton({ planId, hasActiveSubscription }: Pro
         disabled={isPending}
         className='h-8 text-xs px-3'
       >
-        {isPending ? 'Processing...' : 'Upgrade now'}
+        {isPending ? 'Processing...' : ctaLabel}
       </Button>
     )
   }
@@ -49,7 +50,7 @@ export function UpgradeSubscriptionButton({ planId, hasActiveSubscription }: Pro
   return (
     <AlertDialog open={open} onOpenChange={setOpen}>
       <AlertDialogTrigger asChild>
-        <Button className='h-8 text-xs px-3'>Upgrade now</Button>
+        <Button className='h-8 text-xs px-3'>{ctaLabel}</Button>
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>

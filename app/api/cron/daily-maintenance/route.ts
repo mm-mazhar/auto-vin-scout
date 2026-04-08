@@ -2,7 +2,7 @@
 
 import prisma from '@/app/lib/db'
 import { headers } from 'next/headers'
-import { CREDITS_FREE, FREE_REFILL_DAYS, SOFT_DELETE_RETENTION_DAYS } from '../../../../lib/constants'
+import { SOFT_DELETE_RETENTION_DAYS } from '../../../../lib/constants'
 
 export async function GET() {
   const h = await headers()
@@ -14,37 +14,7 @@ export async function GET() {
   }
 
   try {
-    // Logic: 
-    // 1. Organization is NOT on a Pro subscription (Subscription is null or not active).
-    // 2. Organization has < CREDITS_FREE credits.
-    // 3. One month has passed since last refill (or since creation if never refilled).
-    
-    // Postgres specific update with join logic
-    // We target Organization table.
-    const result = await prisma.$executeRaw`
-      UPDATE "Organization"
-      SET 
-        "credits" = ${CREDITS_FREE},
-        "lastFreeRefillAt" = NOW(),
-        "creditsReminderThresholdSent" = false
-      FROM "Organization" o
-      LEFT JOIN "Subscription" s ON s."organizationId" = o.id
-      WHERE 
-        "Organization".id = o.id
-        AND o."deletedAt" IS NULL
-        AND (s.status IS NULL OR s.status != 'active')
-        AND o.credits < ${CREDITS_FREE}
-        AND o."isPrimary" = true
-        AND (
-          o."lastFreeRefillAt" < NOW() - make_interval(days => ${FREE_REFILL_DAYS})
-          OR 
-          (o."lastFreeRefillAt" IS NULL AND o."createdAt" < NOW() - make_interval(days => ${FREE_REFILL_DAYS}))
-        )
-    `
-
-
-
-    // Action B (Cleanup): Run a new SQL query to Hard Delete any organizations where deletedAt is 30+ days old.
+    // Cleanup: hard delete organizations where soft-delete retention elapsed.
     const cleanupResult = await prisma.$executeRaw`
       DELETE FROM "Organization" WHERE "deletedAt" <= NOW() - make_interval(days => ${SOFT_DELETE_RETENTION_DAYS})
     `
@@ -52,7 +22,6 @@ export async function GET() {
     // Use JSON.stringify for safety with BigInts (if any return from raw queries)
     return new Response(JSON.stringify({ 
       success: true, 
-      orgsRefilled: Number(result),
       orgsCleanedUp: Number(cleanupResult)
     }), {
       status: 200,

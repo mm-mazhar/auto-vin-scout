@@ -54,13 +54,13 @@ describe('Transactional Emails', () => {
         to: testUser.email,
         name: testUser.name,
         orgName: testOrg.name,
-        amountPaid: 2000, // $20.00 in cents
+        amountPaid: 5999, // $59.99 in cents
         currency: 'usd',
         invoiceUrl: 'https://invoice.stripe.com/test',
         invoiceNumber: 'INV-001',
-        planTitle: 'Pro',
+        planTitle: 'Pro Plan',
         periodEnd: Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60, // 30 days from now
-        finalCredits: CREDITS_FREE + 50,
+        finalCredits: CREDITS_FREE + 10,
       })
 
       // Verify the function was called
@@ -70,28 +70,28 @@ describe('Transactional Emails', () => {
       const callArgs = mockSendPaymentConfirmationEmail.mock.calls[0][0]
       expect(callArgs.to).toBe(testUser.email)
       expect(callArgs.orgName).toBe(testOrg.name)
-      expect(callArgs.planTitle).toBe('Pro')
-      expect(callArgs.amountPaid).toBe(2000)
+      expect(callArgs.planTitle).toBe('Pro Plan')
+      expect(callArgs.amountPaid).toBe(5999)
       expect(callArgs.currency).toBe('usd')
       expect(callArgs.invoiceUrl).toBe('https://invoice.stripe.com/test')
-      expect(callArgs.finalCredits).toBe(CREDITS_FREE + 50)
+      expect(callArgs.finalCredits).toBe(CREDITS_FREE + 10)
     })
 
-    it('should send payment confirmation email with correct content for Pro Plus plan', async () => {
+    it('should send payment confirmation email with correct content for Dealer Plus plan', async () => {
       const mockSendPaymentConfirmationEmail = vi.mocked(emailModule.sendPaymentConfirmationEmail)
       
-      // Simulate payment confirmation for Pro Plus
+      // Simulate payment confirmation for Dealer Plus
       await emailModule.sendPaymentConfirmationEmail({
         to: testUser.email,
         name: testUser.name,
         orgName: testOrg.name,
-        amountPaid: 5000, // $50.00 in cents
+        amountPaid: 49999, // $499.99 in cents
         currency: 'usd',
         invoiceUrl: 'https://invoice.stripe.com/test',
         invoiceNumber: 'INV-002',
-        planTitle: 'Pro Plus',
+        planTitle: 'Dealer Plus',
         periodEnd: Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60,
-        finalCredits: CREDITS_FREE + 100,
+        finalCredits: CREDITS_FREE + 200,
       })
 
       // Verify the function was called
@@ -99,9 +99,9 @@ describe('Transactional Emails', () => {
       
       // Verify the parameters
       const callArgs = mockSendPaymentConfirmationEmail.mock.calls[0][0]
-      expect(callArgs.planTitle).toBe('Pro Plus')
-      expect(callArgs.amountPaid).toBe(5000)
-      expect(callArgs.finalCredits).toBe(CREDITS_FREE + 100)
+      expect(callArgs.planTitle).toBe('Dealer Plus')
+      expect(callArgs.amountPaid).toBe(49999)
+      expect(callArgs.finalCredits).toBe(CREDITS_FREE + 200)
     })
 
     it('should include organization name in subject', async () => {
@@ -114,7 +114,7 @@ describe('Transactional Emails', () => {
         amountPaid: 2000,
         currency: 'usd',
         invoiceUrl: 'https://invoice.stripe.com/test',
-        planTitle: 'Pro',
+        planTitle: 'Pro Plan',
       })
 
       const callArgs = mockSendPaymentConfirmationEmail.mock.calls[0][0]
@@ -129,10 +129,10 @@ describe('Transactional Emails', () => {
         to: testUser.email,
         name: testUser.name,
         orgName: testOrg.name,
-        amountPaid: 2000,
+        amountPaid: 5999,
         currency: 'usd',
         invoiceUrl,
-        planTitle: 'Pro',
+        planTitle: 'Pro Plan',
       })
 
       const callArgs = mockSendPaymentConfirmationEmail.mock.calls[0][0]

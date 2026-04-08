@@ -88,13 +88,16 @@ export default async function HeroSection() {
       )
       return matched?.id ?? PLAN_IDS.free
     }
+    if ((orgBilling?.credits ?? 0) > 0) {
+      return PLAN_IDS.basic
+    }
     return null
   })()
 
   const proCredits =
-    PRICING_PLANS.find((p) => p.id === PLAN_IDS.proplus)?.credits ?? 0
+    PRICING_PLANS.find((p) => p.id === PLAN_IDS.dealerplus)?.credits ?? 0
   const proExhausted =
-    subStatus === 'active' && currentPlanId === PLAN_IDS.proplus
+    subStatus === 'active' && currentPlanId === PLAN_IDS.dealerplus
       ? creditsUsed >= proCredits
       : false
 

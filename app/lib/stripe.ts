@@ -21,7 +21,7 @@ export const getStripeSession = async ({
   customerId?: string
   userId?: string
   organizationId?: string
-  mode?: 'subscription'
+  mode?: 'subscription' | 'payment'
 }) => {
   const payload: Stripe.Checkout.SessionCreateParams = {
     mode,
@@ -29,7 +29,7 @@ export const getStripeSession = async ({
     line_items: [{ price: priceId, quantity: 1 }],
     payment_method_types: ['card'],
     success_url: `${domainUrl}/payment/success`,
-    cancel_url: `${domainUrl}/payment/unsuccessful`,
+    cancel_url: `${domainUrl}/dashboard/billing`,
     allow_promotion_codes: true,
   }
 

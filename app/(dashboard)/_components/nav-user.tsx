@@ -155,16 +155,22 @@ export function NavUser({
                   {currentPlanId === PLAN_IDS.pro
                     ? (
                       <>
-                        <span className="text-primary font-semibold">Pro,</span>Upgrade to <span className="text-primary font-semibold">Pro Plus</span>
+                        <span className="text-primary font-semibold">Pro Plan,</span>Upgrade to <span className="text-primary font-semibold">Dealer Core</span>
                       </>
                     )
-                    : currentPlanId === PLAN_IDS.proplus
+                    : currentPlanId === PLAN_IDS.dealercore
                     ? (
-                      <span className="text-primary font-semibold">Pro Plus</span>
+                      <>
+                        <span className="text-primary font-semibold">Dealer Core,</span>Upgrade to <span className="text-primary font-semibold">Dealer Plus</span>
+                      </>
+                    )
+                    : currentPlanId === PLAN_IDS.dealerplus
+                    ? (
+                      <span className="text-primary font-semibold">Dealer Plus</span>
                     )
                     : (
                       <>
-                        Free, Upgrade to <span className="text-primary font-semibold">Pro</span>
+                        Free, Upgrade to <span className="text-primary font-semibold">Pro Plan</span>
                       </>
                     )}
                 </Link>
