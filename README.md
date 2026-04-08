@@ -13,92 +13,92 @@ Build a production-ready, multi-tenant SaaS with:
 
 This README is a full, end‑to‑end setup and operations guide for this specific codebase.
 
----
+***
 
 ## Table of Contents
 
-- [Next.js SaaS Kit](#nextjs-saas-kit)
-  - [Table of Contents](#table-of-contents)
-  - [Overview](#overview)
-  - [Features](#features)
-  - [Tech Stack](#tech-stack)
-  - [Architecture](#architecture)
-    - [Multi-tenancy Model](#multi-tenancy-model)
-    - [RBAC Model](#rbac-model)
-    - [Super Admin Dashboard](#super-admin-dashboard)
-  - [Getting Started](#getting-started)
-    - [1. Clone \& Install](#1-clone--install)
-    - [2. Environment Variables](#2-environment-variables)
-    - [3. Database \& Prisma](#3-database--prisma)
-      - [Optional: Seed Data](#optional-seed-data)
-    - [4. Supabase Auth Setup](#4-supabase-auth-setup)
-      - [4.1 API Keys](#41-api-keys)
-      - [4.2 Email Provider](#42-email-provider)
-      - [4.3 Google OAuth](#43-google-oauth)
-      - [4.4 URL Configuration](#44-url-configuration)
-      - [4.5 Email Templates](#45-email-templates)
-    - [5. Row Level Security (RLS)](#5-row-level-security-rls)
-    - [6. Stripe Setup](#6-stripe-setup)
-      - [6.1 Local Webhook Setup](#61-local-webhook-setup)
-      - [6.2  Webhook Setup in Stripe](#62--webhook-setup-in-stripe)
-    - [7. oRPC API Setup](#7-orpc-api-setup)
-      - [7.1 API Documentation](#71-api-documentation)
-      - [7.2 Client Usage](#72-client-usage)
-      - [7.3 Testing oRPC](#73-testing-orpc)
-    - [8. CRON Jobs \& Maintenance](#8-cron-jobs--maintenance)
-      - [8.1 Local Testing](#81-local-testing)
-      - [8.2 Vercel CRON Configuration](#82-vercel-cron-configuration)
-    - [9. Run the App](#9-run-the-app)
-  - [Role Based Access Control (RBAC)](#role-based-access-control-rbac)
-    - [Roles](#roles)
-    - [High-level Rules](#high-level-rules)
-    - [Enforcement Examples](#enforcement-examples)
-    - [UI Behavior](#ui-behavior)
-  - [Super Admin Mode](#super-admin-mode)
-    - [Enabling Super Admin Access](#enabling-super-admin-access)
-    - [Super Admin Dashboard Capabilities](#super-admin-dashboard-capabilities)
-  - [Testing Checklist](#testing-checklist)
-    - [Authentication \& Onboarding](#authentication--onboarding)
-    - [Organizations, Projects \& RBAC](#organizations-projects--rbac)
-    - [Billing \& Credits](#billing--credits)
-    - [Super Admin Dashboard](#super-admin-dashboard-1)
-    - [Security \& RLS](#security--rls)
-    - [oRPC API \& Type Safety](#orpc-api--type-safety)
-  - [Useful Commands](#useful-commands)
-    - [General](#general)
-    - [Testing](#testing)
-    - [Prisma](#prisma)
-    - [Stripe (Local)](#stripe-local)
-    - [Supabase Quick Test](#supabase-quick-test)
-    - [oRPC API Testing](#orpc-api-testing)
-  - [Deployment](#deployment)
-  - [Troubleshooting](#troubleshooting)
-    - [Auth Issues](#auth-issues)
-    - [RBAC / Permission Errors](#rbac--permission-errors)
-    - [Super Admin](#super-admin)
-    - [Database \& RLS](#database--rls)
-    - [oRPC API Issues](#orpc-api-issues)
+  - [Next.js SaaS Kit](#nextjs-saas-kit)
+    - [Table of Contents](#table-of-contents)
+    - [Overview](#overview)
+    - [Features](#features)
+    - [Tech Stack](#tech-stack)
+    - [Architecture](#architecture)
+      - [Multi-tenancy Model](#multi-tenancy-model)
+      - [RBAC Model](#rbac-model)
+      - [Super Admin Dashboard](#super-admin-dashboard)
+    - [Getting Started](#getting-started)
+      - [1. Clone & Install](#1-clone--install)
+      - [2. Environment Variables](#2-environment-variables)
+      - [3. Database & Prisma](#3-database--prisma)
+        - [Optional: Seed Data](#optional-seed-data)
+      - [4. Supabase Auth Setup](#4-supabase-auth-setup)
+        - [4.1 API Keys](#41-api-keys)
+        - [4.2 Email Provider](#42-email-provider)
+        - [4.3 Google OAuth](#43-google-oauth)
+        - [4.4 URL Configuration](#44-url-configuration)
+        - [4.5 Email Templates](#45-email-templates)
+      - [5. Row Level Security (RLS)](#5-row-level-security-rls)
+      - [6. Stripe Setup](#6-stripe-setup)
+        - [6.1 Local Webhook Setup](#61-local-webhook-setup)
+        - [6.2  Webhook Setup in Stripe](#62--webhook-setup-in-stripe)
+      - [7. oRPC API Setup](#7-orpc-api-setup)
+        - [7.1 API Documentation](#71-api-documentation)
+        - [7.2 Client Usage](#72-client-usage)
+        - [7.3 Testing oRPC](#73-testing-orpc)
+      - [8. CRON Jobs & Maintenance](#8-cron-jobs--maintenance)
+        - [8.1 Local Testing](#81-local-testing)
+        - [8.2 Vercel CRON Configuration](#82-vercel-cron-configuration)
+      - [9. Run the App](#9-run-the-app)
+    - [Role Based Access Control (RBAC)](#role-based-access-control-rbac)
+      - [Roles](#roles)
+      - [High-level Rules](#high-level-rules)
+      - [Enforcement Examples](#enforcement-examples)
+      - [UI Behavior](#ui-behavior)
+    - [Super Admin Mode](#super-admin-mode)
+      - [Enabling Super Admin Access](#enabling-super-admin-access)
+      - [Super Admin Dashboard Capabilities](#super-admin-dashboard-capabilities)
+    - [Testing Checklist](#testing-checklist)
+      - [Authentication & Onboarding](#authentication--onboarding)
+      - [Organizations, Projects & RBAC](#organizations-projects--rbac)
+      - [Billing & Credits](#billing--credits)
+      - [Super Admin Dashboard](#super-admin-dashboard-1)
+      - [Security & RLS](#security--rls)
+      - [oRPC API & Type Safety](#orpc-api--type-safety)
+    - [Useful Commands](#useful-commands)
+      - [General](#general)
+      - [Testing](#testing)
+      - [Prisma](#prisma)
+      - [Stripe (Local)](#stripe-local)
+      - [Supabase Quick Test](#supabase-quick-test)
+      - [oRPC API Testing](#orpc-api-testing)
+    - [Deployment](#deployment)
+    - [Troubleshooting](#troubleshooting)
+      - [Auth Issues](#auth-issues)
+      - [RBAC / Permission Errors](#rbac--permission-errors)
+      - [Super Admin](#super-admin)
+      - [Database & RLS](#database--rls)
+      - [oRPC API Issues](#orpc-api-issues)
 
 ---
 
 ## Overview
 
-This project is a multi-tenant SaaS starter built with Next.js 16 and Supabase. It supports:
+  This project is a multi-tenant SaaS starter built with Next.js 16 and Supabase. It supports:
 
-- Authentication via Supabase (email magic links + Google OAuth)
-- Multi-organization accounts with members and projects
-- RBAC with `OWNER`, `ADMIN`, and `MEMBER` roles
-- Type-safe API layer with oRPC and auto-generated OpenAPI documentation
-- Billing via Stripe (subscriptions + credit refills)
-- A Super Admin section to monitor system-wide stats (users, orgs, revenue)
-- CRON-based background maintenance and email notifications
+  - Authentication via Supabase (email magic links + Google OAuth)
+  - Multi-organization accounts with members and projects
+  - RBAC with `OWNER`, `ADMIN`, and `MEMBER` roles
+  - Type-safe API layer with oRPC and auto-generated OpenAPI documentation
+  - Billing via Stripe (subscriptions + credit refills)
+  - A Super Admin section to monitor system-wide stats (users, orgs, revenue)
+  - CRON-based background maintenance and email notifications
 
-You can use it as a starting point for your own SaaS, or as a reference for:
+  You can use it as a starting point for your own SaaS, or as a reference for:
 
-- How to combine Supabase Auth with Prisma
-- How to implement RBAC and multi-tenancy
-- How to build a type-safe API with oRPC
-- How to build a super admin area separate from tenant dashboards
+  - How to combine Supabase Auth with Prisma
+  - How to implement RBAC and multi-tenancy
+  - How to build a type-safe API with oRPC
+  - How to build a super admin area separate from tenant dashboards
 
 ---
 
@@ -108,28 +108,23 @@ You can use it as a starting point for your own SaaS, or as a reference for:
   - Supabase magic links (passwordless)
   - Google OAuth
   - Email templates wired to `/auth/callback`
-
 - **Multi-tenancy**
   - Each user can belong to multiple organizations
   - Each organization owns its own projects and billing
   - RLS policies to prevent cross‑org data leaks
-
 - **RBAC**
   - Roles: `OWNER`, `ADMIN`, `MEMBER`
   - Fine-grained server-side checks via `requireOrgRole` and `permissions`
   - UI behavior matches role permissions (e.g., disabled buttons for low-privilege members)
-
 - **Billing**
   - Stripe subscriptions (e.g. Pro plan)
   - Credits per organization
   - Daily maintenance job to refill/cleanup
   - Reminder emails for renewals and credit exhaustion
-
 - **Super Admin**
   - Email-based super admin whitelisting
   - `/admin` area with analytics cards, charts, user/org lists, system status
   - CSV export of aggregated statistics
-
 - **DX**
   - Tailwind CSS 4 + Shadcn UI components
   - ESLint + TypeScript strict
@@ -178,21 +173,17 @@ The core multi-tenant model is defined in `prisma/schema.prisma`:
   - Identified by Supabase Auth user `id` (UUID string)
   - Stores profile preferences (`colorScheme`, `themePreference`)
   - Has many `OrganizationMember` rows (one per organization)
-
 - `Organization`
   - Owns billing (`stripeCustomerId`, `credits`, `subscription`)
   - Has many `OrganizationMember` (users) and `Project` (resources)
   - Soft-delete via `deletedAt`
-
 - `OrganizationMember`
   - Junction of `User` + `Organization`
   - Has `role` of type `OrganizationRole` (`OWNER`, `ADMIN`, `MEMBER`)
   - Enforced uniqueness on (`organizationId`, `userId`)
-
 - `Project`
   - Belongs to exactly one `Organization`
   - Slug unique per organization
-
 - `OrganizationInvite`
   - Used to invite users by email into organizations with a specific role
   - Includes `status` and expiration
@@ -213,7 +204,6 @@ Server-side authorization helpers:
   - `getCurrentOrgContext(orgId, userId)` returns the user’s role in the organization or `null`
   - `requireOrgRole(orgId, userId, minimumRole)` throws if user does not meet required role
   - `ROLE_HIERARCHY` enforces `OWNER > ADMIN > MEMBER`
-
 - `lib/auth/permissions.ts:1`
   - Declares a simple permission map for actions:
     - Org‑level: `org:update`, `org:delete`, `org:transfer`
@@ -227,7 +217,6 @@ Actions that enforce RBAC:
   - `updateMemberRoleAction` – only `ADMIN`+ can change roles, cannot downgrade `OWNER`, cannot set `OWNER` via this path
   - `inviteMember` – only `ADMIN`+ can invite, with rate limiting and pending-invite caps
   - `updateOrganizationNameAction` – requires at least `ADMIN`
-
 - `app/actions/project.ts:76`
   - `deleteProject` – resolves `organizationId` and enforces `ADMIN`+ via `requireOrgRole`
 
@@ -241,7 +230,6 @@ The super admin area lives under `app/(super-admin)`:
     - Checks `SUPER_ADMIN_EMAILS` env var
     - Redirects non-super-admins to `/dashboard`
   - Wraps children with `SidebarProvider` and `AdminSidebar`, plus `DashboardHeader`
-
 - `app/(super-admin)/_components/admin-sidebar.tsx:1`
   - Client sidebar for super admin navigation
   - Links to:
@@ -249,17 +237,15 @@ The super admin area lives under `app/(super-admin)`:
     - Revenue analytics
     - User analytics
     - Users, organizations, subscriptions, settings
-
 - `app/(super-admin)/_components/dashboard-actions.tsx:1`
   - Controls for refreshing dashboard, exporting CSV reports, etc.
-
 - `app/(super-admin)/_components/system-status.tsx:1`
   - Receives system health data (`database` status + latency)
   - Renders cards with overall system status
 
 The dashboard aggregates data across all organizations (e.g., total revenue, active orgs, growth), separate from tenant scoping.
 
----
+***
 
 ## Getting Started
 
@@ -294,19 +280,16 @@ Key groups:
   - `SUPABASE_SERVICE_ROLE_KEY`
   - `DATABASE_URL`
   - `DIRECT_URL`
-
 - Stripe:
   - `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`
   - `STRIPE_SECRET_KEY`
   - `STRIPE_PRICE_ID`
   - `STRIPE_WEBHOOK_SECRET` (per environment)
-
 - App:
   - `NEXT_PUBLIC_APP_URL` / `PRODUCTION_URL`
   - `SUPPORT_EMAIL`, `APP_EMAIL`
   - `CRON_SECRET` – secret key for CRON endpoints
   - `SUPER_ADMIN_EMAILS` – comma-separated list of emails with super admin access
-
 - Email (Resend / SMTP):
   - `RESEND_API_KEY` or SMTP credentials (depending on how you configure `sendBasicEmail`)
 
@@ -321,6 +304,7 @@ MAX_ORGANIZATIONS_PER_USER=3
 ```
 
 Notes:
+
 - If these are unset, 0, negative, or non‑numeric, the system defaults to 1 (single‑org).
 - With a value > 1, secondary organization creation is enabled and multi‑org tests run.
 - With a value of 1, secondary org creation is disabled and multi‑org tests auto‑skip.
@@ -379,12 +363,12 @@ DIRECT_URL=...
 - **Path**: `Authentication → Providers → Email`
 - Recommended config:
 
-| Setting                     | Recommended                              |
-| --------------------------- | ---------------------------------------- |
-| Enable Email provider       | Enabled                                  |
-| Confirm email               | Disabled (dev) / Enabled (prod)         |
-| Secure email change         | Enabled                                  |
-| Double confirm email change | Enabled                                  |
+| Setting                     | Recommended                     |
+| --------------------------- | ------------------------------- |
+| Enable Email provider       | Enabled                         |
+| Confirm email               | Disabled (dev) / Enabled (prod) |
+| Secure email change         | Enabled                         |
+| Double confirm email change | Enabled                         |
 
 #### 4.3 Google OAuth
 
@@ -397,13 +381,13 @@ http://localhost:3000
 https://your-production-domain.com
 ```
 
-4. Authorized redirect URIs:
+1. Authorized redirect URIs:
 
 ```bash
 https://YOUR_PROJECT_REF.supabase.co/auth/v1/callback
 ```
 
-5. Paste Client ID and Secret into:
+1. Paste Client ID and Secret into:
    - Supabase → `Authentication → Providers → Google`
 
 #### 4.4 URL Configuration
@@ -499,7 +483,7 @@ TRUNCATE TABLE auth.users CASCADE;
 COMMIT;
 ```
 
-2. Apply the RLS scripts from [RLS-Public-Schema](docs/RLS-Public-Schema.md) (or your own) to:
+1. Apply the RLS scripts from [RLS-Public-Schema](docs/RLS-Public-Schema.md) (or your own) to:
    - Enable RLS on each table
    - Create policies:
      - `Org: select by membership`
@@ -545,6 +529,7 @@ stripe listen --forward-to localhost:3000/api/webhook/stripe
 ```
 
 Stripe CLI will print a `whsec_...` signing secret; set:
+
 ```bash
 # For Local
 STRIPE_WEBHOOK_SECRET=whsec_...
@@ -553,63 +538,64 @@ STRIPE_WEBHOOK_SECRET=whsec_...
 #### 6.2  Webhook Setup in Stripe
 
 Steps in the Stripe Dashboard
+
 - Navigate to Webhooks: Log in to your Stripe Dashboard, go to the Developers section, and click the Webhooks tab (or "Event destinations").
 - Add Endpoint: Click + Add endpoint (or "Create an event destination").
 - Select Events: Choose specific events rather than all events for better performance.
-  - Checkout: 
-        
-        - checkout.session.async_payment_succeeded 
-        - checkout.session.completed
-        - checkout.session.expired
+  - Checkout:
+    ```
+    - checkout.session.async_payment_succeeded 
+    - checkout.session.completed
+    - checkout.session.expired
+    ```
   - Customer:
-        
-        - customer.subscription.created
-        - customer.subscription.deleted
-        - customer.subscription.paused
-        - customer.subscription.pending_update_applied
-        - customer.subscription.pending_update_expired
-        - customer.subscription.resumed
-        - customer.subscription.trial_will_end
-        - customer.subscription.updated
-        
+    ```
+    - customer.subscription.created
+    - customer.subscription.deleted
+    - customer.subscription.paused
+    - customer.subscription.pending_update_applied
+    - customer.subscription.pending_update_expired
+    - customer.subscription.resumed
+    - customer.subscription.trial_will_end
+    - customer.subscription.updated
+    ```
   - Invoice:
-      
-        - invoice.created
-        - invoice.deleted
-        - invoice.finalization_failed
-        - invoice.finalized
-        - invoice.marked_uncollectible
-        - invoice.overdue
-        - invoice.overpaid
-        - invoice.paid
-        - invoice.payment_action_required
-        - invoice.payment_failed
-        - invoice.payment_succeeded
-        - invoice.sent
-        - invoice.upcoming
-        - invoice.updated
-        - invoice.voided
-        - invoice.will_be_due
-  
+    ```
+    - invoice.created
+    - invoice.deleted
+    - invoice.finalization_failed
+    - invoice.finalized
+    - invoice.marked_uncollectible
+    - invoice.overdue
+    - invoice.overpaid
+    - invoice.paid
+    - invoice.payment_action_required
+    - invoice.payment_failed
+    - invoice.payment_succeeded
+    - invoice.sent
+    - invoice.upcoming
+    - invoice.updated
+    - invoice.voided
+    - invoice.will_be_due
+    ```
   - Payment Intent:
-      
-        - payment_intent.amount_capturable_updated
-        - payment_intent.canceled
-        - payment_intent.created
-        - payment_intent.partially_funded
-        - payment_intent.payment_failed
-        - payment_intent.processing
-        - payment_intent.requires_action
-        - payment_intent.succeeded
-- Enter Endpoint URL: Input your server's HTTPS URL (e.g., https://your-domain.com/api/webhook/stripe) where Stripe will send events.
-     
+    ```
+    - payment_intent.amount_capturable_updated
+    - payment_intent.canceled
+    - payment_intent.created
+    - payment_intent.partially_funded
+    - payment_intent.payment_failed
+    - payment_intent.processing
+    - payment_intent.requires_action
+    - payment_intent.succeeded
+    ```
+- Enter Endpoint URL: Input your server's HTTPS URL (e.g., <https://your-domain.com/api/webhook/stripe>) where Stripe will send events.
 - Add Endpoint: Click to add the endpoint.
-- Get the Secret: After creation, find your unique webhook signing secret (starts with whsec_) and set it as `STRIPE_WEBHOOK_SECRET` in your environment variables `.env` file. 
+- Get the Secret: After creation, find your unique webhook signing secret (starts with whsec\_) and set it as `STRIPE_WEBHOOK_SECRET` in your environment variables `.env` file.
   ```bash
     # For Production
     STRIPE_WEBHOOK_SECRET=whsec_...
   ```
-
 
 ### 7. oRPC API Setup
 
@@ -623,6 +609,7 @@ The oRPC API automatically generates OpenAPI documentation accessible at:
 - **Production**: `https://your-domain.com/api/docs`
 
 The API specification is available at:
+
 - **JSON**: `/api/openapi.json`
 
 #### 7.2 Client Usage
@@ -630,6 +617,7 @@ The API specification is available at:
 The oRPC client is configured for both server-side and client-side usage:
 
 **Server-side (RSC):**
+
 ```typescript
 import { rscClient } from '@/lib/orpc/rsc-client'
 
@@ -638,6 +626,7 @@ const organizations = await rscClient.organization.list()
 ```
 
 **Client-side with React Query:**
+
 ```typescript
 'use client'
 import { client } from '@/lib/orpc/client'
@@ -659,6 +648,7 @@ function OrganizationList() {
 The project includes comprehensive tests for the oRPC implementation:
 
 **Run all oRPC tests:**
+
 ```bash
 - pnpm test tests/orpc
 - pnpm tsc --noEmit
@@ -667,6 +657,7 @@ The project includes comprehensive tests for the oRPC implementation:
 ```
 
 **Run specific test suites:**
+
 ```bash
 # Test context and authentication
 pnpm test tests/orpc/context.test.ts
@@ -686,6 +677,7 @@ pnpm test tests/orpc/server.test.ts
 ```
 
 **Test with watch mode:**
+
 ```bash
 pnpm run test:watch tests/orpc
 ```
@@ -703,24 +695,20 @@ The oRPC API provides the following router endpoints:
   - `inviteMember` - Invite new member
   - `updateMemberRole` - Update member role
   - `removeMember` - Remove member
-
 - **Project Router** (`/api/rpc/project.*`)
   - `list` - List organization projects
   - `create` - Create new project
   - `update` - Update project details
   - `delete` - Delete project
-
 - **User Router** (`/api/rpc/user.*`)
   - `profile` - Get user profile
   - `updateProfile` - Update user profile
   - `preferences` - Get user preferences
   - `updatePreferences` - Update preferences
-
 - **Billing Router** (`/api/rpc/billing.*`)
   - `getSubscription` - Get subscription details
   - `createCheckoutSession` - Create Stripe checkout
   - `getUsage` - Get credit usage stats
-
 - **Admin Router** (`/api/rpc/admin.*`) (Super Admin only)
   - `getStats` - System-wide statistics
   - `getUsers` - List all users
@@ -730,6 +718,7 @@ The oRPC API provides the following router endpoints:
 **RBAC Integration:**
 
 All oRPC procedures automatically enforce RBAC through:
+
 - Context-based authentication via Supabase
 - Role-based authorization using `requireOrgRole`
 - Organization-scoped data access
@@ -738,6 +727,7 @@ All oRPC procedures automatically enforce RBAC through:
 **Error Handling:**
 
 oRPC procedures return structured errors with:
+
 - HTTP status codes
 - Error messages
 - Validation details (for input errors)
@@ -825,7 +815,7 @@ Visit:
 - `http://localhost:3000/dashboard` – tenant dashboard
 - `http://localhost:3000/admin` – super admin dashboard (for super admin emails)
 
----
+***
 
 ## Role Based Access Control (RBAC)
 
@@ -844,13 +834,11 @@ Defined in `lib/constants.ts:158`:
   - Can delete the organization
   - Can invite/remove members
   - Can transfer ownership
-
 - `ADMIN`
   - Manages most org settings
   - Can invite/remove/update members (excluding owner)
   - Can create/update/delete projects
   - Cannot promote anyone to `OWNER` (must use transfer flow)
-
 - `MEMBER`
   - Limited access
   - Typically can create/update projects they are involved with
@@ -862,14 +850,11 @@ Defined in `lib/constants.ts:158`:
   - Checks the caller is at least `ADMIN` via `requireOrgRole`
   - Prevents changes to `OWNER`
   - Prevents setting a member to `OWNER`
-
 - `inviteMember` (`app/actions/organization.ts:122`)
   - Requires `ADMIN`
   - Applies rate limiting and pending invite caps
-
 - `updateOrganizationNameAction` (`app/actions/organization.ts:527`)
   - Requires `ADMIN`
-
 - `deleteProject` (`app/actions/project.ts:76`)
   - Resolves the project’s org
   - Requires `ADMIN`
@@ -883,7 +868,7 @@ Defined in `lib/constants.ts:158`:
 
 These patterns ensure that server‑side checks and client‑side behavior stay in sync.
 
----
+***
 
 ## Super Admin Mode
 
@@ -897,9 +882,9 @@ Super admin access is gated by the `SUPER_ADMIN_EMAILS` environment variable.
 SUPER_ADMIN_EMAILS=alice@example.com,bob@example.com
 ```
 
-2. Ensure those emails exist as Supabase users and are also present in the `User` table.
-3. When such a user logs in and visits `/admin`, they are allowed into the super admin area.
-4. Non‑super‑admins visiting `/admin` are redirected back to `/dashboard`.
+1. Ensure those emails exist as Supabase users and are also present in the `User` table.
+2. When such a user logs in and visits `/admin`, they are allowed into the super admin area.
+3. Non‑super‑admins visiting `/admin` are redirected back to `/dashboard`.
 
 Logic is implemented in `app/(super-admin)/layout.tsx:1`.
 
@@ -918,7 +903,7 @@ Components under `app/(super-admin)/_components` provide:
 
 Use this area for operational visibility and, if needed, for additional admin tooling.
 
----
+***
 
 ## Testing Checklist
 
@@ -1005,7 +990,7 @@ This section is updated to reflect RBAC and the Super Admin dashboard.
   - [ ] Router-specific tests (organization, project, user, admin)
   - [ ] Procedure and server tests
 
----
+***
 
 ## Useful Commands
 
@@ -1022,7 +1007,6 @@ This section is updated to reflect RBAC and the Super Admin dashboard.
 - `pnpm test`           – Run all tests once
 - `pnpm run test:watch` – Run tests in watch mode
 
-
 ### Testing
 
 - `pnpm test` – Run all tests (including oRPC)
@@ -1035,6 +1019,7 @@ This section is updated to reflect RBAC and the Super Admin dashboard.
 - `pnpm vitest run tests/integration/calculate-api.test.ts`
 
 **Update snapshots (only when you intentionally changed the golden output)**
+
 - `pnpm vitest run tests/integration/calculate-orpc.golden-shape.test.ts -u`
 
 ### Prisma
@@ -1074,7 +1059,7 @@ pnpm test tests/orpc
 pnpm test tests/orpc/routers/organization.test.ts
 ```
 
----
+***
 
 ## Deployment
 
@@ -1096,7 +1081,7 @@ After deploy:
 - Run `pnpm prisma migrate deploy` against your production database (e.g. via Vercel CLI or a separate step).
 - Re-test critical flows using the [Testing Checklist](#testing-checklist).
 
----
+***
 
 ## Troubleshooting
 
@@ -1105,12 +1090,10 @@ After deploy:
 - **Invalid redirect URL**
   - Check Supabase `Authentication → URL Configuration`
   - Ensure exact matches including protocol and trailing slash
-
 - **Google OAuth errors**
   - Verify client ID/secret
   - Confirm redirect URI matches exactly:
     - `https://YOUR_PROJECT_REF.supabase.co/auth/v1/callback`
-
 - **Emails not sending**
   - Check Resend / SMTP provider logs
   - Verify API keys
@@ -1123,7 +1106,6 @@ After deploy:
   - Ensure the user is a member of the organization
   - Confirm their role is high enough for the action
   - Check `requireOrgRole` usage in the relevant action
-
 - Members seeing options they cannot use:
   - Review `MemberRoleSelect` and related UI
   - Ensure `can(role, action)` is used to gate destructive actions
@@ -1146,23 +1128,19 @@ After deploy:
   - Ensure the API route is properly configured at `app/api/rpc/[[...rest]]/route.ts`
   - Check that the oRPC handler is correctly set up with the app router
   - Verify the endpoint path matches the router structure
-
 - **Type errors with oRPC client**
   - Run `pnpm run build` to regenerate types
   - Ensure oRPC client is properly imported (`@/lib/orpc/client` or `@/lib/orpc/rsc-client`)
   - Check that procedures are properly defined in routers
-
 - **Authorization errors in oRPC procedures**
   - Verify user is authenticated and session is valid
   - Check organization membership for org-scoped procedures
   - Ensure user has required role (OWNER/ADMIN/MEMBER) for the action
   - Review RBAC test failures for specific authorization logic
-
 - **OpenAPI documentation not loading**
   - Check that `@orpc/openapi` is properly configured
   - Verify the OpenAPI route at `/api/openapi.json` returns valid JSON
   - Ensure Scalar API documentation is set up correctly
-
 - **oRPC tests failing**
   - Run tests individually to isolate issues: `pnpm test tests/orpc/context.test.ts`
   - Check mock implementations match actual oRPC context structure
