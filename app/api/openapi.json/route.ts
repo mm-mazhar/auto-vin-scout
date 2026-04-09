@@ -2,6 +2,7 @@ import { OpenAPIGenerator } from '@orpc/openapi'
 import { ZodToJsonSchemaConverter } from '@orpc/zod'
 import { appRouter } from '@/lib/orpc/root'
 import { createClient } from '@/app/lib/supabase/server'
+import { NEXT_PUBLIC_SITE_NAME } from '@/lib/constants'
 
 /**
  * OpenAPI specification generator for the oRPC API
@@ -19,9 +20,9 @@ const SUPER_ADMINS = process.env.SUPER_ADMIN_EMAILS?.split(',').map(e => e.trim(
 async function generateOpenAPISpec() {
   return await generator.generate(appRouter, {
     info: {
-      title: 'SaaS Kit API',
+      title: `${NEXT_PUBLIC_SITE_NAME} API`,
       version: '1.0.0',
-      description: 'Type-safe API for the Next.js SaaS Kit',
+      description: `Type-safe API for the ${NEXT_PUBLIC_SITE_NAME}`,
     },
     servers: [
       {

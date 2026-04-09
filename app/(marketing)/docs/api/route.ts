@@ -1,5 +1,6 @@
-import { ApiReference } from '@scalar/nextjs-api-reference'
 import { createClient } from '@/app/lib/supabase/server'
+import { NEXT_PUBLIC_SITE_NAME } from '@/lib/constants'
+import { ApiReference } from '@scalar/nextjs-api-reference'
 import { redirect } from 'next/navigation'
 
 const config = {
@@ -8,8 +9,8 @@ const config = {
   },
   theme: 'kepler' as const,
   metaData: {
-    title: 'SaaS Kit API Documentation',
-    description: 'Interactive API documentation for the Next.js SaaS Kit oRPC API',
+    title: `${NEXT_PUBLIC_SITE_NAME} API Documentation`,
+    description: `Interactive API documentation for the ${NEXT_PUBLIC_SITE_NAME} oRPC API`,
   },
   hideModels: false,
   hideDownloadButton: false,

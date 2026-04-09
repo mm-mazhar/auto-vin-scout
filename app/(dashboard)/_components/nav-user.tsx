@@ -152,7 +152,13 @@ export function NavUser({
                   className='flex items-center text-sm gap-2'
                 >
                   <Sparkles />
-                  {currentPlanId === PLAN_IDS.pro
+                  {currentPlanId === PLAN_IDS.basic
+                    ? (
+                      <>
+                        <span className="text-primary font-semibold">Basic Report,</span>Upgrade to <span className="text-primary font-semibold">Pro Plan</span>
+                      </>
+                    )
+                    : currentPlanId === PLAN_IDS.pro
                     ? (
                       <>
                         <span className="text-primary font-semibold">Pro Plan,</span>Upgrade to <span className="text-primary font-semibold">Dealer Core</span>

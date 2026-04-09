@@ -21,7 +21,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
-// import { CreateOrgDialog } from './create-org-dialog'
 import { CreateOrgDialog } from '@/app/(dashboard)/_components/create-org-dialog'
 
 const MAX_ORGS_ENV = Number(process.env.NEXT_PUBLIC_MAX_ORGANIZATIONS_PER_USER)
@@ -52,7 +51,6 @@ export function TeamSwitcher({
     return null
   }
 
-  // 👇 ADD THIS HELPER 👇
   const isPrivileged = currentOrganization.role === 'OWNER' || currentOrganization.role === 'ADMIN'
   const ownerOrgCount = organizations.filter((org) => org.role === 'OWNER').length
   const canCreateOrganization = ownerOrgCount < MAX_ORGS_PER_USER
@@ -90,6 +88,7 @@ export function TeamSwitcher({
               <DropdownMenuItem
                 key={org.id}
                 onClick={() => {
+                  if (org.id === currentOrganization.id) return
                   startTransition(async () => {
                     await switchOrganization(org.id)
                   })
@@ -102,7 +101,9 @@ export function TeamSwitcher({
                 </div>
                 {org.name}
                 {isPending && org.id !== currentOrganization.id && <Loader2 className='ml-auto size-4 animate-spin' />}
-                {/* <DropdownMenuShortcut>⌘{index + 1}</DropdownMenuShortcut> */}
+                {org.id === currentOrganization.id && (
+                  <div className='ml-auto size-2 rounded-full bg-primary' />
+                )}
               </DropdownMenuItem>
             ))}
             {canCreateOrganization && (
@@ -116,7 +117,6 @@ export function TeamSwitcher({
                 </DropdownMenuItem>
               </>
             )}
-            {/* 👇 WRAP THIS ITEM IN CONDITION 👇 */}
             {isPrivileged && (
               <>
                 <DropdownMenuSeparator />
@@ -130,7 +130,6 @@ export function TeamSwitcher({
                 </DropdownMenuItem>
               </>
             )}
-            {/* 👆 END CONDITION 👆 */}
           </DropdownMenuContent>
         </DropdownMenu>
         <CreateOrgDialog open={open} onOpenChange={setOpen} />
