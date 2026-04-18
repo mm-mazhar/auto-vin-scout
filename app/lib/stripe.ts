@@ -3,7 +3,8 @@
 import Stripe from 'stripe'
 
 export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
-  apiVersion: '2025-10-29.clover', 
+  // Let the v22 SDK use its native built-in API version automatically
+  // apiVersion: '2025-10-29.clover', 
   // apiVersion: '2025-06-30.basil',
   typescript: true,
 })

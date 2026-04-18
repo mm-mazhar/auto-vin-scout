@@ -16,6 +16,7 @@ export const DEFAULT_THEME_MODE = `dark` as string
 // ✅ LOCALE
 export const LOCALE = `en_US`
 export const DEFAULT_CURRENCY = `USD`
+export const OPENAPI_SPEC_VERSION = `1.0.0`
 
 export function formatPrice(
   price: string | number,

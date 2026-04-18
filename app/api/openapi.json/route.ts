@@ -2,7 +2,8 @@ import { OpenAPIGenerator } from '@orpc/openapi'
 import { ZodToJsonSchemaConverter } from '@orpc/zod'
 import { appRouter } from '@/lib/orpc/root'
 import { createClient } from '@/app/lib/supabase/server'
-import { NEXT_PUBLIC_SITE_NAME } from '@/lib/constants'
+import { NEXT_PUBLIC_SITE_NAME, OPENAPI_SPEC_VERSION } from '@/lib/constants'
+
 
 /**
  * OpenAPI specification generator for the oRPC API
@@ -21,7 +22,7 @@ async function generateOpenAPISpec() {
   return await generator.generate(appRouter, {
     info: {
       title: `${NEXT_PUBLIC_SITE_NAME} API`,
-      version: '1.0.0',
+      version: `${OPENAPI_SPEC_VERSION}`,
       description: `Type-safe API for the ${NEXT_PUBLIC_SITE_NAME}`,
     },
     servers: [
