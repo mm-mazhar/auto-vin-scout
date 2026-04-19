@@ -1,0 +1,13 @@
+llm:
+  primary:
+    provider: "openrouter"
+    baseUrl: "https://openrouter.ai/api/v1"
+    model: "anthropic/claude-3.5-sonnet"
+  fallback:
+    provider: "google"
+    # No baseUrl needed — @google/genai SDK connects directly to Google AI.
+    # To switch models in future, change only this field.
+    model: "gemini-2.5-flash"
+  settings:
+    timeoutMs: 8000
+    maxRetries: 2
