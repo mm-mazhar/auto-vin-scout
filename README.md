@@ -421,7 +421,30 @@ https://your-production-domain.com/dashboard
 
 #### 4.5 Email Templates
 
-Magic link (sign-in) template:
+**Upload the logo file first to supabase**
+
+1. Go to Supabase Dashboard > Storage.
+2. Create a Public bucket named assets.
+3. Upload your logo.png.
+4. Copy the Public URL (it will look like https://xyz.supabase.co/storage/v1/object/public/assets/logo.png).
+5. Paste that URL into your email template.
+
+**ALSO UPDATE `lib/constants.ts` with following**
+
+```typescript
+// ✅ EMAIL BRANDING
+//hex value of main color scheme
+export const EMAIL_BUTTON_BG = `#22c55e` as string
+//hex value of color of text inside button for emails only
+export const EMAIL_BUTTON_TEXT = `#ffffff` as string 
+export const EMAIL_LOGO_URL = `<LOGO URL>` as string
+```
+
+**Magic link (sign-in) template:**
+
+see [MAGIC LINK TEMPLATE](docs/magic-link-template.html)
+
+OR
 
 ```html
 <h2>Magic Link</h2>
@@ -435,7 +458,11 @@ Magic link (sign-in) template:
 </p>
 ```
 
-Confirm signup template:
+**Confirm signup template:**
+
+see [CONFIRM SIGN UP TEMPLATE](docs/confirm-signup-template.html)
+
+OR 
 
 ```html
 <h2>Confirm your email</h2>

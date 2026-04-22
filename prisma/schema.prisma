@@ -142,6 +142,8 @@ enum ReportStatus {
   PENDING
   COMPLETED
   FAILED
+  FREE_PREVIEW
+  ZERO_CREDITS
 }
 
 model Vehicle {
@@ -183,6 +185,7 @@ model Report {
   riskScore         Int?
   riskLabel         String?
   riskNarrative     String? @db.Text
+  isAiFallback      Boolean @default(false)
   marketData        Json?
   recallData        Json?
   environmentalData Json?

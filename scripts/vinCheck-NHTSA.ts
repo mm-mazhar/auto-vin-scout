@@ -1,5 +1,9 @@
 // scripts/vinCheck-NHTSA.ts
 // Run this via: pnpm tsx scripts/vinCheck-NHTSA.ts <YOUR_VIN_HERE>
+// e.g. pnpm tsx scripts/vinCheck-NHTSA.ts 1G1RC6E45EUxxxxxx
+// Generate RANDOM VIN from `https://randomvin.com/` or `https://vingenerator.org/`
+// Report Generation Sites: `https://www.faxvin.com/`
+// RANDOM VINS: 5J6RM4H52EL066598, 1HVBBABP5TH371982, 1G1RC6E45EUxxxxxx
 
 async function vinCheck() {
   // Grab the VIN from the command line arguments
@@ -7,7 +11,7 @@ async function vinCheck() {
 
   if (!vin || vin.length !== 17) {
     console.error('❌ Error: Please provide a valid 17-character VIN.')
-    console.log('👉 Usage: pnpm tsx scripts/vinCheck-NHTSA.ts 1G1RC6E45EUxxxxxx')
+    console.log('👉 Usage: pnpm tsx scripts/vinCheck-NHTSA.ts 1HVBBABP5TH371982')
     process.exit(1)
   }
 
@@ -18,6 +22,8 @@ async function vinCheck() {
     // Call the NHTSA API directly
     const response = await fetch(
       `https://vpic.nhtsa.dot.gov/api/vehicles/DecodeVinValues/${uppercaseVin}?format=json`
+      // `https://vpic.nhtsa.dot.gov/api/vehicles/DecodeVinValuesExtended/${uppercaseVin}?format=json`
+      // `https://vpic.nhtsa.dot.gov/api/vehicles/DecodeVinExtended/${uppercaseVin}?format=json`
     )
 
     if (!response.ok) {

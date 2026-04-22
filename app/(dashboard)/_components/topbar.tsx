@@ -22,6 +22,7 @@ import {
   ChartNoAxesCombined,
   CreditCard,
   Database,
+  FileBarChart,
   FileText,
   Home,
   Settings,
@@ -56,6 +57,7 @@ export function TopBar({
     settings: 'Settings',
     billing: 'Billing',
     organization: 'Organization',
+    reports: 'Reports',
   }
   const icons: Record<string, React.ElementType> = {
     dashboard: ChartNoAxesCombined,
@@ -64,6 +66,7 @@ export function TopBar({
     settings: Settings,
     billing: CreditCard,
     organization: Building2,
+    reports: FileBarChart,
   }
 
   let acc = ''

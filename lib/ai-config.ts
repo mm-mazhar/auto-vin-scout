@@ -18,6 +18,7 @@ type LLMConfig = {
       timeoutMs: number
       maxRetries: number
     }
+    systemInstruction: string
   }
 }
 
@@ -42,4 +43,8 @@ export function getFallbackLLMConfig() {
 
 export function getLLMSettings() {
   return getConfig().llm.settings
+}
+
+export function getSystemInstruction() {
+  return getConfig().llm.systemInstruction
 }

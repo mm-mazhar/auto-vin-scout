@@ -16,16 +16,18 @@ import {
 } from '@/app/(dashboard)/_components/sidebar'
 import { TeamSwitcher } from '@/app/(dashboard)/_components/team-switcher'
 import { type PlanId } from '@/lib/constants'
-import { ChartNoAxesCombined, Database, FileText } from 'lucide-react'
+import { ChartNoAxesCombined } from 'lucide-react'
 import { usePathname } from 'next/navigation'
 
 const navItems = [
-  { name: 'Dashboard', href: '/dashboard', icon: ChartNoAxesCombined },
-]
-
-const projectItems = [
-  { name: 'Data', href: '/dashboard/data', icon: Database },
-  { name: 'Documents', href: '/dashboard/documents', icon: FileText },
+  {
+    name: 'Dashboard',
+    href: '/dashboard',
+    icon: ChartNoAxesCombined,
+    children: [
+      { name: 'Reports', href: '/dashboard/reports' },
+    ],
+  },
 ]
 
 
@@ -58,14 +60,12 @@ export function AppSidebar({
     title: n.name,
     url: n.href,
     icon: n.icon,
-    isActive: n.href === '/dashboard' ? pathname === n.href : pathname.startsWith(n.href),
-  }))
-
-  const mappedProjectItems = projectItems.map((n) => ({
-    title: n.name,
-    url: n.href,
-    icon: n.icon,
-    isActive: pathname.startsWith(n.href),
+    isActive: pathname === n.href || pathname.startsWith(n.href + '/'),
+    defaultOpen: true,
+    items: n.children?.map((c) => ({
+      title: c.name,
+      url: c.href,
+    })),
   }))
 
   const finalUser = user ?? {
@@ -91,9 +91,6 @@ export function AppSidebar({
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={mappedNavMain} label="Platform" />
-        {activeProjectId && (
-          <NavMain items={mappedProjectItems} label="Project" />
-        )}
       </SidebarContent>
       <SidebarFooter className='pb-4'>
         <NavUser

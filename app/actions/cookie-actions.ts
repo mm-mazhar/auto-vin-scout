@@ -30,13 +30,19 @@ export async function setCurrentOrganization(orgId: string) {
 
 /**
  * Switch the current project context
- * Sets the current-project-id cookie and redirects to dashboard
+ * Sets the current-project-id cookie and redirects appropriately
  */
 export async function switchProject(projectId: string) {
   const cookieStore = await cookies()
   cookieStore.set('current-project-id', projectId)
+  
+  // Revalidate all dashboard-related paths to ensure fresh data
   revalidatePath('/dashboard')
-  redirect('/dashboard')
+  revalidatePath('/dashboard/reports')
+  
+  // Clear any project-specific pages and redirect to reports
+  // This ensures users don't stay on old project's report pages
+  redirect('/dashboard/reports')
 }
 
 /**

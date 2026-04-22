@@ -6,6 +6,7 @@ import {
   getFallbackLLMConfig,
   getLLMSettings,
   getPrimaryLLMConfig,
+  getSystemInstruction,
 } from '@/lib/ai-config'
 
 export class RiskEngineService {
@@ -57,18 +58,13 @@ export class RiskEngineService {
       riskScore = Math.min(riskScore, 100)
 
       const riskLabel =
-        riskScore <= 30 ? 'Low Risk' : riskScore <= 60 ? 'Medium Risk' : 'High Risk'
+        riskScore <= 30 ? 'Low' : riskScore <= 60 ? 'Moderate' : 'High'
 
       // Step 2c — AI Narrative Generation
       const primary = getPrimaryLLMConfig()
       const fallback = getFallbackLLMConfig()
       const settings = getLLMSettings()
-
-      const systemInstruction =
-        'You are AutoVinScout AI Analyst. ' +
-        'Provide structured, objective risk insights for used-car buyers based solely on the data points provided. ' +
-        'Do not invent mechanical issues or make assumptions beyond the data. ' +
-        'Be concise, honest about what is simulated vs. real data, and actionable.'
+      const systemInstruction = getSystemInstruction()
 
       const userPrompt = `
 Vehicle Details:
@@ -127,18 +123,16 @@ Format: Return only the 3 bullets, one per line, starting with •
         if (googleKey) {
           try {
             const ai = new GoogleGenAI({ apiKey: googleKey })
-            const result = await ai.models.generateContent({
+            const response = await ai.models.generateContent({
               model: fallback.model,
-              contents: [
-                { role: 'user', parts: [{ text: userPrompt }] }
-              ],
+              contents: userPrompt,
               config: {
                 systemInstruction,
                 temperature: 0.7,
                 maxOutputTokens: 500,
               }
             })
-            const text = result.text?.trim()
+            const text = response.text?.trim()
             if (text) return text
             throw new Error('Fallback LLM returned empty output')
           } catch (error) {
@@ -149,8 +143,20 @@ Format: Return only the 3 bullets, one per line, starting with •
           }
         }
 
+        // If we reach here, both providers failed
+        throw new Error('All LLM providers failed')
+      }
+
+      let isAiFallback = false
+      let riskNarrative: string
+
+      try {
+        riskNarrative = await generateNarrative()
+      } catch (error) {
+        console.warn('[RiskEngine] All LLM providers failed, using fallback narrative')
+        isAiFallback = true
         // Fallback to rules-based narrative
-        return [
+        riskNarrative = [
           `• Vehicle age is ${vehicleAge} years, so inspect wear-related items carefully before purchase.`,
           hasOpenRecalls
             ? '• Recall signals were detected (simulated — verify independently) with a dealer before buying.'
@@ -161,8 +167,6 @@ Format: Return only the 3 bullets, one per line, starting with •
         ].join('\n')
       }
 
-      const riskNarrative = await generateNarrative()
-
       // Step 2d — Database Update (Success)
       await prisma.report.update({
         where: { id: reportId },
@@ -170,6 +174,7 @@ Format: Return only the 3 bullets, one per line, starting with •
           riskScore,
           riskLabel,
           riskNarrative,
+          isAiFallback,
           status: 'COMPLETED',
         },
       })

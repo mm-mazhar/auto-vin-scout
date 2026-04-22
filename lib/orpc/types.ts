@@ -28,3 +28,11 @@ export type ProjectListOutput = RouterOutputs['project']['list']
  * Invite types
  */
 export type InviteListOutput = RouterOutputs['org']['getInvites']
+
+/**
+ * VIN types
+ */
+export type VinAnalyzeInput = RouterInputs['vin']['analyze']
+export type VinAnalyzeOutput = RouterOutputs['vin']['analyze']
+export type VinListInput = RouterInputs['vin']['list']
+export type VinListOutput = RouterOutputs['vin']['list']

@@ -89,10 +89,10 @@ export function ProjectSwitcher({
                   <Folder className='size-3.5 shrink-0' />
                 </div>
                 {project.name}
-                {isPending && project.id !== activeProjectId && (
+                {isPending && (
                   <Loader2 className='ml-auto size-4 animate-spin' />
                 )}
-                {project.id === activeProjectId && (
+                {project.id === activeProjectId && !isPending && (
                   <div className='ml-auto size-2 rounded-full bg-primary' />
                 )}
               </DropdownMenuItem>

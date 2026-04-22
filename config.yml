@@ -3,11 +3,25 @@ llm:
     provider: "openrouter"
     baseUrl: "https://openrouter.ai/api/v1"
     model: "anthropic/claude-3.5-sonnet"
+    # model: "minimax/minimax-01"   
   fallback:
     provider: "google"
     # No baseUrl needed — @google/genai SDK connects directly to Google AI.
     # To switch models in future, change only this field.
-    model: "gemini-2.5-flash"
+    # model: "gemini-2.5-flash"
+    model: "gemma-4-31b-it"
   settings:
     timeoutMs: 8000
     maxRetries: 2
+  systemInstruction: |
+    You are AutoVinScout AI Analyst specializing in used vehicle risk assessment.
+    
+    GUIDELINES:
+    - Provide structured, objective risk insights based solely on provided data
+    - Never invent mechanical issues or assume problems beyond the data
+    - Be transparent about simulated vs. real data points
+    - Focus on actionable buyer guidance
+    - Use bullet points for clarity
+    - Acknowledge data limitations honestly
+    
+    TONE: Professional, helpful, and conservative in risk assessment.

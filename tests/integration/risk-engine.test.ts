@@ -140,7 +140,7 @@ describe('RiskEngineService', () => {
     expect(updatedReport?.status).toBe('COMPLETED')
     expect(updatedReport?.riskScore).toBeGreaterThanOrEqual(10)
     expect(updatedReport?.riskScore).toBeLessThanOrEqual(100)
-    expect(updatedReport?.riskLabel).toMatch(/Low Risk|Medium Risk|High Risk/)
+    expect(updatedReport?.riskLabel).toMatch(/Low|Moderate|Elevated|High/)
     expect(updatedReport?.riskNarrative).toBe('• Bullet 1\n• Bullet 2\n• Bullet 3')
 
     // Verify OpenAI was called

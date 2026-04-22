@@ -37,7 +37,7 @@ describe('Transactional Emails', () => {
       'Test Organization',
       TestUtils.generateUniqueSlug('test-org')
     )
-  })
+  }, 30000)
 
   afterEach(async () => {
     if (testUser) {

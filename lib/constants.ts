@@ -13,6 +13,11 @@ export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || ''
 export const DEFAULT_COLOR_SCHEME = `theme-green` as string
 export const DEFAULT_THEME_MODE = `dark` as string
 
+// ✅ EMAIL BRANDING
+export const EMAIL_BUTTON_BG = `#22c55e` as string
+export const EMAIL_BUTTON_TEXT = `#ffffff` as string
+export const EMAIL_LOGO_URL = `https://zasonncpchlminlwpqwn.supabase.co/storage/v1/object/public/assets/autovinscout-logo-dark-01.png` as string
+
 // ✅ LOCALE
 export const LOCALE = `en_US`
 export const DEFAULT_CURRENCY = `USD`

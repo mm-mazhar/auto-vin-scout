@@ -1,0 +1,100 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  <title>Confirm your email</title>
+  <style type="text/css">
+    /* Simple hover effect for clients that support it */
+    .button:hover { background-color: #312e81 !important; }
+  </style>
+</head>
+<body style="margin: 0; padding: 0; width: 100%; background-color: #f8fafc; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+  <table width="100%" border="0" cellpadding="0" cellspacing="0" style="background-color: #f8fafc; padding: 40px 10px;">
+    <tr>
+      <td align="center">
+        <!-- Main Email Container -->
+        <table width="100%" border="0" cellpadding="0" cellspacing="0" style="max-width: 500px; background-color: #ffffff; border-radius: 12px; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);">
+          
+          <!-- Logo Section -->
+        <tr>
+          <td align="center" style="padding: 40px 0 30px 0;">
+            <!-- Nested table to hold Logo + Text in one row -->
+            <table border="0" cellpadding="0" cellspacing="0">
+              <tr>
+                <!-- The Logo -->
+                <td style="vertical-align: middle; padding-right: 12px;">
+                  <img 
+                    src="{{ .SiteURL }}/autovinscout-logo-dark-01.png"
+                    {% comment %} or use uploaded logo in supabse -> assests (public folder) {% endcomment %}
+                    {% comment %} src="https://zasonncpchlminlwpqwn.supabase.co/storage/v1/object/public/assets/autovinscout-logo-dark-01.png" {% endcomment %}
+                    alt="Logo" 
+                    alt="Logo" 
+                    width="40" 
+                    style="display: block; border: none; outline: none; text-decoration: none;" 
+                  />
+                </td>
+                <!-- The Text Title -->
+                <td style="vertical-align: middle;">
+                  <h3 style="margin: 0; color: #0f172a; font-size: 24px; font-weight: 800; font-family: 'Segoe UI', Helvetica, Arial, sans-serif; letter-spacing: -0.5px;">
+                    Auto VIN Scout
+                  </h3>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+          <!-- Text Content Section -->
+          <tr>
+            <td style="padding: 0 40px;">
+              <h1 style="color: #0f172a; font-size: 24px; font-weight: 700; margin: 0 0 16px 0; text-align: center;">Welcome!</h1>
+              
+              <p style="color: #475569; font-size: 16px; line-height: 26px; margin: 0 0 32px 0; text-align: center;">
+                Thanks for joining us. We're excited to have you here! Please confirm your email address to unlock full access to your dashboard.
+              </p>
+
+              <!-- CTA Button Section -->
+              <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                <tr>
+                  <td align="center" style="padding-bottom: 40px;">
+                    <a href="{{ .SiteURL }}/auth/callback?token_hash={{ .TokenHash }}&type=signup&next=/dashboard" 
+                       style="background-color: #4f46e5; color: #ffffff; padding: 14px 30px; border-radius: 8px; text-decoration: none; font-weight: 600; display: inline-block; font-size: 16px;">
+                      Confirm Email Address
+                    </a>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Footer Section -->
+          <tr>
+            <td style="background-color: #f1f5f9; padding: 24px; text-align: center;">
+              <p style="color: #64748b; font-size: 13px; margin: 0 0 8px 0;">
+                If you didn't create an account, you can safely ignore this email.
+              </p>
+              <p style="color: #94a3b8; font-size: 12px; margin: 0;">
+                &copy; {{ .SiteURL }}
+              </p>
+            </td>
+          </tr>
+        </table>
+        
+        <!-- Bottom link for users who can't see the button -->
+        <table width="100%" border="0" cellpadding="0" cellspacing="0" style="max-width: 500px;">
+          <tr>
+            <td align="center" style="padding-top: 20px;">
+              <p style="color: #94a3b8; font-size: 11px;">
+                Button not working? Copy this link: <br/>
+                <span style="color: #6366f1;">{{ .SiteURL }}/auth/callback?token_hash={{ .TokenHash }}&type=signup&next=/dashboard</span>
+              </p>
+            </td>
+          </tr>
+        </table>
+
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

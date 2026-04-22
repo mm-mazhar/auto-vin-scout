@@ -1,9 +1,6 @@
 // app/lib/email.ts
 
-import { SITE_LOGO_PATH } from '@/app/(marketing)/_components/Sitelogo'
-import { APP_EMAIL, ENABLE_EMAILS, INVITE_EXPIRATION_MS, NEXT_PUBLIC_SITE_NAME } from '@/lib/constants'
-import fs from 'node:fs'
-import path from 'node:path'
+import { APP_EMAIL, EMAIL_BUTTON_BG, EMAIL_BUTTON_TEXT, EMAIL_LOGO_URL, ENABLE_EMAILS, INVITE_EXPIRATION_MS, NEXT_PUBLIC_SITE_NAME } from '@/lib/constants'
 import { Resend, type CreateEmailOptions } from 'resend'
 
 const resend = new Resend(process.env.RESEND_API_KEY as string)
@@ -24,30 +21,7 @@ function getBaseUrl() {
 function getEmailContext(fromOverride?: string) {
   const fromAddress = fromOverride ?? (process.env.RESEND_FROM || APP_EMAIL)
   const origin = getBaseUrl()
-  
-  const isLocal = process.env.NODE_ENV === 'development'
-  let logoUrl = ''
-  
-  if (origin) {
-    try {
-      logoUrl = new URL(SITE_LOGO_PATH, origin).href
-    } catch (error) {
-      console.error('Failed to construct logo URL:', error, { SITE_LOGO_PATH, origin })
-      logoUrl = ''
-    }
-  }
-  
-  if (isLocal && logoUrl) {
-    try {
-      const filePath = path.join(process.cwd(), 'public', SITE_LOGO_PATH.replace(/^\//, ''))
-      const buf = fs.readFileSync(filePath)
-      logoUrl = `data:image/png;base64,${buf.toString('base64')}`
-    } catch {
-      // Keep the URL-based logo if file reading fails
-    }
-  }
-
-  return { fromAddress, origin, logoUrl }
+  return { fromAddress, origin }
 }
 
 function formatCurrency(amountInSmallestUnit: number, currency: string) {
@@ -61,11 +35,15 @@ function formatCurrency(amountInSmallestUnit: number, currency: string) {
   }
 }
 
-function getHeaderHtml(ctx: { logoUrl: string }) {
+function getHeaderHtml() {
   return `
-    <div style="display:flex;align-items:center;gap:12px;padding:16px 20px;border-bottom:1px solid #eaeaea">
-      ${ctx.logoUrl ? `<img src="${ctx.logoUrl}" width="40" height="40" alt="" style="border-radius:8px;display:block;object-fit:contain"/>` : ''}
-      <div style="font-size:18px;font-weight:700;color:#000">${NEXT_PUBLIC_SITE_NAME}</div>
+    <div style="padding:16px 20px;border-bottom:1px solid #eaeaea">
+      <table cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
+        <tr>
+          ${EMAIL_LOGO_URL ? `<td style="vertical-align:middle;padding-right:10px;"><img src="${EMAIL_LOGO_URL}" width="36" height="36" alt="${NEXT_PUBLIC_SITE_NAME}" style="display:block;border-radius:6px;object-fit:contain;"/></td>` : ''}
+          <td style="vertical-align:middle;padding-top:4px;"><span style="font-size:18px;font-weight:700;color:#000;line-height:1;">${NEXT_PUBLIC_SITE_NAME}</span></td>
+        </tr>
+      </table>
     </div>
   `
 }
@@ -79,10 +57,11 @@ function getFooterHtml(ctx: { origin: string }) {
   `
 }
 
-// ✅ FIXED: Enforced Blue color (#2563eb) for all buttons
 function getButtonHtml(label: string, url: string) {
   return `
-    <a href="${url}" target="_blank" style="display:inline-block;background-color:#2563eb;color:#ffffff;font-weight:600;text-decoration:none;padding:12px 24px;border-radius:6px;font-size:14px;margin-top:16px;text-align:center;">${label}</a>
+    <div style="text-align:center;margin-top:16px;">
+      <a href="${url}" target="_blank" style="display:inline-block;background-color:${EMAIL_BUTTON_BG};color:${EMAIL_BUTTON_TEXT};font-weight:600;text-decoration:none;padding:12px 24px;border-radius:6px;font-size:14px;text-align:center;">${label}</a>
+    </div>
   `
 }
 
@@ -138,7 +117,7 @@ export async function sendPaymentConfirmationEmail(params: PaymentEmailParams) {
   const html = `
   <div style="background:#f6f9fc;padding:24px;font-family:sans-serif;">
     <div style="max-width:600px;margin:0 auto;background:#ffffff;border:1px solid #eaeaea;border-radius:10px;overflow:hidden;">
-      ${getHeaderHtml(ctx)}
+      ${getHeaderHtml()}
       <div style="padding:24px 20px;color:#374151;line-height:1.5">
         <p style="margin:0 0 16px 0">Dear ${displayName},</p>
         <p style="margin:0 0 24px 0">Thank you for your payment for <strong>${params.planTitle || NEXT_PUBLIC_SITE_NAME}</strong>${orgLabel}.</p>
@@ -169,9 +148,9 @@ export async function sendPaymentConfirmationEmail(params: PaymentEmailParams) {
           You can view your invoice or manage your subscription below:
         </div>
 
-        <div style="display:flex;gap:12px;flex-wrap:wrap">
-          <a href="${invoiceUrl}" target="_blank" style="display:inline-block;background-color:#2563eb;color:#ffffff;font-weight:600;text-decoration:none;padding:12px 24px;border-radius:6px;font-size:14px;margin-top:16px;text-align:center;margin-right:12px">View Invoice</a>
-          <a href="${billingUrl}" target="_blank" style="display:inline-block;background-color:#2563eb;color:#ffffff;font-weight:600;text-decoration:none;padding:12px 24px;border-radius:6px;font-size:14px;margin-top:16px;text-align:center;">Manage Subscription</a>
+        <div style="text-align:center;margin-top:16px;">
+          <a href="${invoiceUrl}" target="_blank" style="display:inline-block;background-color:${EMAIL_BUTTON_BG};color:${EMAIL_BUTTON_TEXT};font-weight:600;text-decoration:none;padding:12px 24px;border-radius:6px;font-size:14px;text-align:center;margin-right:12px">View Invoice</a>
+          <a href="${billingUrl}" target="_blank" style="display:inline-block;background-color:${EMAIL_BUTTON_BG};color:${EMAIL_BUTTON_TEXT};font-weight:600;text-decoration:none;padding:12px 24px;border-radius:6px;font-size:14px;text-align:center;">Manage Subscription</a>
         </div>
       </div>
       ${getFooterHtml(ctx)}
@@ -243,7 +222,7 @@ export async function sendCancellationEmail(params: CancellationParams) {
   const html = `
   <div style="background:#f6f9fc;padding:24px;font-family:sans-serif;">
     <div style="max-width:600px;margin:0 auto;background:#ffffff;border:1px solid #eaeaea;border-radius:10px;overflow:hidden;">
-      ${getHeaderHtml(ctx)}
+      ${getHeaderHtml()}
       <div style="padding:24px 20px;color:#374151;line-height:1.5">
         <p style="margin:0 0 16px 0">Dear ${displayName},</p>
         <p style="margin:0 0 24px 0">${headline}</p>
@@ -290,7 +269,7 @@ export async function sendRenewalReminderEmail(params: RenewalReminderParams) {
   const html = `
   <div style="background:#f6f9fc;padding:24px;font-family:sans-serif;">
     <div style="max-width:600px;margin:0 auto;background:#ffffff;border:1px solid #eaeaea;border-radius:10px;overflow:hidden;">
-      ${getHeaderHtml(ctx)}
+      ${getHeaderHtml()}
       <div style="padding:24px 20px;color:#374151;line-height:1.5">
         <p style="margin:0 0 16px 0">Dear ${displayName},</p>
         <p>Your subscription for <strong>${params.planTitle}</strong>${orgLabel} will renew on <strong>${periodText}</strong>.</p>
@@ -338,7 +317,7 @@ export async function sendLowCreditsEmail(params: LowCreditsEmailParams) {
   const html = `
   <div style="background:#f6f9fc;padding:24px;font-family:sans-serif;">
     <div style="max-width:600px;margin:0 auto;background:#ffffff;border:1px solid #eaeaea;border-radius:10px;overflow:hidden;">
-      ${getHeaderHtml(ctx)}
+      ${getHeaderHtml()}
       <div style="padding:24px 20px;color:#374151;line-height:1.5">
         <p style="margin:0 0 8px 0">Dear ${displayName},</p>
         <p style="margin:0 0 12px 0">Your credits${orgLabel} are running low.</p>
@@ -388,7 +367,7 @@ export async function sendInviteEmail(params: InviteEmailParams) {
   const html = `
   <div style="background:#f6f9fc;padding:24px;font-family:sans-serif;">
     <div style="max-width:600px;margin:0 auto;background:#ffffff;border:1px solid #eaeaea;border-radius:10px;overflow:hidden;">
-      ${getHeaderHtml(ctx)}
+      ${getHeaderHtml()}
       <div style="padding:24px 20px;color:#374151;line-height:1.5">
         <p style="margin:0 0 12px 0">You have been invited to join <strong>${params.organizationName || 'an organization'}</strong>.</p>
         ${inviterLine}
@@ -404,7 +383,7 @@ export async function sendInviteEmail(params: InviteEmailParams) {
         
         <div style="margin-top:24px;padding-top:24px;border-top:1px solid #f3f4f6;font-size:12px;color:#6b7280;word-break:break-all">
           If the button doesn't work, copy and paste this link into your browser:<br/>
-          <a href="${params.inviteLink}" style="color:#2563eb;text-decoration:none">${params.inviteLink}</a>
+          <a href="${params.inviteLink}" style="color:${EMAIL_BUTTON_BG};text-decoration:none">${params.inviteLink}</a>
         </div>
       </div>
       ${getFooterHtml(ctx)}
