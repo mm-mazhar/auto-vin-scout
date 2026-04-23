@@ -55,7 +55,10 @@ describe('Primary Org Bootstrap Slug', () => {
 
     const slug = primary!.slug
     const id8 = uniqueId.substring(0, 8)
-    const pattern = new RegExp(`^default-organization-${id8}-\\d{13}$`)
+    // Slug is now derived from the email prefix (part before @), slugified and truncated to 16 chars
+    const emailPrefix = email.split('@')[0]
+    const slugBase = emailPrefix.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 16)
+    const pattern = new RegExp(`^${slugBase}-${id8}-\\d{13}$`)
 
     expect(pattern.test(slug)).toBe(true)
   })

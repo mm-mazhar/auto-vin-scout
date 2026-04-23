@@ -43,9 +43,9 @@ export function FirstRunRenameOrgDialog({ open, orgId, currentName, currentSlug 
   )
 
   const prefix = slugifyPrefix(name)
-  const suffix = currentSlug.startsWith('default-organization-')
-    ? currentSlug.slice('default-organization-'.length)
-    : ''
+  // The slug suffix is always the last two segments: {userId8}-{timestamp}
+  const slugParts = currentSlug.split('-')
+  const suffix = slugParts.length >= 2 ? slugParts.slice(-2).join('-') : ''
   const previewSlug = prefix && suffix ? `${prefix}-${suffix}` : currentSlug
 
   const disabled = !prefix || isPending

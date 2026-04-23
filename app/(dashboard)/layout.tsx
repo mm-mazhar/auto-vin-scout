@@ -61,11 +61,13 @@ async function DashboardGroupLayout({ children }: { children: ReactNode }) {
   
   // Only attempt to create default organization if the user exists in DB (has createdAt)
   if (organizations.length === 0 && userRow?.createdAt) {
-    const defaultOrgName = 'Default Organization'
+    const rawEmailPrefix = user.email?.split('@')[0] ?? ''
+    const orgPrefix = rawEmailPrefix.slice(0, 16)
+    const projectPrefix = rawEmailPrefix.slice(0, 12)
+    const defaultOrgName = orgPrefix ? `Org ${orgPrefix}` : 'Default Organization'
+    const defaultProjectName = projectPrefix ? `Project ${projectPrefix}` : 'Default Project'
     try {
-      // Use oRPC to create the organization
       const newOrg = await rpc.org.create({ name: defaultOrgName })
-      const defaultProjectName = 'Default Project'
       await ProjectService.createProject(
         user.id,
         newOrg.id,
@@ -168,13 +170,6 @@ async function DashboardGroupLayout({ children }: { children: ReactNode }) {
     role: currentOrganization.members[0]?.role || 'MEMBER'
   } : null
 
-  const requireFirstRunRename =
-    Boolean(currentOrganization?.isPrimary) &&
-    typeof currentOrganization?.slug === 'string' &&
-    currentOrganization.slug.startsWith('default-organization-')
-
-  const { FirstRunRenameOrgDialog } = await import('./_components/first-run-rename-org-dialog')
-
   return (
     <QueryProvider>
       <ToastProvider>
@@ -183,14 +178,6 @@ async function DashboardGroupLayout({ children }: { children: ReactNode }) {
           style={{ '--sidebar-width-icon': '3.25rem' } as CSSProperties}
         >
           <div className="flex min-h-screen w-full bg-background">
-            {requireFirstRunRename && mappedCurrentOrg && (
-              <FirstRunRenameOrgDialog
-                open={true}
-                orgId={mappedCurrentOrg.id}
-                currentName={mappedCurrentOrg.name}
-                currentSlug={mappedCurrentOrg.slug}
-              />
-            )}
           <ClientAppSidebar
           user={{
             name:

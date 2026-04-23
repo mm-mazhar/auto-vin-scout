@@ -137,6 +137,19 @@ export async function getData(userData?: UserData | string): Promise<DbUser | nu
 
     {
       const fullName = `${userData.firstName} ${userData.lastName}`.trim()
+      const rawEmailPrefix = userData.email?.split('@')[0] ?? ''
+      // VarChar(20): "Org " = 4 chars → max 16 for prefix; "Project " = 8 chars → max 12 for prefix
+      const orgPrefix = rawEmailPrefix.slice(0, 16)
+      const projectPrefix = rawEmailPrefix.slice(0, 12)
+      const defaultOrgName = orgPrefix ? `Org ${orgPrefix}` : 'Default Organization'
+      const defaultProjectName = projectPrefix ? `Project ${projectPrefix}` : 'Default Project'
+      const orgSlugBase = orgPrefix
+        ? orgPrefix.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+        : 'default-organization'
+      const projectSlugBase = projectPrefix
+        ? projectPrefix.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+        : 'default-project'
+      const idSuffix = `${userData.id.substring(0, 8)}-${Date.now()}`
       try {
         const created = await prisma.user.create({
           data: {
@@ -145,19 +158,18 @@ export async function getData(userData?: UserData | string): Promise<DbUser | nu
             name: fullName || null,
             colorScheme: DEFAULT_COLOR_SCHEME,
             themePreference: DEFAULT_THEME_MODE,
-            // Create default Personal Organization and Project
             memberships: {
               create: {
                 role: 'OWNER',
                 organization: {
                   create: {
-                    name: 'Default Organization',
-                    slug: `default-organization-${userData.id.substring(0, 8)}-${Date.now()}`,
+                    name: defaultOrgName,
+                    slug: `${orgSlugBase}-${idSuffix}`,
                     isPrimary: true,
                     projects: {
                       create: {
-                        name: 'Default Project',
-                        slug: `default-project-${userData.id.substring(0, 8)}-${Date.now()}`,
+                        name: defaultProjectName,
+                        slug: `${projectSlugBase}-${idSuffix}`,
                       },
                     },
                   },

@@ -46,7 +46,10 @@ export default async function DashboardPage() {
   // Use ProjectService directly to fetch projects for the effective organization.
   // This avoids issues where the RPC context might be using a stale cookie (e.g. pointing to a deleted org).
   const { ProjectService } = await import('@/lib/services/project-service')
-  const projects = await ProjectService.getOrganizationProjects(user.id, effectiveOrgId) as { id: string; name: string; slug: string; updatedAt: Date }[]
+  const projects = await ProjectService.getOrganizationProjects(user.id, effectiveOrgId) as { id: string; name: string; slug: string; updatedAt: Date; createdAt: Date; organizationId: string }[]
+
+  const { getActiveProjectId } = await import('@/lib/project-helper')
+  const activeProjectId = await getActiveProjectId(projects)
 
   return (
     <div className='flex flex-1 flex-col gap-4 p-4 pt-0'>
@@ -71,7 +74,10 @@ export default async function DashboardPage() {
       ) : (
         <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-3'>
           {projects.map((project: { id: string; name: string; slug: string; updatedAt: Date }) => (
-            <Card key={project.id} className='hover:bg-muted/50 transition-colors'>
+            <Card key={project.id} className='relative hover:bg-muted/50 transition-colors'>
+              {project.id === activeProjectId && (
+                <div className='absolute top-3 right-3 size-2 rounded-full bg-primary' />
+              )}
               <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
                 <CardTitle className='text-sm font-medium'>
                   {project.name}
