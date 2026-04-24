@@ -63,20 +63,16 @@ describe('ReportPage Data Integration Tests (Task 13.3)', () => {
   })
 
   afterEach(async () => {
-    // Clean up in reverse order of creation
-    // First delete all reports and vehicles to avoid foreign key constraints
-    await testDb.report.deleteMany({
-      where: { organizationId: testOrg.id },
-    })
+    await testDb.report.deleteMany({ where: { organizationId: testOrg.id } })
     await testDb.vehicle.deleteMany({})
-    await testDb.project.deleteMany({
-      where: { id: testProject.id },
-    })
-    await TestUtils.cleanupOrganization(testOrg.id)
-    await TestUtils.cleanupUser(testUser.id)
+    await testDb.project.deleteMany({ where: { organizationId: testOrg.id } })
+    await testDb.organizationInvite.deleteMany({ where: { organizationId: testOrg.id } })
+    await testDb.organizationMember.deleteMany({ where: { organizationId: testOrg.id } })
+    await testDb.organization.delete({ where: { id: testOrg.id } })
+    await testDb.user.delete({ where: { id: testUser.id } })
 
     vi.restoreAllMocks()
-  })
+  }, 30000)
 
   it('should fetch and structure vehicle information correctly for ReportPage', async () => {
     // #given - A vehicle and completed report with vehicle data
