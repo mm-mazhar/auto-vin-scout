@@ -6,6 +6,7 @@ import { userRouter } from './routers/user'
 import { adminRouter } from './routers/admin'
 import { billingRouter } from './routers/billing'
 import { vinRouter } from './routers/vin'
+import { dashboardRouter } from './routers/dashboard'
 
 /**
  * Root application router
@@ -19,6 +20,7 @@ export const appRouter = {
   admin: adminRouter,
   billing: billingRouter,
   vin: vinRouter,
+  dashboard: dashboardRouter,
 }
 
 /**

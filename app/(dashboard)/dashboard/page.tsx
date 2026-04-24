@@ -1,22 +1,42 @@
 // app/(dashboard)/dashboard/page.tsx
 
-import { CreateProjectDialog } from '@/app/(dashboard)/_components/create-project-dialog'
-import { ProjectActions } from '@/app/(dashboard)/_components/project-actions'
+import { KpiCards } from '@/components/dashboard/KpiCards'
+import { RecentReportsTable } from '@/components/dashboard/RecentReportsTable'
+import { ReportsAreaChart } from '@/components/dashboard/ReportsAreaChart'
+import { ReportsByProjectDonut } from '@/components/dashboard/ReportsByProjectDonut'
+import { Card, CardContent } from '@/components/ui/card'
+import { getActiveProjectId } from '@/lib/project-helper'
+import { getRPCCaller, getRPCCallerForOrg } from '@/lib/orpc/rsc-client'
 import { createClient } from '@/app/lib/supabase/server'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { getRPCCaller } from '@/lib/orpc/rsc-client'
-import { Folder } from 'lucide-react'
-import { unstable_noStore as noStore } from 'next/cache'
+import { ProjectService } from '@/lib/services/project-service'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
+import type {
+  DashboardStats,
+  DailyReportCount,
+  ProjectReportCount,
+  RecentReport,
+} from '@/lib/orpc/routers/dashboard'
+import type { OrganizationRole } from '@/lib/constants'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
+function SectionError({ label }: { label: string }) {
+  return (
+    <Card>
+      <CardContent className='flex items-center justify-center h-32 text-sm text-muted-foreground'>
+        Failed to load {label}. Refresh to retry.
+      </CardContent>
+    </Card>
+  )
+}
+
 export default async function DashboardPage() {
-  noStore()
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
 
   if (!user) {
     return redirect('/get-started')
@@ -24,16 +44,19 @@ export default async function DashboardPage() {
 
   const rpc = await getRPCCaller()
 
+  // Resolve effective org from cookie + membership validation
   const cookieStore = await cookies()
   const currentOrgId = cookieStore.get('current-org-id')?.value
-  const organizations = await rpc.org.list() as { id: string; members: { role: string }[] }[]
-  
-  // Validate that the user is actually a member of the organization in the cookie
-  const isMember = currentOrgId && organizations.some((org: { id: string }) => org.id === currentOrgId)
-  const effectiveOrgId = isMember ? currentOrgId : (organizations[0]?.id ?? null)
+  const organizations = (await rpc.org.list()) as {
+    id: string
+    members: { role: string }[]
+  }[]
 
-  const effectiveOrg = effectiveOrgId ? organizations.find((o: { id: string }) => o.id === effectiveOrgId) : null
-  const userRole = effectiveOrg?.members[0]?.role
+  const isMember =
+    currentOrgId && organizations.some((org) => org.id === currentOrgId)
+  const effectiveOrgId = isMember
+    ? currentOrgId
+    : (organizations[0]?.id ?? null)
 
   if (!effectiveOrgId) {
     return (
@@ -43,59 +66,86 @@ export default async function DashboardPage() {
     )
   }
 
-  // Use ProjectService directly to fetch projects for the effective organization.
-  // This avoids issues where the RPC context might be using a stale cookie (e.g. pointing to a deleted org).
-  const { ProjectService } = await import('@/lib/services/project-service')
-  const projects = await ProjectService.getOrganizationProjects(user.id, effectiveOrgId) as { id: string; name: string; slug: string; updatedAt: Date; createdAt: Date; organizationId: string }[]
+  const effectiveOrg = organizations.find((o) => o.id === effectiveOrgId)
+  const userRole = (effectiveOrg?.members[0]?.role ?? 'MEMBER') as OrganizationRole
 
-  const { getActiveProjectId } = await import('@/lib/project-helper')
+  // Build a caller pinned to the resolved org — avoids cookie mismatch
+  // where createContext() might resolve a different orgId than effectiveOrgId
+  const orgRpc = getRPCCallerForOrg(user, effectiveOrgId, userRole)
+
+  // Fetch projects (needed for activeProjectId + donut chart)
+  const projects = (await ProjectService.getOrganizationProjects(
+    user.id,
+    effectiveOrgId
+  )) as { id: string; name: string; slug: string; updatedAt: Date; createdAt: Date; organizationId: string }[]
+
   const activeProjectId = await getActiveProjectId(projects)
 
+  // Fetch all dashboard data in parallel — each section has its own fallback
+  let stats: DashboardStats | null = null
+  let reportsOverTime: DailyReportCount[] = []
+  let reportsByProject: ProjectReportCount[] = []
+  let recentReports: RecentReport[] = []
+
+  let statsError = false
+  let chartError = false
+  let donutError = false
+  let tableError = false
+
+  await Promise.allSettled([
+    orgRpc.dashboard.stats().then((d: DashboardStats) => { stats = d }).catch(() => { statsError = true }),
+    orgRpc.dashboard.reportsOverTime({ days: 90 }).then((d: DailyReportCount[]) => { reportsOverTime = d }).catch(() => { chartError = true }),
+    orgRpc.dashboard.reportsByProject().then((d: ProjectReportCount[]) => { reportsByProject = d }).catch(() => { donutError = true }),
+    orgRpc.dashboard.recentReports().then((d: RecentReport[]) => { recentReports = d }).catch(() => { tableError = true }),
+  ])
+
   return (
-    <div className='flex flex-1 flex-col gap-4 p-4 pt-0'>
-      <div className='flex items-center justify-between'>
-        <h2 className='text-2xl font-bold tracking-tight'>Projects</h2>
-        <div>
-          <CreateProjectDialog orgId={effectiveOrgId} />
-        </div>
+    <div className='flex flex-1 flex-col gap-6 p-4 pt-0'>
+      {/* Row 1 — KPI Cards */}
+      {(statsError || !stats) ? (
+        <SectionError label='KPI stats' />
+      ) : (
+        <KpiCards
+          totalReports={(stats as DashboardStats).totalReports}
+          creditsRemaining={(stats as DashboardStats).creditsRemaining}
+          creditsTotal={(stats as DashboardStats).creditsTotal}
+          reportsThisMonth={(stats as DashboardStats).reportsThisMonth}
+          activeProjects={(stats as DashboardStats).activeProjects}
+          planId={(stats as DashboardStats).planId}
+        />
+      )}
+
+      {/* Row 2 — Charts */}
+      <div className='grid grid-cols-1 lg:grid-cols-5 gap-4'>
+        {chartError ? (
+          <div className='col-span-3'>
+            <SectionError label='reports chart' />
+          </div>
+        ) : (
+          <ReportsAreaChart data={reportsOverTime} />
+        )}
+
+        {donutError ? (
+          <div className='col-span-2'>
+            <SectionError label='project distribution' />
+          </div>
+        ) : (
+          <ReportsByProjectDonut
+            data={reportsByProject}
+            orgId={effectiveOrgId}
+            userRole={userRole}
+          />
+        )}
       </div>
 
-      {projects.length === 0 ? (
-        <div className='flex min-h-[400px] flex-col items-center justify-center rounded-md border border-dashed p-8 text-center animate-in fade-in-50'>
-          <div className='mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-accent'>
-            <Folder className='h-6 w-6 text-foreground' />
-          </div>
-          <h3 className='mt-4 text-lg font-semibold'>No projects yet</h3>
-          <p className='mb-4 mt-2 text-sm text-muted-foreground max-w-sm'>
-            Create your first project to start building.
-          </p>
-          <CreateProjectDialog orgId={effectiveOrgId} />
-        </div>
-      ) : (
-        <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-3'>
-          {projects.map((project: { id: string; name: string; slug: string; updatedAt: Date }) => (
-            <Card key={project.id} className='relative hover:bg-muted/50 transition-colors'>
-              {project.id === activeProjectId && (
-                <div className='absolute top-3 right-3 size-2 rounded-full bg-primary' />
-              )}
-              <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-                <CardTitle className='text-sm font-medium'>
-                  {project.name}
-                </CardTitle>
-                <ProjectActions projectId={project.id} defaultName={project.name} userRole={userRole} />
-              </CardHeader>
-              <CardContent>
-                <div className='text-xs text-muted-foreground'>
-                  slug: {project.slug}
-                </div>
-                <p className='text-xs text-muted-foreground'>
-                  Updated {new Date(project.updatedAt).toLocaleDateString()}
-                </p>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      )}
+      {/* Row 3 — Recent Reports (full width) */}
+      <div className='grid grid-cols-1 gap-4'>
+        {tableError ? (
+          <SectionError label='recent reports' />
+        ) : (
+          <RecentReportsTable reports={recentReports} />
+        )}
+      </div>
     </div>
   )
 }

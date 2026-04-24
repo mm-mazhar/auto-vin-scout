@@ -86,6 +86,7 @@ export function AppSidebar({
             projects={projects || []}
             activeProjectId={activeProjectId}
             orgId={currentOrganization.id}
+            userRole={currentOrganization.role}
           />
         )}
       </SidebarHeader>

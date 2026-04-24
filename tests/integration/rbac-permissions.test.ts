@@ -53,23 +53,26 @@ describe('RBAC (Roles & Permissions)', () => {
   }
 
   afterEach(async () => {
-    // Cleanup in reverse order of dependencies
+    // Cleanup in reverse order of dependencies — run independent deletes in parallel
     if (organizationId) {
-      await testDb.organizationInvite.deleteMany({ where: { organizationId } })
-      await testDb.project.deleteMany({ where: { organizationId } })
+      await Promise.all([
+        testDb.organizationInvite.deleteMany({ where: { organizationId } }),
+        testDb.project.deleteMany({ where: { organizationId } }),
+      ])
       await testDb.organizationMember.deleteMany({ where: { organizationId } })
       await testDb.organization.deleteMany({ where: { id: organizationId } })
     }
-    if (memberUserId) await testDb.user.deleteMany({ where: { id: memberUserId } })
-    if (adminUserId) await testDb.user.deleteMany({ where: { id: adminUserId } })
-    if (ownerUserId) await testDb.user.deleteMany({ where: { id: ownerUserId } })
-    
-    // Reset IDs
+    await Promise.all([
+      memberUserId ? testDb.user.deleteMany({ where: { id: memberUserId } }) : Promise.resolve(),
+      adminUserId ? testDb.user.deleteMany({ where: { id: adminUserId } }) : Promise.resolve(),
+      ownerUserId ? testDb.user.deleteMany({ where: { id: ownerUserId } }) : Promise.resolve(),
+    ])
+
     ownerUserId = ''
     adminUserId = ''
     memberUserId = ''
     organizationId = ''
-  })
+  }, 30000)
 
   describe('Test 2.1: Member Restrictions', () => {
     it('should correctly identify MEMBER role via getCurrentOrgContext', async () => {

@@ -55,13 +55,13 @@ describe('CRON Jobs & Automated Alerts', () => {
     } else {
       secondaryOrg = null
     }
-  }, 15000) // Increase timeout to 15 seconds
+  }, 30000)
 
   afterEach(async () => {
     if (testUser) {
       await TestUtils.cleanupUser(testUser.id)
     }
-  })
+  }, 30000)
 
   describe('Test 7.1: Low Credits Alert', () => {
     it('should send low credits email when credits are below threshold', async () => {

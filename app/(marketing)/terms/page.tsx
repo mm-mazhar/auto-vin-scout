@@ -1,15 +1,25 @@
 // app/(marketing)/terms/page.tsx
 
-'use client'
-
 import {
   MARKETING_ALIGNED_CONTAINER_WIDTH,
   MARKETING_ALIGNED_PROSE_WIDTH,
   MARKETING_CONTENT_SECTION_BOTTOM_SPACING,
   MARKETING_CONTENT_SECTION_TOP_SPACING,
   PageSection,
-} from '@/components/page-section';
-import { Badge } from '@/components/ui/badge';
+} from '@/components/page-section'
+import { Badge } from '@/components/ui/badge'
+import { APP_EMAIL, NEXT_PUBLIC_SITE_NAME } from '@/lib/constants'
+
+const EFFECTIVE_DATE = 'April 23, 2026'
+
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <section className="space-y-3">
+      <h2 className="text-base font-semibold text-foreground">{title}</h2>
+      <div className="space-y-2 text-sm text-muted-foreground leading-relaxed">{children}</div>
+    </section>
+  )
+}
 
 export default function TermsPage() {
   return (
@@ -17,305 +27,255 @@ export default function TermsPage() {
       className={`${MARKETING_CONTENT_SECTION_TOP_SPACING} ${MARKETING_CONTENT_SECTION_BOTTOM_SPACING}`}
       containerClassName={MARKETING_ALIGNED_CONTAINER_WIDTH}
     >
-      <div className='flex flex-col items-center space-y-6 px-4'>
+      <div className="flex flex-col items-center space-y-6 px-4">
         <Badge
-                  variant="outline"
-                  className="border-primary mb-4 px-3 py-1 text-xs font-medium tracking-wider uppercase"
-                >
-                  Terms
-                </Badge>
-        <h1 className='mt-3 text-3xl font-bold'>Terms and Conditions</h1>
-        <div
-          className={`mt-3 space-y-4 text-sm text-muted-foreground text-justify ${MARKETING_ALIGNED_PROSE_WIDTH}`}
+          variant="outline"
+          className="border-primary mb-4 px-3 py-1 text-xs font-medium tracking-wider uppercase"
         >
-          <p>
-            
-          Vestibulum ante ipsum primis in faucibus orci luctus et ultrices
-          posuere cubilia curae; Morbi lacinia molestie dui.
-        
-          Praesent blandit dolor. Sed non quam. In vel mi sit amet augue
-          congue elementum.
-        
-          Morbi in ipsum sit amet pede facilisis laoreet. Donec lacus nunc,
-          viverra nec, blandit vel, egestas et, augue.
-          
-          Vestibulum ante ipsum primis in faucibus orci luctus et ultrices
-          posuere cubilia curae; Morbi lacinia molestie dui.
-          Praesent blandit dolor. Sed non quam. In vel mi sit amet augue
-          congue elementum.
-        
-          Morbi in ipsum sit amet pede facilisis laoreet. Donec lacus nunc,
-          viverra nec, blandit vel, egestas et, augue.
-        
-          Vestibulum ante ipsum primis in faucibus orci luctus et ultrices
-          posuere cubilia curae; Morbi lacinia molestie dui.
-        
-          Praesent blandit dolor. Sed non quam. In vel mi sit amet augue
-          congue elementum.
-        
-          Morbi in ipsum sit amet pede facilisis laoreet. Donec lacus nunc,
-          viverra nec, blandit vel, egestas et, augue.
+          Legal
+        </Badge>
 
-          Vestibulum ante ipsum primis in faucibus orci luctus et ultrices
-          posuere cubilia curae; Morbi lacinia molestie dui.
-        
-          Praesent blandit dolor. Sed non quam. In vel mi sit amet augue
-          congue elementum.
-        
-          Morbi in ipsum sit amet pede facilisis laoreet. Donec lacus nunc,
-          viverra nec, blandit vel, egestas et, augue.
-          
-          Vestibulum ante ipsum primis in faucibus orci luctus et ultrices
-          posuere cubilia curae; Morbi lacinia molestie dui.
-          Praesent blandit dolor. Sed non quam. In vel mi sit amet augue
-          congue elementum.
-        
-          Morbi in ipsum sit amet pede facilisis laoreet. Donec lacus nunc,
-          viverra nec, blandit vel, egestas et, augue.
-        
-          Vestibulum ante ipsum primis in faucibus orci luctus et ultrices
-          posuere cubilia curae; Morbi lacinia molestie dui.
-        
-          Praesent blandit dolor. Sed non quam. In vel mi sit amet augue
-          congue elementum.
-        
-          Morbi in ipsum sit amet pede facilisis laoreet. Donec lacus nunc,
-          viverra nec, blandit vel, egestas et, augue.
+        <div className={`space-y-2 text-center ${MARKETING_ALIGNED_PROSE_WIDTH}`}>
+          <h1 className="text-3xl font-bold">Terms of Service</h1>
+          <p className="text-xs text-muted-foreground">Effective date: {EFFECTIVE_DATE}</p>
+        </div>
 
-          Vestibulum ante ipsum primis in faucibus orci luctus et ultrices
-          posuere cubilia curae; Morbi lacinia molestie dui.
-        
-          Praesent blandit dolor. Sed non quam. In vel mi sit amet augue
-          congue elementum.
-        
-          Morbi in ipsum sit amet pede facilisis laoreet. Donec lacus nunc,
-          viverra nec, blandit vel, egestas et, augue.
-          
-          Vestibulum ante ipsum primis in faucibus orci luctus et ultrices
-          posuere cubilia curae; Morbi lacinia molestie dui.
-          Praesent blandit dolor. Sed non quam. In vel mi sit amet augue
-          congue elementum.
-        
-          Morbi in ipsum sit amet pede facilisis laoreet. Donec lacus nunc,
-          viverra nec, blandit vel, egestas et, augue.
-        
-          Vestibulum ante ipsum primis in faucibus orci luctus et ultrices
-          posuere cubilia curae; Morbi lacinia molestie dui.
-        
-          Praesent blandit dolor. Sed non quam. In vel mi sit amet augue
-          congue elementum.
-        
-          Morbi in ipsum sit amet pede facilisis laoreet. Donec lacus nunc,
-          viverra nec, blandit vel, egestas et, augue.
-
-          Vestibulum ante ipsum primis in faucibus orci luctus et ultrices
-          posuere cubilia curae; Morbi lacinia molestie dui.
-        
-          Praesent blandit dolor. Sed non quam. In vel mi sit amet augue
-          congue elementum.
-        
-          Morbi in ipsum sit amet pede facilisis laoreet. Donec lacus nunc,
-          viverra nec, blandit vel, egestas et, augue.
-          
-          Vestibulum ante ipsum primis in faucibus orci luctus et ultrices
-          posuere cubilia curae; Morbi lacinia molestie dui.
-          Praesent blandit dolor. Sed non quam. In vel mi sit amet augue
-          congue elementum.
-        
-          Morbi in ipsum sit amet pede facilisis laoreet. Donec lacus nunc,
-          viverra nec, blandit vel, egestas et, augue.
-        
-          Vestibulum ante ipsum primis in faucibus orci luctus et ultrices
-          posuere cubilia curae; Morbi lacinia molestie dui.
-        
-          Praesent blandit dolor. Sed non quam. In vel mi sit amet augue
-          congue elementum.
-        
-          Morbi in ipsum sit amet pede facilisis laoreet. Donec lacus nunc,
-          viverra nec, blandit vel, egestas et, augue.
-
-          Vestibulum ante ipsum primis in faucibus orci luctus et ultrices
-          posuere cubilia curae; Morbi lacinia molestie dui.
-        
-          Praesent blandit dolor. Sed non quam. In vel mi sit amet augue
-          congue elementum.
-        
-          Morbi in ipsum sit amet pede facilisis laoreet. Donec lacus nunc,
-          viverra nec, blandit vel, egestas et, augue.
-          
-          Vestibulum ante ipsum primis in faucibus orci luctus et ultrices
-          posuere cubilia curae; Morbi lacinia molestie dui.
-          Praesent blandit dolor. Sed non quam. In vel mi sit amet augue
-          congue elementum.
-        
-          Morbi in ipsum sit amet pede facilisis laoreet. Donec lacus nunc,
-          viverra nec, blandit vel, egestas et, augue.
-        
-          Vestibulum ante ipsum primis in faucibus orci luctus et ultrices
-          posuere cubilia curae; Morbi lacinia molestie dui.
-        
-          Praesent blandit dolor. Sed non quam. In vel mi sit amet augue
-          congue elementum.
-        
-          Morbi in ipsum sit amet pede facilisis laoreet. Donec lacus nunc,
-          viverra nec, blandit vel, egestas et, augue.
-
-          Vestibulum ante ipsum primis in faucibus orci luctus et ultrices
-          posuere cubilia curae; Morbi lacinia molestie dui.
-        
-          Praesent blandit dolor. Sed non quam. In vel mi sit amet augue
-          congue elementum.
-        
-          Morbi in ipsum sit amet pede facilisis laoreet. Donec lacus nunc,
-          viverra nec, blandit vel, egestas et, augue.
-          
-          Vestibulum ante ipsum primis in faucibus orci luctus et ultrices
-          posuere cubilia curae; Morbi lacinia molestie dui.
-          Praesent blandit dolor. Sed non quam. In vel mi sit amet augue
-          congue elementum.
-        
-          Morbi in ipsum sit amet pede facilisis laoreet. Donec lacus nunc,
-          viverra nec, blandit vel, egestas et, augue.
-        
-          Vestibulum ante ipsum primis in faucibus orci luctus et ultrices
-          posuere cubilia curae; Morbi lacinia molestie dui.
-        
-          Praesent blandit dolor. Sed non quam. In vel mi sit amet augue
-          congue elementum.
-        
-          Morbi in ipsum sit amet pede facilisis laoreet. Donec lacus nunc,
-          viverra nec, blandit vel, egestas et, augue.
-
-          Vestibulum ante ipsum primis in faucibus orci luctus et ultrices
-          posuere cubilia curae; Morbi lacinia molestie dui.
-        
-          Praesent blandit dolor. Sed non quam. In vel mi sit amet augue
-          congue elementum.
-        
-          Morbi in ipsum sit amet pede facilisis laoreet. Donec lacus nunc,
-          viverra nec, blandit vel, egestas et, augue.
-          
-          Vestibulum ante ipsum primis in faucibus orci luctus et ultrices
-          posuere cubilia curae; Morbi lacinia molestie dui.
-          Praesent blandit dolor. Sed non quam. In vel mi sit amet augue
-          congue elementum.
-        
-          Morbi in ipsum sit amet pede facilisis laoreet. Donec lacus nunc,
-          viverra nec, blandit vel, egestas et, augue.
-        
-          Vestibulum ante ipsum primis in faucibus orci luctus et ultrices
-          posuere cubilia curae; Morbi lacinia molestie dui.
-        
-          Praesent blandit dolor. Sed non quam. In vel mi sit amet augue
-          congue elementum.
-        
-          Morbi in ipsum sit amet pede facilisis laoreet. Donec lacus nunc,
-          viverra nec, blandit vel, egestas et, augue.
-
-          Vestibulum ante ipsum primis in faucibus orci luctus et ultrices
-          posuere cubilia curae; Morbi lacinia molestie dui.
-        
-          Praesent blandit dolor. Sed non quam. In vel mi sit amet augue
-          congue elementum.
-        
-          Morbi in ipsum sit amet pede facilisis laoreet. Donec lacus nunc,
-          viverra nec, blandit vel, egestas et, augue.
-          
-          Vestibulum ante ipsum primis in faucibus orci luctus et ultrices
-          posuere cubilia curae; Morbi lacinia molestie dui.
-          Praesent blandit dolor. Sed non quam. In vel mi sit amet augue
-          congue elementum.
-        
-          Morbi in ipsum sit amet pede facilisis laoreet. Donec lacus nunc,
-          viverra nec, blandit vel, egestas et, augue.
-        
-          Vestibulum ante ipsum primis in faucibus orci luctus et ultrices
-          posuere cubilia curae; Morbi lacinia molestie dui.
-        
-          Praesent blandit dolor. Sed non quam. In vel mi sit amet augue
-          congue elementum.
-        
-          Morbi in ipsum sit amet pede facilisis laoreet. Donec lacus nunc,
-          viverra nec, blandit vel, egestas et, augue.
-
-          Vestibulum ante ipsum primis in faucibus orci luctus et ultrices
-          posuere cubilia curae; Morbi lacinia molestie dui.
-        
-          Praesent blandit dolor. Sed non quam. In vel mi sit amet augue
-          congue elementum.
-        
-          Morbi in ipsum sit amet pede facilisis laoreet. Donec lacus nunc,
-          viverra nec, blandit vel, egestas et, augue.
-          
-          Vestibulum ante ipsum primis in faucibus orci luctus et ultrices
-          posuere cubilia curae; Morbi lacinia molestie dui.
-          Praesent blandit dolor. Sed non quam. In vel mi sit amet augue
-          congue elementum.
-        
-          Morbi in ipsum sit amet pede facilisis laoreet. Donec lacus nunc,
-          viverra nec, blandit vel, egestas et, augue.
-        
-          Vestibulum ante ipsum primis in faucibus orci luctus et ultrices
-          posuere cubilia curae; Morbi lacinia molestie dui.
-        
-          Praesent blandit dolor. Sed non quam. In vel mi sit amet augue
-          congue elementum.
-        
-          Morbi in ipsum sit amet pede facilisis laoreet. Donec lacus nunc,
-          viverra nec, blandit vel, egestas et, augue.
-
-          Vestibulum ante ipsum primis in faucibus orci luctus et ultrices
-          posuere cubilia curae; Morbi lacinia molestie dui.
-        
-          Praesent blandit dolor. Sed non quam. In vel mi sit amet augue
-          congue elementum.
-        
-          Morbi in ipsum sit amet pede facilisis laoreet. Donec lacus nunc,
-          viverra nec, blandit vel, egestas et, augue.
-          
-          Vestibulum ante ipsum primis in faucibus orci luctus et ultrices
-          posuere cubilia curae; Morbi lacinia molestie dui.
-          Praesent blandit dolor. Sed non quam. In vel mi sit amet augue
-          congue elementum.
-        
-          Morbi in ipsum sit amet pede facilisis laoreet. Donec lacus nunc,
-          viverra nec, blandit vel, egestas et, augue.
-        
-          Vestibulum ante ipsum primis in faucibus orci luctus et ultrices
-          posuere cubilia curae; Morbi lacinia molestie dui.
-        
-          Praesent blandit dolor. Sed non quam. In vel mi sit amet augue
-          congue elementum.
-        
-          Morbi in ipsum sit amet pede facilisis laoreet. Donec lacus nunc,
-          viverra nec, blandit vel, egestas et, augue.
-
-          Vestibulum ante ipsum primis in faucibus orci luctus et ultrices
-          posuere cubilia curae; Morbi lacinia molestie dui.
-        
-          Praesent blandit dolor. Sed non quam. In vel mi sit amet augue
-          congue elementum.
-        
-          Morbi in ipsum sit amet pede facilisis laoreet. Donec lacus nunc,
-          viverra nec, blandit vel, egestas et, augue.
-          
-          Vestibulum ante ipsum primis in faucibus orci luctus et ultrices
-          posuere cubilia curae; Morbi lacinia molestie dui.
-          Praesent blandit dolor. Sed non quam. In vel mi sit amet augue
-          congue elementum.
-        
-          Morbi in ipsum sit amet pede facilisis laoreet. Donec lacus nunc,
-          viverra nec, blandit vel, egestas et, augue.
-        
-          Vestibulum ante ipsum primis in faucibus orci luctus et ultrices
-          posuere cubilia curae; Morbi lacinia molestie dui.
-        
-          Praesent blandit dolor. Sed non quam. In vel mi sit amet augue
-          congue elementum.
-        
-          Morbi in ipsum sit amet pede facilisis laoreet. Donec lacus nunc,
-          viverra nec, blandit vel, egestas et, augue.
+        <div
+          className={`mt-3 space-y-8 text-sm text-muted-foreground text-justify ${MARKETING_ALIGNED_PROSE_WIDTH}`}
+        >
+          <p className="leading-relaxed">
+            Please read these Terms of Service carefully before accessing or using{' '}
+            <span className="font-medium text-foreground">{NEXT_PUBLIC_SITE_NAME}</span>. By
+            creating an account, submitting a VIN, or otherwise using any part of the Service, you
+            agree to be bound by these Terms. If you do not agree, do not use the Service.
           </p>
+
+          <Section title="1. Definitions">
+            <p>
+              <span className="font-medium text-foreground">"Service"</span> means the{' '}
+              {NEXT_PUBLIC_SITE_NAME} platform, including all web pages, APIs, reports, and related
+              features made available at our domain.
+            </p>
+            <p>
+              <span className="font-medium text-foreground">"User," "you," or "your"</span> means
+              any individual or entity that accesses or uses the Service.
+            </p>
+            <p>
+              <span className="font-medium text-foreground">"Report"</span> means any VIN-based
+              output generated by the Service, including decoded vehicle data, market analysis,
+              flood zone signals, recall information, and inspection checklists.
+            </p>
+            <p>
+              <span className="font-medium text-foreground">"Credits"</span> means the consumable
+              units purchased or allocated to your account that are required to generate Reports.
+            </p>
+          </Section>
+
+          <Section title="2. Eligibility">
+            <p>
+              You must be at least 18 years of age and capable of forming a legally binding contract
+              to use the Service. By using the Service, you represent and warrant that you meet
+              these requirements. The Service is intended for use within the United States. Access
+              from other jurisdictions is at your own risk and subject to local laws.
+            </p>
+          </Section>
+
+          <Section title="3. Account Registration & Security">
+            <p>
+              You must provide accurate, current, and complete information when creating an account.
+              You are solely responsible for maintaining the confidentiality of your credentials and
+              for all activity that occurs under your account. You agree to notify us immediately at{' '}
+              <a href={`mailto:${APP_EMAIL}`} className="text-primary underline underline-offset-2">
+                {APP_EMAIL}
+              </a>{' '}
+              if you suspect unauthorized access.
+            </p>
+            <p>
+              We reserve the right to suspend or terminate accounts that provide false information,
+              violate these Terms, or engage in fraudulent activity.
+            </p>
+          </Section>
+
+          <Section title="4. Permitted Use">
+            <p>
+              The Service is licensed, not sold. Subject to these Terms, we grant you a limited,
+              non-exclusive, non-transferable, revocable license to access and use the Service for
+              your personal or internal business purposes — specifically, evaluating used vehicles
+              prior to purchase or acquisition.
+            </p>
+            <p>You agree not to:</p>
+            <ul className="list-disc pl-5 space-y-1">
+              <li>Resell, sublicense, or redistribute Reports or any data derived from the Service.</li>
+              <li>
+                Scrape, crawl, or use automated means to extract data from the Service without our
+                prior written consent.
+              </li>
+              <li>
+                Use the Service to build a competing product or service, or to benchmark against a
+                competing product.
+              </li>
+              <li>
+                Attempt to reverse-engineer, decompile, or otherwise derive source code from the
+                Service.
+              </li>
+              <li>
+                Circumvent any access controls, rate limits, or credit-gating mechanisms.
+              </li>
+              <li>
+                Use the Service in any manner that violates applicable federal, state, or local law.
+              </li>
+            </ul>
+          </Section>
+
+          <Section title="5. Credits, Payments & Refunds">
+            <p>
+              Certain features of the Service require Credits. Credits are purchased through our
+              payment processor (Stripe) and are non-refundable except as required by applicable
+              law or as expressly stated in a separate written agreement.
+            </p>
+            <p>
+              Subscription Credits are allocated at the start of each billing cycle and expire at
+              the end of that cycle. Unused Credits do not roll over unless explicitly stated in
+              your plan description. One-time purchase Credits (e.g., Basic Report) do not expire
+              but are non-transferable.
+            </p>
+            <p>
+              All prices are in USD and exclusive of applicable taxes. We reserve the right to
+              change pricing at any time with at least 30 days' notice for active subscribers.
+              Continued use of the Service after a price change constitutes acceptance of the new
+              pricing.
+            </p>
+          </Section>
+
+          <Section title="6. Nature of Reports — No Guarantee of Accuracy">
+            <p>
+              Reports generated by {NEXT_PUBLIC_SITE_NAME} are informational in nature and are
+              derived from third-party data sources including government databases, market feeds,
+              and FEMA flood zone records. We do not independently verify the accuracy,
+              completeness, or timeliness of underlying data.
+            </p>
+            <p>
+              <span className="font-medium text-foreground">
+                Reports are not a substitute for a professional vehicle inspection, title search,
+                or legal advice.
+              </span>{' '}
+              A Report should be used as one input among many in your vehicle evaluation process.
+              We expressly disclaim any warranty that a Report will identify all defects, liens,
+              title issues, or risks associated with a vehicle.
+            </p>
+          </Section>
+
+          <Section title="7. Disclaimer of Warranties">
+            <p>
+              THE SERVICE AND ALL REPORTS ARE PROVIDED "AS IS" AND "AS AVAILABLE" WITHOUT WARRANTY
+              OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO WARRANTIES OF
+              MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, ACCURACY, OR NON-INFRINGEMENT.
+            </p>
+            <p>
+              WE DO NOT WARRANT THAT THE SERVICE WILL BE UNINTERRUPTED, ERROR-FREE, OR FREE OF
+              VIRUSES OR OTHER HARMFUL COMPONENTS. YOUR USE OF THE SERVICE IS AT YOUR SOLE RISK.
+            </p>
+          </Section>
+
+          <Section title="8. Limitation of Liability">
+            <p>
+              TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, {NEXT_PUBLIC_SITE_NAME.toUpperCase()}{' '}
+              AND ITS OFFICERS, DIRECTORS, EMPLOYEES, AND AGENTS SHALL NOT BE LIABLE FOR ANY
+              INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES, INCLUDING LOSS OF
+              PROFITS, DATA, OR GOODWILL, ARISING OUT OF OR IN CONNECTION WITH YOUR USE OF OR
+              INABILITY TO USE THE SERVICE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
+            </p>
+            <p>
+              IN NO EVENT SHALL OUR TOTAL AGGREGATE LIABILITY TO YOU EXCEED THE GREATER OF (A) THE
+              AMOUNT YOU PAID TO US IN THE TWELVE (12) MONTHS PRECEDING THE CLAIM, OR (B) ONE
+              HUNDRED DOLLARS ($100.00).
+            </p>
+          </Section>
+
+          <Section title="9. Indemnification">
+            <p>
+              You agree to indemnify, defend, and hold harmless {NEXT_PUBLIC_SITE_NAME} and its
+              affiliates, officers, directors, employees, and agents from and against any claims,
+              liabilities, damages, losses, and expenses (including reasonable attorneys' fees)
+              arising out of or in any way connected with: (a) your access to or use of the
+              Service; (b) your violation of these Terms; or (c) your violation of any third-party
+              right, including any intellectual property or privacy right.
+            </p>
+          </Section>
+
+          <Section title="10. Intellectual Property">
+            <p>
+              All content, trademarks, logos, and software comprising the Service are the exclusive
+              property of {NEXT_PUBLIC_SITE_NAME} or its licensors. Nothing in these Terms grants
+              you any right, title, or interest in or to the Service beyond the limited license
+              expressly set forth herein.
+            </p>
+            <p>
+              You retain ownership of any data you submit to the Service (e.g., VINs you look up).
+              By submitting data, you grant us a limited, royalty-free license to process that data
+              solely to provide the Service to you.
+            </p>
+          </Section>
+
+          <Section title="11. Third-Party Services & Links">
+            <p>
+              The Service may integrate with or link to third-party services (e.g., payment
+              processors, data providers). We are not responsible for the content, privacy
+              practices, or terms of any third-party service. Your use of third-party services is
+              governed by their respective terms.
+            </p>
+          </Section>
+
+          <Section title="12. Termination">
+            <p>
+              We may suspend or terminate your access to the Service at any time, with or without
+              cause, with or without notice. Upon termination, your right to use the Service ceases
+              immediately. Provisions that by their nature should survive termination (including
+              Sections 6–10 and 13–15) shall survive.
+            </p>
+            <p>
+              You may terminate your account at any time by contacting us at{' '}
+              <a href={`mailto:${APP_EMAIL}`} className="text-primary underline underline-offset-2">
+                {APP_EMAIL}
+              </a>
+              . Termination does not entitle you to a refund of unused Credits except as required
+              by law.
+            </p>
+          </Section>
+
+          <Section title="13. Governing Law & Dispute Resolution">
+            <p>
+              These Terms are governed by the laws of the Commonwealth of Pennsylvania, without
+              regard to its conflict-of-law principles. Any dispute arising out of or relating to
+              these Terms or the Service shall be resolved exclusively through binding arbitration
+              administered under the rules of the American Arbitration Association (AAA), except
+              that either party may seek injunctive or other equitable relief in a court of
+              competent jurisdiction to prevent irreparable harm.
+            </p>
+            <p>
+              YOU WAIVE ANY RIGHT TO PARTICIPATE IN A CLASS ACTION LAWSUIT OR CLASS-WIDE
+              ARBITRATION AGAINST {NEXT_PUBLIC_SITE_NAME.toUpperCase()}.
+            </p>
+          </Section>
+
+          <Section title="14. Changes to These Terms">
+            <p>
+              We reserve the right to modify these Terms at any time. When we make material
+              changes, we will update the effective date above and, where appropriate, notify you
+              by email or in-app notice. Your continued use of the Service after the effective date
+              of any changes constitutes your acceptance of the revised Terms.
+            </p>
+          </Section>
+
+          <Section title="15. Contact">
+            <p>
+              Questions about these Terms? Reach us at{' '}
+              <a href={`mailto:${APP_EMAIL}`} className="text-primary underline underline-offset-2">
+                {APP_EMAIL}
+              </a>
+              .
+            </p>
+          </Section>
         </div>
       </div>
     </PageSection>

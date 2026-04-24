@@ -32,47 +32,33 @@ export class TestUtils {
   }
 
   static async cleanupUser(userId: string) {
-    // Clean up in proper order to respect foreign key constraints
-    
-    // 1. Delete organization invites
-    await testDb.organizationInvite.deleteMany({
-      where: { inviterId: userId },
-    })
-
-    // 2. Delete organization memberships
-    await testDb.organizationMember.deleteMany({
-      where: { userId },
-    })
-
-    // 3. Delete projects from organizations owned by this user
+    // 1. Find all orgs this user belongs to
     const userOrganizations = await testDb.organization.findMany({
-      where: {
-        members: {
-          some: { userId },
-        },
-      },
+      where: { members: { some: { userId } } },
       select: { id: true },
     })
 
-    for (const org of userOrganizations) {
-      await testDb.project.deleteMany({
-        where: { organizationId: org.id },
-      })
+    const orgIds = userOrganizations.map((o) => o.id)
+
+    // 2. Delete all org-scoped data in parallel (no FK deps between these)
+    await Promise.all([
+      testDb.organizationInvite.deleteMany({
+        where: { OR: [{ inviterId: userId }, { organizationId: { in: orgIds } }] },
+      }),
+      testDb.project.deleteMany({ where: { organizationId: { in: orgIds } } }),
+      testDb.report.deleteMany({ where: { organizationId: { in: orgIds } } }),
+    ])
+
+    // 3. Members must go before orgs (FK constraint)
+    await testDb.organizationMember.deleteMany({ where: { userId } })
+
+    // 4. Delete orgs
+    if (orgIds.length > 0) {
+      await testDb.organization.deleteMany({ where: { id: { in: orgIds } } })
     }
 
-    // 4. Delete organizations
-    await testDb.organization.deleteMany({
-      where: {
-        members: {
-          some: { userId },
-        },
-      },
-    })
-
-    // 5. Finally delete the user
-    await testDb.user.delete({
-      where: { id: userId },
-    })
+    // 5. Delete user
+    await testDb.user.delete({ where: { id: userId } })
   }
 
   static async cleanupOrganization(organizationId: string) {
