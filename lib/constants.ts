@@ -273,3 +273,6 @@ export const TESTIMONIALS: Testimonial[] = [
   },
 ]
 
+export const PREMIUM_VIN_PROVIDER = process.env.PREMIUM_VIN_PROVIDER || ''
+export const PREMIUM_VIN_API_KEY = process.env.PREMIUM_VIN_API_KEY || ''
+export const PREMIUM_VIN_BASE_URL = 'https://stag-mc-api.marketcheck.com'
