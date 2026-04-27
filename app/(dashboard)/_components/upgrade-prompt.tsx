@@ -1,3 +1,5 @@
+// app/(dashboard)/_components/upgrade-prompt.tsx
+
 import Link from 'next/link'
 import { AlertCircle, TrendingUp, Shield, ArrowRight, Check } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'

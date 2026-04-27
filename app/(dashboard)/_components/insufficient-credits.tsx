@@ -1,3 +1,5 @@
+// app/(dashboard)/_components/insufficient-credits.tsx
+
 import Link from 'next/link'
 import { AlertCircle, CreditCard, ArrowRight } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'

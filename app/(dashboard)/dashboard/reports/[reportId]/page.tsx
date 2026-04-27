@@ -1,3 +1,5 @@
+// app/(dashboard)/dashboard/reports/[reportId]/page.tsx
+
 import { notFound } from 'next/navigation'
 import { getRPCCaller } from '@/lib/orpc/rsc-client'
 import { ReportPage } from '@/app/(dashboard)/_components/report-page'

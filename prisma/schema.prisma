@@ -166,12 +166,30 @@ model Vehicle {
   fuelTypeSecondary    String?
   electrificationLevel String?
 
+  // Premium fields from MarketCheck API
+  bodySubtype          String?
+  transmission         String?
+  doors                Int?
+  engineSize           Float?
+  cylinders            Int?
+  overallHeight        Float?
+  overallLength        Float?
+  overallWidth         Float?
+  stdSeating           Int?
+  highwayMpg           Float?
+  cityMpg              Float?
+  powertrainType       String?
+
+  // Decoder source tracking
+  decoderSource        String  @default("NHTSA")
+
   reports Report[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([vin])
+  @@index([decoderSource])
 }
 
 model Report {

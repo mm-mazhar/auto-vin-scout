@@ -20,7 +20,6 @@ describe('ReportPage Data Integration Tests (Task 13.3)', () => {
 
   // Clean up any existing test data before starting
   beforeAll(async () => {
-    await testDb.report.deleteMany({})
     await testDb.vehicle.deleteMany({})
   })
 

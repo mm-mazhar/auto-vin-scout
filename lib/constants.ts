@@ -16,7 +16,9 @@ export const DEFAULT_THEME_MODE = `dark` as string
 // ✅ EMAIL BRANDING
 export const EMAIL_BUTTON_BG = `#22c55e` as string
 export const EMAIL_BUTTON_TEXT = `#ffffff` as string
-export const EMAIL_LOGO_URL = `https://zasonncpchlminlwpqwn.supabase.co/storage/v1/object/public/assets/autovinscout-logo-dark-01.png` as string
+export const EMAIL_LOGO_URL = process.env.NODE_ENV === 'development'
+  ? `https://zasonncpchlminlwpqwn.supabase.co/storage/v1/object/public/assets/autovinscout-logo-dark-01.png`
+  : `https://mssrrxccmrsyuuehpebs.supabase.co/storage/v1/object/public/assets/autovinscout-logo-dark-01.png`
 
 // ✅ LOCALE
 export const LOCALE = `en_US`
@@ -275,4 +277,7 @@ export const TESTIMONIALS: Testimonial[] = [
 
 export const PREMIUM_VIN_PROVIDER = process.env.PREMIUM_VIN_PROVIDER || ''
 export const PREMIUM_VIN_API_KEY = process.env.PREMIUM_VIN_API_KEY || ''
+export const PREMIUM_VIN_API_SECRET = process.env.PREMIUM_VIN_API_SECRET || ''
 export const PREMIUM_VIN_BASE_URL = 'https://stag-mc-api.marketcheck.com'
+export const PREMIUM_VIN_TIMEOUT_MS = 10000 // 10 seconds
+

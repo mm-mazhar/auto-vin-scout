@@ -1,6 +1,6 @@
-'use client'
-
 // components/dashboard/ReportsByProjectDonut.tsx
+
+'use client'
 
 import { CreateProjectDialog } from '@/app/(dashboard)/_components/create-project-dialog'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'

@@ -159,7 +159,7 @@ export default function Faq2() {
                   <h3 className="text-foreground text-lg font-medium">
                     {faq.question}
                   </h3>
-                  <div className="ml-4 flex-shrink-0">
+                  <div className="ml-4 shrink-0">
                     {expandedId === faq.id ? (
                       <MinusIcon className="text-primary h-5 w-5" />
                     ) : (

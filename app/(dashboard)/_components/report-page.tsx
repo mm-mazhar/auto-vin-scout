@@ -1,10 +1,12 @@
+// app/(dashboard)/_components/report-actions-menu.tsx
+
 'use client'
 
 import { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { AlertCircle, Car, Gauge, Info, MapPin, Wrench, FileText, TrendingUp, Shield, CheckSquare, TriangleAlert, Scale } from 'lucide-react'
+import { AlertCircle, Car, Gauge, Info, MapPin, Wrench, FileText, TrendingUp, Shield, CheckSquare, TriangleAlert, Scale, Zap } from 'lucide-react'
 import type { ReportWithVehicle, VehicleDetails } from '@/lib/orpc/routers/vin'
 import { PreviewReport } from './preview-report'
 
@@ -78,10 +80,17 @@ export function ReportPage({ report: initialReport, projectId }: ReportPageProps
               <h1 className="text-2xl font-bold">
                 {vehicle.year} {vehicle.make} {vehicle.model}
               </h1>
-              {/* NHTSA vPIC Verified Badge */}
-              <div className="bg-primary text-primary-foreground text-xs px-3 py-1 rounded-full font-medium">
-                NHTSA vPIC Verified
-              </div>
+              {/* Decoder source badge */}
+              {vehicle.decoderSource === 'MARKETCHECK' ? (
+                <div className="bg-primary text-primary-foreground text-xs px-3 py-1 rounded-full font-medium flex items-center gap-1">
+                  <Zap className="h-3 w-3" />
+                  MarketCheck Enhanced
+                </div>
+              ) : (
+                <div className="bg-primary text-primary-foreground text-xs px-3 py-1 rounded-full font-medium">
+                  NHTSA vPIC Verified
+                </div>
+              )}
             </div>
             <p className="text-muted-foreground font-mono text-sm">
               VIN: {vehicle.vin}
@@ -334,6 +343,140 @@ function FullReportWithTabs({
           </CardContent>
         </Card>
 
+        {/* Premium Specs — only shown when MarketCheck data is available */}
+        {vehicle.decoderSource === 'MARKETCHECK' && (
+          <Card>
+            <CardHeader>
+              <div className="flex items-center gap-2">
+                <Zap className="h-5 w-5 text-primary" />
+                <CardTitle>Specifications</CardTitle>
+              </div>
+              <CardDescription>
+                Enhanced data — transmission, dimensions, fuel economy, and more
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+                {/* Powertrain */}
+                {(vehicle.transmission || vehicle.powertrainType || vehicle.cylinders || vehicle.engineSize) && (
+                  <div className="space-y-2">
+                    <h4 className="font-medium flex items-center gap-2">
+                      <Gauge className="h-4 w-4 text-primary" />
+                      Powertrain
+                    </h4>
+                    {vehicle.transmission && (
+                      <div>
+                        <label className="text-sm text-muted-foreground">Transmission</label>
+                        <p className="text-sm">{vehicle.transmission}</p>
+                      </div>
+                    )}
+                    {vehicle.powertrainType && (
+                      <div>
+                        <label className="text-sm text-muted-foreground">Powertrain Type</label>
+                        <p className="text-sm">{vehicle.powertrainType}</p>
+                      </div>
+                    )}
+                    {vehicle.engineSize != null && (
+                      <div>
+                        <label className="text-sm text-muted-foreground">Engine Size</label>
+                        <p className="text-sm">{vehicle.engineSize}L</p>
+                      </div>
+                    )}
+                    {vehicle.cylinders != null && (
+                      <div>
+                        <label className="text-sm text-muted-foreground">Cylinders</label>
+                        <p className="text-sm">{vehicle.cylinders}</p>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Body & Seating */}
+                {(vehicle.bodySubtype || vehicle.doors != null || vehicle.stdSeating != null) && (
+                  <div className="space-y-2">
+                    <h4 className="font-medium flex items-center gap-2">
+                      <Car className="h-4 w-4 text-primary" />
+                      Body & Seating
+                    </h4>
+                    {vehicle.bodySubtype && (
+                      <div>
+                        <label className="text-sm text-muted-foreground">Body Subtype</label>
+                        <p className="text-sm">{vehicle.bodySubtype}</p>
+                      </div>
+                    )}
+                    {vehicle.doors != null && (
+                      <div>
+                        <label className="text-sm text-muted-foreground">Doors</label>
+                        <p className="text-sm">{vehicle.doors}</p>
+                      </div>
+                    )}
+                    {vehicle.stdSeating != null && (
+                      <div>
+                        <label className="text-sm text-muted-foreground">Standard Seating</label>
+                        <p className="text-sm">{vehicle.stdSeating}</p>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Fuel Economy */}
+                {(vehicle.highwayMpg != null || vehicle.cityMpg != null) && (
+                  <div className="space-y-2">
+                    <h4 className="font-medium flex items-center gap-2">
+                      <TrendingUp className="h-4 w-4 text-primary" />
+                      Fuel Economy
+                    </h4>
+                    {vehicle.highwayMpg != null && (
+                      <div>
+                        <label className="text-sm text-muted-foreground">Highway</label>
+                        <p className="text-sm">{vehicle.highwayMpg} MPG</p>
+                      </div>
+                    )}
+                    {vehicle.cityMpg != null && (
+                      <div>
+                        <label className="text-sm text-muted-foreground">City</label>
+                        <p className="text-sm">{vehicle.cityMpg} MPG</p>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Dimensions */}
+                {(vehicle.overallHeight != null || vehicle.overallLength != null || vehicle.overallWidth != null) && (
+                  <div className="space-y-2">
+                    <h4 className="font-medium flex items-center gap-2">
+                      <Info className="h-4 w-4 text-primary" />
+                      Dimensions
+                    </h4>
+                    <div className="flex gap-6">
+                      {vehicle.overallLength != null && (
+                        <div>
+                          <label className="text-sm text-muted-foreground">Length</label>
+                          <p className="text-sm">{vehicle.overallLength}&quot;</p>
+                        </div>
+                      )}
+                      {vehicle.overallWidth != null && (
+                        <div>
+                          <label className="text-sm text-muted-foreground">Width</label>
+                          <p className="text-sm">{vehicle.overallWidth}&quot;</p>
+                        </div>
+                      )}
+                      {vehicle.overallHeight != null && (
+                        <div>
+                          <label className="text-sm text-muted-foreground">Height</label>
+                          <p className="text-sm">{vehicle.overallHeight}&quot;</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Risk Assessment Section */}
         <Card>
           <CardHeader>
@@ -347,7 +490,7 @@ function FullReportWithTabs({
             {isAiFallback && (
               <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-lg">
                 <p className="text-sm text-red-700 flex items-center gap-2">
-                  <AlertCircle className="h-4 w-4 flex-shrink-0" />
+                  <AlertCircle className="h-4 w-4 shrink-0" />
                   Analysis based on general rules due to temporary service limitations. Enhanced AI analysis is currently unavailable. Please contact support.
                 </p>
               </div>
@@ -451,7 +594,7 @@ function FullReportWithTabs({
                             .map((item, index) => (
                               <div key={index} className="flex items-start gap-3">
                                 <TriangleAlert 
-                                  className="w-4 h-4 mt-0.5 flex-shrink-0" 
+                                  className="w-4 h-4 mt-0.5 shrink-0" 
                                   style={{ color: getRiskColor(riskLabel) }}
                                 />
                                 <p className="text-sm leading-relaxed text-muted-foreground">

@@ -18,7 +18,6 @@ describe('CreateReportDialog Integration Tests (Task 12.1)', () => {
 
   // Clean up any existing test data before starting
   beforeAll(async () => {
-    await testDb.report.deleteMany({})
     await testDb.vehicle.deleteMany({})
   })
 

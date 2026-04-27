@@ -77,9 +77,8 @@ describe('VIN Router - Credit Atomicity Properties', () => {
   })
 
   afterEach(async () => {
-    // Clean up in reverse order of creation
-    // Delete ALL reports first (not just by organizationId, as some may be orphaned)
-    await testDb.report.deleteMany({})
+    // Clean up in reverse order of creation - scoped to test org only
+    await testDb.report.deleteMany({ where: { organizationId: testOrg.id } })
     await testDb.vehicle.deleteMany({})
     await testDb.project.deleteMany({
       where: { id: testProject.id },

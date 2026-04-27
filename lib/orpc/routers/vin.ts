@@ -5,6 +5,7 @@ import { after } from 'next/server'
 import { orgProcedure, adminProcedure } from '../procedures'
 import { ORPCError } from '../server'
 import { decodeVin } from '@/lib/services/nhtsa-decoder'
+import { decodeVinForTier, type EnhancedVehicleData } from '@/lib/services/vin-decoder'
 import { RiskEngineService } from '@/lib/services/risk-engine'
 import type { PrismaClient } from '@prisma/client'
 import type { VehicleData } from '@/lib/services/nhtsa-decoder'
@@ -18,10 +19,10 @@ export type UserTier = 'FREE_TIER' | 'ZERO_CREDITS' | 'PAID'
  * Create a vehicle response object without saving to database
  * Used for free tier preview functionality
  * 
- * @param vehicleData - NHTSA vehicle data
+ * @param vehicleData - Enhanced vehicle data
  * @returns Vehicle details object with temporary ID
  */
-function createVehicleResponse(vehicleData: VehicleData) {
+function createVehicleResponse(vehicleData: EnhancedVehicleData) {
   return {
     id: `preview-${Date.now()}`, // Temporary ID for frontend
     vin: vehicleData.vin,
@@ -41,6 +42,20 @@ function createVehicleResponse(vehicleData: VehicleData) {
     fuelTypePrimary: vehicleData.fuelTypePrimary,
     fuelTypeSecondary: vehicleData.fuelTypeSecondary,
     electrificationLevel: vehicleData.electrificationLevel,
+    // Premium fields
+    bodySubtype: vehicleData.bodySubtype ?? null,
+    transmission: vehicleData.transmission ?? null,
+    doors: vehicleData.doors ?? null,
+    engineSize: vehicleData.engineSize ?? null,
+    cylinders: vehicleData.cylinders ?? null,
+    overallHeight: vehicleData.overallHeight ?? null,
+    overallLength: vehicleData.overallLength ?? null,
+    overallWidth: vehicleData.overallWidth ?? null,
+    stdSeating: vehicleData.stdSeating ?? null,
+    highwayMpg: vehicleData.highwayMpg ?? null,
+    cityMpg: vehicleData.cityMpg ?? null,
+    powertrainType: vehicleData.powertrainType ?? null,
+    decoderSource: vehicleData.decoderSource,
     createdAt: new Date(),
     updatedAt: new Date(),
   }
@@ -50,10 +65,10 @@ function createVehicleResponse(vehicleData: VehicleData) {
  * Handle Free Tier Flow
  * Returns NHTSA data without database saves for users with no subscription history
  * 
- * @param vehicleData - NHTSA vehicle data
+ * @param vehicleData - Enhanced vehicle data
  * @returns Free preview response with temporary vehicle ID
  */
-function handleFreeTierFlow(vehicleData: VehicleData) {
+function handleFreeTierFlow(vehicleData: EnhancedVehicleData) {
   return {
     reportId: null,
     status: 'FREE_PREVIEW' as const,
@@ -69,10 +84,10 @@ function handleFreeTierFlow(vehicleData: VehicleData) {
  * @param db - Prisma client instance
  * @param orgId - Organization ID
  * @param projectId - Project ID
- * @param vehicleData - NHTSA vehicle data
+ * @param vehicleData - Enhanced vehicle data (NHTSA or MarketCheck)
  * @returns Full report response
  */
-async function handlePaidFlow(db: PrismaClient, orgId: string, projectId: string, vehicleData: VehicleData) {
+async function handlePaidFlow(db: PrismaClient, orgId: string, projectId: string, vehicleData: EnhancedVehicleData) {
   // Database Transaction
   const result = await db.$transaction(async (tx) => {
     // Upsert Vehicle (update if exists, create if not)
@@ -95,6 +110,20 @@ async function handlePaidFlow(db: PrismaClient, orgId: string, projectId: string
         fuelTypePrimary: vehicleData.fuelTypePrimary,
         fuelTypeSecondary: vehicleData.fuelTypeSecondary,
         electrificationLevel: vehicleData.electrificationLevel,
+        // Premium fields
+        bodySubtype: vehicleData.bodySubtype,
+        transmission: vehicleData.transmission,
+        doors: vehicleData.doors,
+        engineSize: vehicleData.engineSize,
+        cylinders: vehicleData.cylinders,
+        overallHeight: vehicleData.overallHeight,
+        overallLength: vehicleData.overallLength,
+        overallWidth: vehicleData.overallWidth,
+        stdSeating: vehicleData.stdSeating,
+        highwayMpg: vehicleData.highwayMpg,
+        cityMpg: vehicleData.cityMpg,
+        powertrainType: vehicleData.powertrainType,
+        decoderSource: vehicleData.decoderSource,
       },
       create: {
         vin: vehicleData.vin,
@@ -114,6 +143,20 @@ async function handlePaidFlow(db: PrismaClient, orgId: string, projectId: string
         fuelTypePrimary: vehicleData.fuelTypePrimary,
         fuelTypeSecondary: vehicleData.fuelTypeSecondary,
         electrificationLevel: vehicleData.electrificationLevel,
+        // Premium fields
+        bodySubtype: vehicleData.bodySubtype,
+        transmission: vehicleData.transmission,
+        doors: vehicleData.doors,
+        engineSize: vehicleData.engineSize,
+        cylinders: vehicleData.cylinders,
+        overallHeight: vehicleData.overallHeight,
+        overallLength: vehicleData.overallLength,
+        overallWidth: vehicleData.overallWidth,
+        stdSeating: vehicleData.stdSeating,
+        highwayMpg: vehicleData.highwayMpg,
+        cityMpg: vehicleData.cityMpg,
+        powertrainType: vehicleData.powertrainType,
+        decoderSource: vehicleData.decoderSource,
       },
     })
 
@@ -160,10 +203,10 @@ async function handlePaidFlow(db: PrismaClient, orgId: string, projectId: string
  * @param db - Prisma client instance
  * @param orgId - Organization ID
  * @param projectId - Project ID
- * @param vehicleData - NHTSA vehicle data
+ * @param vehicleData - Enhanced vehicle data (NHTSA or MarketCheck)
  * @returns Zero credits response
  */
-async function handleZeroCreditsFlow(db: PrismaClient, orgId: string, projectId: string, vehicleData: VehicleData) {
+async function handleZeroCreditsFlow(db: PrismaClient, orgId: string, projectId: string, vehicleData: EnhancedVehicleData) {
   const result = await db.$transaction(async (tx) => {
     const vehicle = await tx.vehicle.upsert({
       where: { vin: vehicleData.vin },
@@ -184,6 +227,20 @@ async function handleZeroCreditsFlow(db: PrismaClient, orgId: string, projectId:
         fuelTypePrimary: vehicleData.fuelTypePrimary,
         fuelTypeSecondary: vehicleData.fuelTypeSecondary,
         electrificationLevel: vehicleData.electrificationLevel,
+        // Premium fields
+        bodySubtype: vehicleData.bodySubtype,
+        transmission: vehicleData.transmission,
+        doors: vehicleData.doors,
+        engineSize: vehicleData.engineSize,
+        cylinders: vehicleData.cylinders,
+        overallHeight: vehicleData.overallHeight,
+        overallLength: vehicleData.overallLength,
+        overallWidth: vehicleData.overallWidth,
+        stdSeating: vehicleData.stdSeating,
+        highwayMpg: vehicleData.highwayMpg,
+        cityMpg: vehicleData.cityMpg,
+        powertrainType: vehicleData.powertrainType,
+        decoderSource: vehicleData.decoderSource,
       },
       create: {
         vin: vehicleData.vin,
@@ -203,6 +260,20 @@ async function handleZeroCreditsFlow(db: PrismaClient, orgId: string, projectId:
         fuelTypePrimary: vehicleData.fuelTypePrimary,
         fuelTypeSecondary: vehicleData.fuelTypeSecondary,
         electrificationLevel: vehicleData.electrificationLevel,
+        // Premium fields
+        bodySubtype: vehicleData.bodySubtype,
+        transmission: vehicleData.transmission,
+        doors: vehicleData.doors,
+        engineSize: vehicleData.engineSize,
+        cylinders: vehicleData.cylinders,
+        overallHeight: vehicleData.overallHeight,
+        overallLength: vehicleData.overallLength,
+        overallWidth: vehicleData.overallWidth,
+        stdSeating: vehicleData.stdSeating,
+        highwayMpg: vehicleData.highwayMpg,
+        cityMpg: vehicleData.cityMpg,
+        powertrainType: vehicleData.powertrainType,
+        decoderSource: vehicleData.decoderSource,
       },
     })
 
@@ -274,7 +345,7 @@ export const reportStatusSchema = z.enum(['PENDING', 'COMPLETED', 'FAILED', 'FRE
 
 /**
  * Vehicle details output schema
- * Represents decoded vehicle information from NHTSA vPIC API
+ * Represents decoded vehicle information from NHTSA vPIC API and MarketCheck API
  */
 export const vehicleDetailsSchema = z.object({
   id: z.string(),
@@ -295,6 +366,24 @@ export const vehicleDetailsSchema = z.object({
   fuelTypePrimary: z.string().nullable(),
   fuelTypeSecondary: z.string().nullable(),
   electrificationLevel: z.string().nullable(),
+  
+  // Premium fields from MarketCheck API
+  bodySubtype: z.string().nullable(),
+  transmission: z.string().nullable(),
+  doors: z.number().nullable(),
+  engineSize: z.number().nullable(),
+  cylinders: z.number().nullable(),
+  overallHeight: z.number().nullable(),
+  overallLength: z.number().nullable(),
+  overallWidth: z.number().nullable(),
+  stdSeating: z.number().nullable(),
+  highwayMpg: z.number().nullable(),
+  cityMpg: z.number().nullable(),
+  powertrainType: z.string().nullable(),
+  
+  // Decoder source tracking
+  decoderSource: z.enum(['NHTSA', 'MARKETCHECK', 'NHTSA_FALLBACK']),
+  
   createdAt: z.date(),
   updatedAt: z.date(),
 })
@@ -434,8 +523,13 @@ export const vinRouter = {
         })
       }
 
-      // Step 3: NHTSA vPIC Decode (always run - it's free)
-      const vehicleData = await decodeVin(vin)
+      // Step 3: Determine user tier
+      const tier = await determineUserTier(db, orgId)
+
+      // Step 4: Decode VIN using tier-appropriate decoder
+      // PAID tier uses MarketCheck with NHTSA fallback
+      // FREE_TIER/ZERO_CREDITS use NHTSA only
+      const vehicleData = await decodeVinForTier(vin, tier)
 
       if (!vehicleData) {
         throw new ORPCError('BAD_REQUEST', {
@@ -443,7 +537,7 @@ export const vinRouter = {
         })
       }
 
-      // Step 4: Determine flow based on credits and subscription history
+      // Step 5: Determine flow based on credits and subscription history
       const hasCredits = organization.credits > 0
       const hasSubscriptionHistory = organization.subscription !== null
 

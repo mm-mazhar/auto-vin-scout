@@ -67,9 +67,8 @@ describe('VIN Router - Database Transaction (Task 4.3)', () => {
   })
 
   afterEach(async () => {
-    // Clean up in reverse order of creation
-    // Delete ALL reports for this vehicle (not just by organizationId)
-    await testDb.report.deleteMany({})
+    // Clean up in reverse order of creation - scoped to test org only
+    await testDb.report.deleteMany({ where: { organizationId: testOrg.id } })
     await testDb.vehicle.deleteMany({
       where: { vin: '1HGBH41JXMN109186' },
     })
@@ -349,7 +348,7 @@ describe('VIN Router - Database Transaction (Task 4.3)', () => {
   describe('Timestamp Recording', () => {
     it('should record creation and update timestamps for vehicle and report', async () => {
       // #given: Valid VIN and project (ensure vehicle doesn't exist yet)
-      await testDb.report.deleteMany({})
+      await testDb.report.deleteMany({ where: { organizationId: testOrg.id } })
       await testDb.vehicle.deleteMany({
         where: { vin: '1HGBH41JXMN109186' },
       })

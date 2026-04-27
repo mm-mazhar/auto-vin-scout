@@ -22,8 +22,6 @@ describe('VIN Router - List Procedure', () => {
         },
       },
     })
-    // Delete ALL reports first to avoid FK violations
-    await db.report.deleteMany({})
     await db.vehicle.deleteMany({
       where: { vin: '1HGBH41JXMN109186' },
     })

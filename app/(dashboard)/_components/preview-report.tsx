@@ -1,3 +1,5 @@
+// app/(dashboard)/_components/preview-report.tsx
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Car, Gauge, Info, MapPin, Wrench } from 'lucide-react'
 import type { VehicleDetails } from '@/lib/orpc/routers/vin'

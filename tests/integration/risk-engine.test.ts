@@ -1,4 +1,5 @@
 // tests/integration/risk-engine.test.ts
+
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { TestUtils, testDb } from './setup'
 import { RiskEngineService } from '@/lib/services/risk-engine'
@@ -219,7 +220,75 @@ describe('RiskEngineService', () => {
     expect(mockGenerateContentFn).toHaveBeenCalledOnce()
   })
 
-  it('Test 4: Missing report flow', async () => {
+  it('Test 4: MarketCheck premium specs are included in the LLM prompt', async () => {
+    // #given: Vehicle with MarketCheck premium fields
+    const premiumVehicle = await testDb.vehicle.create({
+      data: {
+        vin: `MKTST${Date.now()}`,
+        make: 'Ford',
+        model: 'F-150',
+        year: 2021,
+        decoderSource: 'MARKETCHECK',
+        transmission: 'Automatic',
+        powertrainType: 'Combustion',
+        engineSize: 2.7,
+        cylinders: 6,
+        highwayMpg: 27,
+        cityMpg: 24,
+      },
+    })
+
+    const premiumReport = await testDb.report.create({
+      data: {
+        organizationId: testOrg.id,
+        projectId: testProject.id,
+        vehicleId: premiumVehicle.id,
+        status: 'PENDING',
+      },
+    })
+
+    const OpenAI = (await import('openai')).default
+    let capturedPrompt = ''
+    const mockCreate = vi.fn().mockImplementation(({ messages }) => {
+      capturedPrompt = messages.find((m: any) => m.role === 'user')?.content ?? ''
+      return Promise.resolve({ choices: [{ message: { content: '• B1\n• B2\n• B3' } }] })
+    })
+    OpenAI.prototype.chat = { completions: { create: mockCreate } } as any
+    process.env.OPENROUTER_API_KEY = 'test-key'
+
+    // #when
+    await RiskEngineService.generateRiskAssessment(premiumReport.id)
+
+    // #then: prompt contains premium spec section and key fields
+    expect(capturedPrompt).toContain('Premium Specifications (confirmed via MarketCheck)')
+    expect(capturedPrompt).toContain('Transmission: Automatic')
+    expect(capturedPrompt).toContain('2.7L')
+    expect(capturedPrompt).toContain('27 MPG')
+
+    // cleanup
+    await testDb.report.deleteMany({ where: { id: premiumReport.id } })
+    await testDb.vehicle.deleteMany({ where: { id: premiumVehicle.id } })
+  })
+
+  it('Test 5: NHTSA-only decode shows premium specs as unavailable in prompt', async () => {
+    // #given: Vehicle with NHTSA-only decode (default decoderSource)
+    const OpenAI = (await import('openai')).default
+    let capturedPrompt = ''
+    const mockCreate = vi.fn().mockImplementation(({ messages }) => {
+      capturedPrompt = messages.find((m: any) => m.role === 'user')?.content ?? ''
+      return Promise.resolve({ choices: [{ message: { content: '• B1\n• B2\n• B3' } }] })
+    })
+    OpenAI.prototype.chat = { completions: { create: mockCreate } } as any
+    process.env.OPENROUTER_API_KEY = 'test-key'
+
+    // #when: testVehicle has default decoderSource = 'NHTSA'
+    await RiskEngineService.generateRiskAssessment(testReport.id)
+
+    // #then: prompt says premium specs unavailable
+    expect(capturedPrompt).toContain('Premium Specifications: unavailable')
+  })
+
+  it('Test 6: Missing report flow', async () => {
     // Use a non-existent report ID
     const invalidReportId = 'non-existent-report-id'
 

@@ -1,4 +1,3 @@
- 
 // tests/integration/transactional-emails.test.ts
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'

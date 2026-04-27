@@ -1,3 +1,5 @@
+// app/(dashboard)/_components/report-actions-menu.tsx
+
 'use client'
 
 import { useState } from 'react'
