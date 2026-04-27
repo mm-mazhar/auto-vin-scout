@@ -275,6 +275,10 @@ export const TESTIMONIALS: Testimonial[] = [
   },
 ]
 
+
+export const NHTSA_VIN_DECODER = 'https://vpic.nhtsa.dot.gov'
+export const NHTSA_RECALLS = 'https://api.nhtsa.gov'
+
 export const PREMIUM_VIN_PROVIDER = process.env.PREMIUM_VIN_PROVIDER || ''
 export const PREMIUM_VIN_API_KEY = process.env.PREMIUM_VIN_API_KEY || ''
 export const PREMIUM_VIN_API_SECRET = process.env.PREMIUM_VIN_API_SECRET || ''

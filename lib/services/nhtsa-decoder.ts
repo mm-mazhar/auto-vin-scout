@@ -7,6 +7,8 @@
  * to extract vehicle identity and configuration data.
  */
 
+import { NHTSA_VIN_DECODER } from '../constants'
+
 interface NHTSAApiResponse {
   Results: Array<{
     Make: string | null
@@ -89,7 +91,7 @@ function normalizeValue(value: string | null | undefined): string | null {
  * @returns VehicleData object if successful, null if decode fails
  */
 export async function decodeVin(vin: string): Promise<VehicleData | null> {
-  const url = `https://vpic.nhtsa.dot.gov/api/vehicles/DecodeVinValues/${vin}?format=json`
+  const url = `${NHTSA_VIN_DECODER}/api/vehicles/DecodeVinValues/${vin}?format=json`
 
   try {
     const response = await fetch(url)
