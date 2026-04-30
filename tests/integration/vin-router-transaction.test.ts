@@ -9,6 +9,7 @@ import { vinRouter } from '@/lib/orpc/routers/vin'
 import { createRouterClient } from '@orpc/server'
 import { ORPCError } from '@/lib/orpc/server'
 import * as nhtsaDecoder from '@/lib/services/nhtsa-decoder'
+import * as marketcheckDecoder from '@/lib/services/marketcheck-decoder'
 import { vi } from 'vitest'
 
 describe('VIN Router - Database Transaction (Task 4.3)', () => {
@@ -64,14 +65,27 @@ describe('VIN Router - Database Transaction (Task 4.3)', () => {
       fuelTypeSecondary: null,
       electrificationLevel: null,
     })
-  })
+
+    // Mock MarketCheck to prevent real API calls — PAID tier triggers MarketCheck
+    // without this mock the real API is called on every analyze, burning quota
+    vi.spyOn(marketcheckDecoder, 'decodeVinMarketCheck').mockResolvedValue(null)
+  }, 30000)
 
   afterEach(async () => {
+    // Guard against beforeEach partial failure leaving testOrg undefined
+    if (!testOrg) return
+
     // Clean up in reverse order of creation - scoped to test org only
-    await testDb.report.deleteMany({ where: { organizationId: testOrg.id } })
-    await testDb.vehicle.deleteMany({
-      where: { vin: '1HGBH41JXMN109186' },
-    })
+    await testDb.jobQueue.deleteMany({ where: { orgId: testOrg.id } })
+    await testDb.recall.deleteMany({})
+    // Delete ALL reports for this vehicle (across all orgs) before deleting the vehicle
+    // to avoid FK violations from reports created by other test runs
+    const vehicle = await testDb.vehicle.findUnique({ where: { vin: '1HGBH41JXMN109186' } })
+    if (vehicle) {
+      await testDb.jobQueue.deleteMany({ where: { report: { vehicleId: vehicle.id } } })
+      await testDb.report.deleteMany({ where: { vehicleId: vehicle.id } })
+      await testDb.vehicle.deleteMany({ where: { vin: '1HGBH41JXMN109186' } })
+    }
     await testDb.project.deleteMany({
       where: { id: testProject.id },
     })
@@ -79,7 +93,7 @@ describe('VIN Router - Database Transaction (Task 4.3)', () => {
     await TestUtils.cleanupUser(testUser.id)
 
     vi.restoreAllMocks()
-  })
+  }, 30000)
 
   describe('Atomic Transaction Operations', () => {
     it('should create vehicle, report, and decrement credits atomically', async () => {
@@ -131,6 +145,14 @@ describe('VIN Router - Database Transaction (Task 4.3)', () => {
     })
 
     it('should upsert vehicle when analyzing same VIN twice', async () => {
+      // Ensure clean state — previous test may have left a vehicle if its beforeEach timed out
+      const staleVehicle = await testDb.vehicle.findUnique({ where: { vin: '1HGBH41JXMN109186' } })
+      if (staleVehicle) {
+        await testDb.jobQueue.deleteMany({ where: { report: { vehicleId: staleVehicle.id } } })
+        await testDb.report.deleteMany({ where: { vehicleId: staleVehicle.id } })
+        await testDb.vehicle.deleteMany({ where: { vin: '1HGBH41JXMN109186' } })
+      }
+
       // #given: First analysis creates vehicle
       const context = {
         db: testDb,
@@ -153,6 +175,7 @@ describe('VIN Router - Database Transaction (Task 4.3)', () => {
       expect(vehicleCountAfterFirst).toBe(1)
 
       // #when: Same VIN is analyzed again with updated data
+      vi.spyOn(marketcheckDecoder, 'decodeVinMarketCheck').mockResolvedValue(null)
       vi.spyOn(nhtsaDecoder, 'decodeVin').mockResolvedValue({
         vin: '1HGBH41JXMN109186',
         make: 'Honda',
@@ -348,10 +371,12 @@ describe('VIN Router - Database Transaction (Task 4.3)', () => {
   describe('Timestamp Recording', () => {
     it('should record creation and update timestamps for vehicle and report', async () => {
       // #given: Valid VIN and project (ensure vehicle doesn't exist yet)
-      await testDb.report.deleteMany({ where: { organizationId: testOrg.id } })
-      await testDb.vehicle.deleteMany({
-        where: { vin: '1HGBH41JXMN109186' },
-      })
+      const existingVehicle = await testDb.vehicle.findUnique({ where: { vin: '1HGBH41JXMN109186' } })
+      if (existingVehicle) {
+        await testDb.jobQueue.deleteMany({ where: { report: { vehicleId: existingVehicle.id } } })
+        await testDb.report.deleteMany({ where: { vehicleId: existingVehicle.id } })
+        await testDb.vehicle.deleteMany({ where: { vin: '1HGBH41JXMN109186' } })
+      }
 
       const context = {
         db: testDb,

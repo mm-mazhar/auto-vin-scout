@@ -10,6 +10,9 @@ import { type EmailOtpType } from '@supabase/supabase-js'
 import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
 
+const allowedEmailsStr = process.env.ALLOWED_EMAILS || '';
+const allowedEmails = allowedEmailsStr.split(',').map(e => e.trim().toLowerCase()).filter(Boolean);
+
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url)
   const token_hash = searchParams.get('token_hash')
@@ -30,6 +33,13 @@ export async function GET(request: Request) {
     if (!error) {
       const { data: { user } } = await supabase.auth.getUser()
       if (user) {
+        // If an allowlist is configured, and the user's email isn't on it, block them.
+        if (allowedEmails.length > 0 && user.email && !allowedEmails.includes(user.email.toLowerCase())) {
+        console.warn(`[Auth] Blocked unauthorized login attempt from: ${user.email}`);
+        await supabase.auth.signOut();
+        return NextResponse.redirect(`${origin}/auth/auth-code-error?error=Unauthorized`);
+        }
+
         try {
           const userName = user.user_metadata?.full_name || user.email?.split('@')[0] || 'User'
           const [firstName, ...lastNameParts] = userName.split(' ')
@@ -96,6 +106,16 @@ export async function GET(request: Request) {
     if (!error) {
       const { data: { user } } = await supabase.auth.getUser()
       if (user) {
+        // --- NEW SECURITY BLOCK STARTS HERE ---
+        const allowedEmailsStr = process.env.ALLOWED_EMAILS || '';
+        const allowedEmails = allowedEmailsStr.split(',').map(e => e.trim().toLowerCase()).filter(Boolean);
+
+        if (allowedEmails.length > 0 && user.email && !allowedEmails.includes(user.email.toLowerCase())) {
+            console.warn(`[Auth] Blocked unauthorized login attempt from: ${user.email}`);
+            await supabase.auth.signOut(); // Immediately destroy their session
+            return NextResponse.redirect(`${origin}/auth/auth-code-error?error=Unauthorized`);
+        }
+        // --- NEW SECURITY BLOCK ENDS HERE ---
         try {
           const userName = user.user_metadata?.full_name || user.email?.split('@')[0] || 'User'
           const [firstName, ...lastNameParts] = userName.split(' ')

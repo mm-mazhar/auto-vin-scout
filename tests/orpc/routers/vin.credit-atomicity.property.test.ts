@@ -9,6 +9,7 @@ import { testDb, TestUtils } from '../../integration/setup'
 import { vinRouter } from '@/lib/orpc/routers/vin'
 import { createRouterClient } from '@orpc/server'
 import * as nhtsaDecoder from '@/lib/services/nhtsa-decoder'
+import * as marketcheckDecoder from '@/lib/services/marketcheck-decoder'
 import { vi } from 'vitest'
 
 /**
@@ -74,12 +75,23 @@ describe('VIN Router - Credit Atomicity Properties', () => {
       fuelTypeSecondary: null,
       electrificationLevel: null,
     })
+
+    // Mock MarketCheck to prevent real API calls — PAID tier triggers MarketCheck
+    // without this mock the real API is called on every analyze, burning quota
+    vi.spyOn(marketcheckDecoder, 'decodeVinMarketCheck').mockResolvedValue(null)
   })
 
   afterEach(async () => {
-    // Clean up in reverse order of creation - scoped to test org only
+    // Clean up in reverse order of creation
+    // Delete ALL reports for the shared mock VIN across all orgs before deleting the vehicle
+    const vehicle = await testDb.vehicle.findUnique({ where: { vin: '1HGBH41JXMN109186' } })
+    if (vehicle) {
+      await testDb.jobQueue.deleteMany({ where: { report: { vehicleId: vehicle.id } } })
+      await testDb.report.deleteMany({ where: { vehicleId: vehicle.id } })
+      await testDb.vehicle.deleteMany({ where: { vin: '1HGBH41JXMN109186' } })
+    }
+    // Also clean up any remaining reports for this org (from property test iterations)
     await testDb.report.deleteMany({ where: { organizationId: testOrg.id } })
-    await testDb.vehicle.deleteMany({})
     await testDb.project.deleteMany({
       where: { id: testProject.id },
     })

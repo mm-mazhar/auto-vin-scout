@@ -3,12 +3,14 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { AlertCircle, Car, Gauge, Info, MapPin, Wrench, FileText, TrendingUp, Shield, CheckSquare, TriangleAlert, Scale, Zap } from 'lucide-react'
+import { AlertCircle, Car, Gauge, Info, MapPin, Wrench, FileText, TrendingUp, Shield, CheckSquare, TriangleAlert, Scale, Zap, Bell } from 'lucide-react'
 import type { ReportWithVehicle, VehicleDetails } from '@/lib/orpc/routers/vin'
 import { PreviewReport } from './preview-report'
+import { RecallsSection } from './recalls-section'
 
 // Type for preview reports (from analyze output)
 type PreviewReportType = {
@@ -25,6 +27,7 @@ interface ReportPageProps {
 
 export function ReportPage({ report: initialReport, projectId }: ReportPageProps) {
   const [report, setReport] = useState(initialReport)
+  const router = useRouter()
   const { vehicle, status } = report
   const [activeTab, setActiveTab] = useState('executive')
 
@@ -42,18 +45,23 @@ export function ReportPage({ report: initialReport, projectId }: ReportPageProps
   const riskNarrative = !isPreview && 'riskNarrative' in report ? report.riskNarrative : null
   const isAiFallback = !isPreview && 'isAiFallback' in report ? report.isAiFallback : false
 
-  // Polling for PENDING reports (only for full reports)
+  // Polling for PENDING reports — uses router.refresh() to avoid full page reload
   useEffect(() => {
     if (isPreview || status !== 'PENDING') return
 
-    const pollInterval = setInterval(() => {
-      // Simple page reload when polling
-      window.location.reload()
-    }, 5000) // Poll every 5 seconds
+    const startTime = Date.now()
+    const MAX_POLL_MS = 120_000 // stop after 2 minutes
 
-    // Cleanup on unmount or status change
+    const pollInterval = setInterval(() => {
+      if (Date.now() - startTime > MAX_POLL_MS) {
+        clearInterval(pollInterval)
+        return
+      }
+      router.refresh()
+    }, 4000)
+
     return () => clearInterval(pollInterval)
-  }, [status, isPreview])
+  }, [status, isPreview, router])
 
   const getRiskColor = (label: string | null) => {
     switch (label) {
@@ -130,6 +138,81 @@ export function ReportPage({ report: initialReport, projectId }: ReportPageProps
   )
 }
 
+// Animated progress component shown while report is being analyzed
+const ANALYSIS_STEPS = [
+  { label: 'Vehicle Specs', icon: Car },
+  { label: 'NHTSA Recalls', icon: Bell },
+  { label: 'Market Data', icon: TrendingUp },
+  { label: 'Risk Assessment', icon: Shield },
+]
+
+function AnalysisProgress() {
+  const [activeStep, setActiveStep] = useState(0)
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setActiveStep((prev) => (prev + 1) % ANALYSIS_STEPS.length)
+    }, 1800)
+    return () => clearInterval(interval)
+  }, [])
+
+  const progress = ((activeStep + 1) / ANALYSIS_STEPS.length) * 100
+
+  return (
+    <div className="p-6 space-y-6">
+      <div className="text-center space-y-1">
+        <p className="text-sm font-medium">Analyzing vehicle risk factors...</p>
+        <p className="text-xs text-muted-foreground">This may take up to a minute</p>
+      </div>
+
+      {/* Progress bar */}
+      <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
+        <div
+          className="h-2 rounded-full bg-primary transition-all duration-700 ease-in-out"
+          style={{ width: `${progress}%` }}
+        />
+      </div>
+
+      {/* Step indicators */}
+      <div className="grid grid-cols-4 gap-2">
+        {ANALYSIS_STEPS.map((step, i) => {
+          const StepIcon = step.icon
+          return (
+            <div
+              key={step.label}
+              className={`flex flex-col items-center gap-1 p-2 rounded-lg transition-all duration-300 ${
+                i <= activeStep ? 'opacity-100' : 'opacity-30'
+              }`}
+            >
+              <StepIcon
+                className={`h-6 w-6 transition-colors duration-300 ${
+                  i === activeStep ? 'text-primary' : 'text-muted-foreground'
+                }`}
+              />
+              <span className="text-xs text-muted-foreground text-center">{step.label}</span>
+              {i === activeStep && (
+                <div className="flex gap-0.5">
+                  {[0, 1, 2].map((dot) => (
+                    <div
+                      key={dot}
+                      className="w-1 h-1 rounded-full bg-primary animate-bounce"
+                      style={{ animationDelay: `${dot * 150}ms` }}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+          )
+        })}
+      </div>
+
+      <p className="text-xs text-center text-muted-foreground">
+        <span className="text-foreground font-medium">{ANALYSIS_STEPS[activeStep].label}</span>
+      </p>
+    </div>
+  )
+}
+
 // Component for full reports with tabs
 interface FullReportWithTabsProps {
   report: ReportWithVehicle
@@ -168,9 +251,9 @@ function FullReportWithTabs({
           <TrendingUp className="h-4 w-4" />
           Market & Behavior
         </TabsTrigger>
-        <TabsTrigger value="safety" className="flex items-center gap-2" disabled>
+        <TabsTrigger value="safety" className="flex items-center gap-2">
           <Shield className="h-4 w-4" />
-          Safety & Environment
+          NHTSA Recalls
         </TabsTrigger>
         <TabsTrigger value="guidance" className="flex items-center gap-2" disabled>
           <CheckSquare className="h-4 w-4" />
@@ -498,16 +581,7 @@ function FullReportWithTabs({
           </CardHeader>
           <CardContent>
             {status === 'PENDING' && (
-              <div className="flex items-center gap-4 p-6 bg-muted/50 rounded-lg">
-                <Skeleton className="h-32 w-32 rounded-full" data-testid="skeleton" />
-                <div className="space-y-2 flex-1">
-                  <Skeleton className="h-4 w-[200px]" data-testid="skeleton" />
-                  <Skeleton className="h-4 w-[300px]" data-testid="skeleton" />
-                  <p className="text-sm text-muted-foreground mt-4">
-                    Analyzing vehicle risk factors... This may take up to 30 seconds.
-                  </p>
-                </div>
-              </div>
+              <AnalysisProgress />
             )}
 
             {status === 'COMPLETED' && (
@@ -663,28 +737,12 @@ function FullReportWithTabs({
         </Card>
       </TabsContent>
 
-      {/* Safety & Environment Tab - Placeholder */}
+      {/* Safety & Environment Tab */}
       <TabsContent value="safety" className="space-y-6">
-        <Card>
-          <CardHeader>
-            <div className="flex items-center gap-2">
-              <Shield className="h-5 w-5" />
-              <CardTitle>Safety & Environmental Risk</CardTitle>
-            </div>
-            <CardDescription>
-              Safety recalls, environmental hazards, and regulatory compliance
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center justify-center h-64 text-muted-foreground">
-              <div className="text-center">
-                <Shield className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p className="text-lg font-medium">Coming Soon</p>
-                <p className="text-sm">Safety recalls and environmental risk analysis will be available in a future update.</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <RecallsSection
+          recalls={vehicle.recalls ?? []}
+          vehicleLabel={`${vehicle.year} ${vehicle.make} ${vehicle.model}`}
+        />
       </TabsContent>
 
       {/* Buyer Guidance Tab - Placeholder */}

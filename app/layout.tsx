@@ -23,6 +23,7 @@ import {
   NEXT_PUBLIC_SITE_NAME,
   SITE_URL,
   SOCIAL_HANDLES,
+  ISLAUNCHED
 } from '@/lib/constants'
 
 const inter = Inter({ subsets: ['latin'] })
@@ -58,10 +59,9 @@ export const metadata: Metadata = {
   publisher: NEXT_PUBLIC_SITE_NAME,
 
   // Robots meta tag
-  robots: {
-    index: true,
-    follow: true,
-  },
+  robots: ISLAUNCHED
+    ? { index: true, follow: true }
+    : { index: false, follow: false, nocache: true },
 
   // Open Graph (for Facebook, LinkedIn, etc.)
   openGraph: {

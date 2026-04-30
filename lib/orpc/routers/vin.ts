@@ -5,8 +5,11 @@ import { after } from 'next/server'
 import { orgProcedure, adminProcedure } from '../procedures'
 import { ORPCError } from '../server'
 import { decodeVin } from '@/lib/services/nhtsa-decoder'
-import { decodeVinForTier, type EnhancedVehicleData } from '@/lib/services/vin-decoder'
+import { decodeVinForTier, needsMarketCheckUpgrade, type EnhancedVehicleData } from '@/lib/services/vin-decoder'
+import { decodeVinMarketCheck } from '@/lib/services/marketcheck-decoder'
 import { RiskEngineService } from '@/lib/services/risk-engine'
+import { fetchNHTSARecalls, upsertVehicleRecalls } from '@/lib/services/nhtsa-recalls'
+import { enqueueReportJob, acquireJobSlot, completeJob, failJob, retryStaleJobs } from '@/lib/services/job-queue'
 import type { PrismaClient } from '@prisma/client'
 import type { VehicleData } from '@/lib/services/nhtsa-decoder'
 
@@ -183,15 +186,54 @@ async function handlePaidFlow(db: PrismaClient, orgId: string, projectId: string
     return { report, vehicle }
   })
 
-  // Schedule Background Risk Assessment
+  // Schedule Background Risk Assessment via Job Queue
+  const jobId = await enqueueReportJob(result.report.id, orgId)
+
   after(async () => {
-    await RiskEngineService.generateRiskAssessment(result.report.id)
+    await retryStaleJobs()
+
+    const acquired = await acquireJobSlot(orgId, jobId)
+    if (!acquired) {
+      console.warn(`[JobQueue] Slot busy for org ${orgId}, job ${jobId} left PENDING`)
+      return
+    }
+
+    try {
+      const recallsResponse = await fetchNHTSARecalls(
+        result.vehicle.make,
+        result.vehicle.model,
+        result.vehicle.year
+      )
+
+      if (recallsResponse && recallsResponse.Count > 0) {
+        const upserted = await upsertVehicleRecalls(result.vehicle.id, recallsResponse.results)
+        console.log(`[JobQueue] Upserted ${upserted} recalls for vehicle ${result.vehicle.id}`)
+      }
+
+      // 200ms stagger before next external call (rate limit protection)
+      await new Promise((resolve) => setTimeout(resolve, 200))
+
+      await RiskEngineService.generateRiskAssessment(result.report.id)
+      await completeJob(jobId)
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : 'Unknown error'
+      console.error(`[JobQueue] Job ${jobId} failed:`, msg)
+      await failJob(jobId, msg)
+      // Mark the report as FAILED so the UI stops polling
+      await db.report.update({
+        where: { id: result.report.id },
+        data: { status: 'FAILED' },
+      }).catch((e) => console.error(`[JobQueue] Could not mark report as FAILED:`, e))
+    }
   })
 
   return {
     reportId: result.report.id,
     status: result.report.status,
-    vehicle: result.vehicle,
+    vehicle: {
+      ...result.vehicle,
+      decoderSource: result.vehicle.decoderSource as 'NHTSA' | 'MARKETCHECK' | 'NHTSA_FALLBACK',
+    },
     isPreview: false,
   }
 }
@@ -292,7 +334,10 @@ async function handleZeroCreditsFlow(db: PrismaClient, orgId: string, projectId:
   return {
     reportId: result.report.id,
     status: result.report.status,
-    vehicle: result.vehicle,
+    vehicle: {
+      ...result.vehicle,
+      decoderSource: result.vehicle.decoderSource as 'NHTSA' | 'MARKETCHECK' | 'NHTSA_FALLBACK',
+    },
     isPreview: true,
   }
 }
@@ -344,6 +389,23 @@ export const vinSchema = z
 export const reportStatusSchema = z.enum(['PENDING', 'COMPLETED', 'FAILED', 'FREE_PREVIEW', 'ZERO_CREDITS'])
 
 /**
+ * Recall display schema for UI rendering
+ */
+export const recallDisplaySchema = z.object({
+  id: z.string(),
+  campaignNumber: z.string(),
+  component: z.string(),
+  summary: z.string(),
+  consequence: z.string(),
+  remedy: z.string(),
+  parkIt: z.boolean(),
+  parkOutSide: z.boolean(),
+  overTheAirUpdate: z.boolean(),
+  reportReceivedDate: z.string().nullable(),
+  manufacturer: z.string().nullable(),
+})
+
+/**
  * Vehicle details output schema
  * Represents decoded vehicle information from NHTSA vPIC API and MarketCheck API
  */
@@ -383,7 +445,10 @@ export const vehicleDetailsSchema = z.object({
   
   // Decoder source tracking
   decoderSource: z.enum(['NHTSA', 'MARKETCHECK', 'NHTSA_FALLBACK']),
-  
+
+  // Recalls (populated for PAID tier reports)
+  recalls: z.array(recallDisplaySchema).optional(),
+
   createdAt: z.date(),
   updatedAt: z.date(),
 })
@@ -403,7 +468,6 @@ export const reportWithVehicleSchema = z.object({
   riskNarrative: z.string().nullable(),
   isAiFallback: z.boolean().default(false),
   marketData: z.any().nullable(),
-  recallData: z.any().nullable(),
   environmentalData: z.any().nullable(),
   createdAt: z.date(),
   updatedAt: z.date(),
@@ -526,10 +590,31 @@ export const vinRouter = {
       // Step 3: Determine user tier
       const tier = await determineUserTier(db, orgId)
 
-      // Step 4: Decode VIN using tier-appropriate decoder
-      // PAID tier uses MarketCheck with NHTSA fallback
-      // FREE_TIER/ZERO_CREDITS use NHTSA only
-      const vehicleData = await decodeVinForTier(vin, tier)
+      // Step 4: Decode VIN using tier-appropriate decoder with smart cache check
+      // For PAID tier: check if existing Vehicle record needs MarketCheck upgrade
+      // (prevents NHTSA-only cached records from blocking premium data for paid users)
+      const existingVehicle = await db.vehicle.findUnique({ where: { vin } })
+
+      let vehicleData: EnhancedVehicleData | null
+
+      if (needsMarketCheckUpgrade(existingVehicle, tier)) {
+        // PAID user with NHTSA-only cached record — force MarketCheck call
+        const premiumData = await decodeVinMarketCheck(vin)
+        if (premiumData) {
+          vehicleData = { ...premiumData, decoderSource: 'MARKETCHECK' }
+        } else {
+          // MarketCheck failed — fall back to NHTSA for fresh data
+          vehicleData = await decodeVinForTier(vin, 'PAID')
+          if (vehicleData) {
+            vehicleData = { ...vehicleData, decoderSource: 'NHTSA_FALLBACK' as const }
+          }
+        }
+      } else if (existingVehicle?.decoderSource === 'MARKETCHECK' && tier === 'PAID') {
+        // Cache hit — premium data already present, skip MarketCheck call
+        vehicleData = existingVehicle as unknown as EnhancedVehicleData
+      } else {
+        vehicleData = await decodeVinForTier(vin, tier)
+      }
 
       if (!vehicleData) {
         throw new ORPCError('BAD_REQUEST', {
@@ -597,7 +682,9 @@ export const vinRouter = {
           organizationId: orgId,
         },
         include: {
-          vehicle: true,
+          vehicle: {
+            include: { recalls: true },
+          },
         },
         orderBy: {
           createdAt: 'desc',
@@ -607,6 +694,10 @@ export const vinRouter = {
       // Cast riskLabel to match the expected enum type, handling legacy values
       return reports.map((report) => ({
         ...report,
+        vehicle: {
+          ...report.vehicle,
+          decoderSource: report.vehicle.decoderSource as 'NHTSA' | 'MARKETCHECK' | 'NHTSA_FALLBACK',
+        },
         riskLabel: (() => {
           if (!report.riskLabel) return null
           // Handle legacy values
@@ -683,6 +774,7 @@ export type DeleteOutput = z.infer<typeof deleteOutputSchema>
 export type VehicleDetails = z.infer<typeof vehicleDetailsSchema>
 export type ReportWithVehicle = z.infer<typeof reportWithVehicleSchema>
 export type ReportStatus = z.infer<typeof reportStatusSchema>
+export type RecallDisplay = z.infer<typeof recallDisplaySchema>
 
 /**
  * Export the determineUserTier function for use in other parts of the application

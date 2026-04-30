@@ -146,6 +146,13 @@ enum ReportStatus {
   ZERO_CREDITS
 }
 
+enum JobStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
 model Vehicle {
   id                   String  @id @default(cuid())
   vin                  String  @unique
@@ -184,6 +191,7 @@ model Vehicle {
   decoderSource        String  @default("NHTSA")
 
   reports Report[]
+  recalls Recall[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -205,13 +213,13 @@ model Report {
   riskNarrative     String? @db.Text
   isAiFallback      Boolean @default(false)
   marketData        Json?
-  recallData        Json?
   environmentalData Json?
 
   // Relations
   vehicle      Vehicle      @relation(fields: [vehicleId], references: [id])
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   project      Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  jobQueue     JobQueue?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -219,4 +227,42 @@ model Report {
   @@index([organizationId])
   @@index([projectId])
   @@index([vehicleId])
+}
+
+model Recall {
+  id                 String    @id @default(cuid())
+  vehicleId          String
+  campaignNumber     String    @unique
+  component          String
+  summary            String    @db.Text
+  consequence        String    @db.Text
+  remedy             String    @db.Text
+  notes              String?   @db.Text
+  parkIt             Boolean   @default(false)
+  parkOutSide        Boolean   @default(false)
+  overTheAirUpdate   Boolean   @default(false)
+  reportReceivedDate String?
+  manufacturer       String?
+  fetchedAt          DateTime  @default(now())
+
+  vehicle Vehicle @relation(fields: [vehicleId], references: [id])
+
+  @@index([vehicleId])
+  @@index([campaignNumber])
+}
+
+model JobQueue {
+  id          String    @id @default(cuid())
+  reportId    String    @unique
+  orgId       String
+  status      JobStatus @default(PENDING)
+  errorMsg    String?   @db.Text
+  createdAt   DateTime  @default(now())
+  startedAt   DateTime?
+  completedAt DateTime?
+
+  report Report @relation(fields: [reportId], references: [id], onDelete: Cascade)
+
+  @@index([orgId, status])
+  @@index([status, createdAt])
 }

@@ -1,13 +1,14 @@
 // app/app/robots.ts
 
 import type { MetadataRoute } from 'next';
+import { ISLAUNCHED } from '../../lib/constants'
 
 export default function robots(): MetadataRoute.Robots {
   // HARD-CODE to disallow everything during development
   // Switch this to 'true' only on launch day
-  const isLaunched = false; 
+  // const isLaunched = false; 
 
-  if (!isLaunched) {
+  if (!ISLAUNCHED) {
     return {
       rules: {
         userAgent: '*',

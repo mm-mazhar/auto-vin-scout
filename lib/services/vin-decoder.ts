@@ -11,6 +11,7 @@
 import { decodeVin, type VehicleData } from './nhtsa-decoder'
 import { decodeVinMarketCheck } from './marketcheck-decoder'
 import type { UserTier } from '@/lib/orpc/routers/vin'
+import type { Vehicle } from '@prisma/client'
 
 /**
  * Decoder source types
@@ -38,6 +39,25 @@ export interface EnhancedVehicleData extends VehicleData {
   
   // Decoder source tracking
   decoderSource: DecoderSource
+}
+
+/**
+ * Determines whether a cached Vehicle record must be refreshed via MarketCheck.
+ *
+ * Returns true only when a PAID-tier user has an existing record that was decoded
+ * by NHTSA — meaning premium fields are absent and MarketCheck should be called.
+ * Pure function — no side effects.
+ */
+export function needsMarketCheckUpgrade(
+  existingVehicle: Vehicle | null,
+  tier: UserTier
+): boolean {
+  if (!existingVehicle) return false
+  if (tier !== 'PAID') return false
+  return (
+    existingVehicle.decoderSource === 'NHTSA' ||
+    existingVehicle.decoderSource === 'NHTSA_FALLBACK'
+  )
 }
 
 /**

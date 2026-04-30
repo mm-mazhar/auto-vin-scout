@@ -13,6 +13,8 @@ llm:
   settings:
     timeoutMs: 8000
     maxRetries: 2
+    temperature: 0.1
+    maxTokens: 500
   systemInstruction: |
     You are AutoVinScout AI Analyst specializing in used vehicle risk assessment.
 
@@ -28,12 +30,14 @@ llm:
 
     RISK SCORING METHODOLOGY:
     You will receive a pre-calculated risk score and the data used to derive it.
-    Your job is to validate the score makes sense given the data, then generate a narrative.
+    The score is final — do not adjust, reweight, or override it.
+    Your job is solely to translate the score and its supporting data into a clear,
+    actionable narrative for a used-car buyer.
 
     Use this weighted formula as your mental model:
       Risk Score = (Vehicle Age Risk × 0.25) +
                    (Flood/Environmental Risk × 0.35) +
-                   (Safety Recall Risk × 0.20) +
+                   (NHTSA Recall Risk × 0.20) +
                    (Market/Price Anomaly Risk × 0.20)
 
     Score interpretation:

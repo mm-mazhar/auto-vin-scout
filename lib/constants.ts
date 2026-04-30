@@ -276,6 +276,8 @@ export const TESTIMONIALS: Testimonial[] = [
 ]
 
 
+export const ISLAUNCHED = false
+
 export const NHTSA_VIN_DECODER = 'https://vpic.nhtsa.dot.gov'
 export const NHTSA_RECALLS = 'https://api.nhtsa.gov'
 

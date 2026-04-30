@@ -8,6 +8,7 @@ import { testDb, TestUtils } from './setup'
 import { vinRouter } from '@/lib/orpc/routers/vin'
 import { createRouterClient } from '@orpc/server'
 import * as nhtsaDecoder from '@/lib/services/nhtsa-decoder'
+import * as marketcheckDecoder from '@/lib/services/marketcheck-decoder'
 import { vi } from 'vitest'
 
 describe('CreateReportDialog Integration Tests (Task 12.1)', () => {
@@ -18,6 +19,8 @@ describe('CreateReportDialog Integration Tests (Task 12.1)', () => {
 
   // Clean up any existing test data before starting
   beforeAll(async () => {
+    await testDb.recall.deleteMany({})
+    await testDb.report.deleteMany({})
     await testDb.vehicle.deleteMany({})
   })
 
@@ -78,14 +81,18 @@ describe('CreateReportDialog Integration Tests (Task 12.1)', () => {
       fuelTypeSecondary: null,
       electrificationLevel: 'None',
     })
+    // Mock MarketCheck to return null so tests use NHTSA data predictably
+    vi.spyOn(marketcheckDecoder, 'decodeVinMarketCheck').mockResolvedValue(null)
   })
 
   afterEach(async () => {
     // Clean up in reverse order of creation
+    await testDb.jobQueue.deleteMany({ where: { orgId: testOrg.id } })
+    await testDb.recall.deleteMany({})
     await testDb.report.deleteMany({
       where: { organizationId: testOrg.id },
     })
-    await testDb.vehicle.deleteMany({})
+    await testDb.vehicle.deleteMany({ where: { reports: { none: {} } } })
     await testDb.project.deleteMany({
       where: { id: testProject.id },
     })
@@ -369,6 +376,7 @@ describe('CreateReportDialog Integration Tests (Task 12.1)', () => {
         data: { credits: 10 },
       })
       vi.restoreAllMocks()
+      vi.spyOn(marketcheckDecoder, 'decodeVinMarketCheck').mockResolvedValue(null)
       vi.spyOn(nhtsaDecoder, 'decodeVin').mockResolvedValue({
         vin: '1HGBH41JXMN109186',
         make: 'Honda',

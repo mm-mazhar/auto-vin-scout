@@ -246,3 +246,4 @@ CREATE POLICY "Service role has full access" ON "OrganizationMember" FOR ALL USI
 CREATE POLICY "Service role has full access" ON "Project" FOR ALL USING (auth.role() = 'service_role');
 CREATE POLICY "Service role has full access" ON "OrganizationInvite" FOR ALL USING (auth.role() = 'service_role');
 CREATE POLICY "Service role has full access" ON "Subscription" FOR ALL USING (auth.role() = 'service_role');
+```

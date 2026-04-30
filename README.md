@@ -505,7 +505,9 @@ TRUNCATE TABLE
   public."Organization",
   public."User",
   public."Report",
-  public."Vehicle"
+  public."Vehicle",
+  public."JobQueue",
+  public."Recall"
 RESTART IDENTITY CASCADE;
 
 TRUNCATE TABLE auth.users CASCADE;

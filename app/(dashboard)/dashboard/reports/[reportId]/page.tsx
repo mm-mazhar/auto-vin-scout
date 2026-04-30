@@ -1,6 +1,7 @@
 // app/(dashboard)/dashboard/reports/[reportId]/page.tsx
 
 import { notFound } from 'next/navigation'
+import { after } from 'next/server'
 import { getRPCCaller } from '@/lib/orpc/rsc-client'
 import { ReportPage } from '@/app/(dashboard)/_components/report-page'
 import { ProjectService } from '@/lib/services/project-service'
@@ -8,6 +9,10 @@ import { getActiveProjectId } from '@/lib/project-helper'
 import { createClient } from '@/app/lib/supabase/server'
 import { cookies } from 'next/headers'
 import { decodeVin } from '@/lib/services/nhtsa-decoder'
+import prisma from '@/app/lib/db'
+import { retryStaleJobs, acquireJobSlot, completeJob, failJob } from '@/lib/services/job-queue'
+import { fetchNHTSARecalls, upsertVehicleRecalls } from '@/lib/services/nhtsa-recalls'
+import { RiskEngineService } from '@/lib/services/risk-engine'
 import type { ReportWithVehicle } from '@/lib/orpc/routers/vin'
 
 interface ReportPageProps {
@@ -109,6 +114,39 @@ export default async function ReportPageRoute({ params, searchParams }: ReportPa
     
     if (!report) {
       notFound()
+    }
+
+    // If report is PENDING, check if there's a stuck PENDING job and retry it
+    if (report.status === 'PENDING') {
+      const pendingJob = await prisma.jobQueue.findFirst({
+        where: { reportId, status: 'PENDING' },
+      })
+
+      if (pendingJob) {
+        after(async () => {
+          await retryStaleJobs()
+          const acquired = await acquireJobSlot(pendingJob.orgId, pendingJob.id)
+          if (!acquired) return
+
+          try {
+            const vehicle = await prisma.vehicle.findUnique({ where: { id: report.vehicleId } })
+            if (vehicle) {
+              const recallsResponse = await fetchNHTSARecalls(vehicle.make, vehicle.model, vehicle.year)
+              if (recallsResponse && recallsResponse.Count > 0) {
+                await upsertVehicleRecalls(vehicle.id, recallsResponse.results)
+              }
+              await new Promise((resolve) => setTimeout(resolve, 200))
+            }
+            await RiskEngineService.generateRiskAssessment(reportId)
+            await completeJob(pendingJob.id)
+          } catch (error) {
+            const msg = error instanceof Error ? error.message : 'Unknown error'
+            await failJob(pendingJob.id, msg)
+            await prisma.report.update({ where: { id: reportId }, data: { status: 'FAILED' } })
+              .catch(() => {})
+          }
+        })
+      }
     }
     
     return <ReportPage report={report} projectId={activeProjectId} />

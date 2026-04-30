@@ -18,6 +18,8 @@ type LLMConfig = {
     settings: {
       timeoutMs: number
       maxRetries: number
+      temperature: number
+      maxTokens: number
     }
     systemInstruction: string
   }
