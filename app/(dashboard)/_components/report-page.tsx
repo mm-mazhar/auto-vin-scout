@@ -31,6 +31,11 @@ export function ReportPage({ report: initialReport, projectId }: ReportPageProps
   const { vehicle, status } = report
   const [activeTab, setActiveTab] = useState('executive')
 
+  // Sync local state when the server re-renders with fresh data (router.refresh())
+  useEffect(() => {
+    setReport(initialReport)
+  }, [initialReport])
+
   // Check if this is a preview report
   const isPreview = 'isPreview' in report && report.isPreview
 
@@ -45,7 +50,9 @@ export function ReportPage({ report: initialReport, projectId }: ReportPageProps
   const riskNarrative = !isPreview && 'riskNarrative' in report ? report.riskNarrative : null
   const isAiFallback = !isPreview && 'isAiFallback' in report ? report.isAiFallback : false
 
-  // Polling for PENDING reports — uses router.refresh() to avoid full page reload
+  // Polling for PENDING reports — uses router.refresh() to trigger server re-render
+  // The effect re-runs whenever status changes, so it stops automatically when
+  // the server returns COMPLETED/FAILED (setReport above updates status)
   useEffect(() => {
     if (isPreview || status !== 'PENDING') return
 
@@ -156,8 +163,6 @@ function AnalysisProgress() {
     return () => clearInterval(interval)
   }, [])
 
-  const progress = ((activeStep + 1) / ANALYSIS_STEPS.length) * 100
-
   return (
     <div className="p-6 space-y-6">
       <div className="text-center space-y-1">
@@ -165,32 +170,31 @@ function AnalysisProgress() {
         <p className="text-xs text-muted-foreground">This may take up to a minute</p>
       </div>
 
-      {/* Progress bar */}
+      {/* Indeterminate progress bar — no fake percentage */}
       <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
-        <div
-          className="h-2 rounded-full bg-primary transition-all duration-700 ease-in-out"
-          style={{ width: `${progress}%` }}
-        />
+        <div className="h-2 rounded-full bg-primary w-1/3 animate-[indeterminate_1.8s_ease-in-out_infinite]" />
       </div>
 
       {/* Step indicators */}
       <div className="grid grid-cols-4 gap-2">
         {ANALYSIS_STEPS.map((step, i) => {
           const StepIcon = step.icon
+          const isActive = i === activeStep
+          const isPast = i < activeStep
           return (
             <div
               key={step.label}
               className={`flex flex-col items-center gap-1 p-2 rounded-lg transition-all duration-300 ${
-                i <= activeStep ? 'opacity-100' : 'opacity-30'
+                isActive || isPast ? 'opacity-100' : 'opacity-30'
               }`}
             >
               <StepIcon
                 className={`h-6 w-6 transition-colors duration-300 ${
-                  i === activeStep ? 'text-primary' : 'text-muted-foreground'
+                  isActive ? 'text-primary' : isPast ? 'text-primary/60' : 'text-muted-foreground'
                 }`}
               />
               <span className="text-xs text-muted-foreground text-center">{step.label}</span>
-              {i === activeStep && (
+              {isActive && (
                 <div className="flex gap-0.5">
                   {[0, 1, 2].map((dot) => (
                     <div
