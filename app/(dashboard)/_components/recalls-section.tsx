@@ -128,7 +128,7 @@ export function RecallsSection({ recalls, vehicleLabel }: RecallsSectionProps) {
           <div className="flex items-center gap-3 p-4 rounded-lg bg-green-500/10 border border-green-500/20">
             <CheckCircle className="h-5 w-5 text-green-500 shrink-0" />
             <div>
-              <p className="text-sm font-medium">No open recalls found</p>
+              <p className="text-sm font-medium">No recalls found</p>
               <p className="text-xs text-muted-foreground mt-0.5">
                 Confirmed via NHTSA. Always verify independently at{' '}
                 <a
