@@ -89,7 +89,6 @@ describe('NHTSA Recalls & Caching Infrastructure — Integration Tests', () => {
   })
 
   afterEach(async () => {
-    await testDb.jobQueue.deleteMany({ where: { orgId: testOrg.id } })
     await testDb.recall.deleteMany({})
     await testDb.report.deleteMany({ where: { organizationId: testOrg.id } })
     await testDb.recall.deleteMany({})
@@ -123,8 +122,8 @@ describe('NHTSA Recalls & Caching Infrastructure — Integration Tests', () => {
           },
         })
 
+        // Create a fresh spy for this iteration only
         const fetchSpy = vi.spyOn(nhtsaRecalls, 'fetchNHTSARecalls')
-        fetchSpy.mockClear() // reset call count for this iteration
 
         const context = {
           db: testDb,
@@ -138,14 +137,15 @@ describe('NHTSA Recalls & Caching Infrastructure — Integration Tests', () => {
         // #when: analyze VIN
         await client.vin.analyze({ vin: VALID_VIN, projectId: testProject.id })
 
-        // #then: fetchNHTSARecalls never called
+        // #then: fetchNHTSARecalls never called for this tier
         expect(fetchSpy).not.toHaveBeenCalled()
 
         // #then: no Recall records written
         const recalls = await testDb.recall.findMany({})
         expect(recalls.length).toBe(0)
 
-        // Cleanup subscription if created
+        // Cleanup
+        fetchSpy.mockRestore()
         if (tier === 'ZERO_CREDITS') {
           await testDb.subscription.deleteMany({ where: { organizationId: testOrg.id } })
         }
@@ -280,11 +280,6 @@ describe('NHTSA Recalls & Caching Infrastructure — Integration Tests', () => {
     // #then: report created with PENDING status
     expect(result.reportId).toBeDefined()
     expect(result.status).toBe('PENDING')
-
-    // #then: JobQueue record created
-    const job = await testDb.jobQueue.findUnique({ where: { reportId: result.reportId! } })
-    expect(job).toBeDefined()
-    expect(job?.status).toBe('PENDING')
 
     // Note: The after() callback runs asynchronously — we can't easily await it in tests
     // without mocking the entire Next.js after() mechanism. This test verifies the

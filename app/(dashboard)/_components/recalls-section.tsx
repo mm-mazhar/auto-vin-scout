@@ -132,7 +132,7 @@ export function RecallsSection({ recalls, vehicleLabel }: RecallsSectionProps) {
               <p className="text-xs text-muted-foreground mt-0.5">
                 Confirmed via NHTSA. Always verify independently at{' '}
                 <a
-                  href="https://www.nhtsa.gov/vehicle-safety/recalls"
+                  href="https://www.nhtsa.gov/recalls"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="underline hover:text-foreground"

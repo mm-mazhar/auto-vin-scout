@@ -86,16 +86,20 @@ describe('CreateReportDialog Integration Tests (Task 12.1)', () => {
   })
 
   afterEach(async () => {
-    // Clean up in reverse order of creation
-    await testDb.jobQueue.deleteMany({ where: { orgId: testOrg.id } })
+    // Clean up in reverse order of creation (children before parents)
+    // Delete all recalls first (they reference vehicles)
     await testDb.recall.deleteMany({})
+    // Then delete reports (they reference vehicles)
     await testDb.report.deleteMany({
       where: { organizationId: testOrg.id },
     })
-    await testDb.vehicle.deleteMany({ where: { reports: { none: {} } } })
+    // Then delete vehicles (now safe, no FK constraints)
+    await testDb.vehicle.deleteMany({})
+    // Then delete projects
     await testDb.project.deleteMany({
       where: { id: testProject.id },
     })
+    // Finally cleanup org and user
     await TestUtils.cleanupOrganization(testOrg.id)
     await TestUtils.cleanupUser(testUser.id)
 

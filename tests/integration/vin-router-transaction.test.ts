@@ -76,13 +76,11 @@ describe('VIN Router - Database Transaction (Task 4.3)', () => {
     if (!testOrg) return
 
     // Clean up in reverse order of creation - scoped to test org only
-    await testDb.jobQueue.deleteMany({ where: { orgId: testOrg.id } })
     await testDb.recall.deleteMany({})
     // Delete ALL reports for this vehicle (across all orgs) before deleting the vehicle
     // to avoid FK violations from reports created by other test runs
     const vehicle = await testDb.vehicle.findUnique({ where: { vin: '1HGBH41JXMN109186' } })
     if (vehicle) {
-      await testDb.jobQueue.deleteMany({ where: { report: { vehicleId: vehicle.id } } })
       await testDb.report.deleteMany({ where: { vehicleId: vehicle.id } })
       await testDb.vehicle.deleteMany({ where: { vin: '1HGBH41JXMN109186' } })
     }
@@ -148,7 +146,6 @@ describe('VIN Router - Database Transaction (Task 4.3)', () => {
       // Ensure clean state — previous test may have left a vehicle if its beforeEach timed out
       const staleVehicle = await testDb.vehicle.findUnique({ where: { vin: '1HGBH41JXMN109186' } })
       if (staleVehicle) {
-        await testDb.jobQueue.deleteMany({ where: { report: { vehicleId: staleVehicle.id } } })
         await testDb.report.deleteMany({ where: { vehicleId: staleVehicle.id } })
         await testDb.vehicle.deleteMany({ where: { vin: '1HGBH41JXMN109186' } })
       }
@@ -373,7 +370,6 @@ describe('VIN Router - Database Transaction (Task 4.3)', () => {
       // #given: Valid VIN and project (ensure vehicle doesn't exist yet)
       const existingVehicle = await testDb.vehicle.findUnique({ where: { vin: '1HGBH41JXMN109186' } })
       if (existingVehicle) {
-        await testDb.jobQueue.deleteMany({ where: { report: { vehicleId: existingVehicle.id } } })
         await testDb.report.deleteMany({ where: { vehicleId: existingVehicle.id } })
         await testDb.vehicle.deleteMany({ where: { vin: '1HGBH41JXMN109186' } })
       }

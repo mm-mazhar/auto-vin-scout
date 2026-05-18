@@ -86,7 +86,6 @@ describe('VIN Router - Credit Atomicity Properties', () => {
     // Delete ALL reports for the shared mock VIN across all orgs before deleting the vehicle
     const vehicle = await testDb.vehicle.findUnique({ where: { vin: '1HGBH41JXMN109186' } })
     if (vehicle) {
-      await testDb.jobQueue.deleteMany({ where: { report: { vehicleId: vehicle.id } } })
       await testDb.report.deleteMany({ where: { vehicleId: vehicle.id } })
       await testDb.vehicle.deleteMany({ where: { vin: '1HGBH41JXMN109186' } })
     }

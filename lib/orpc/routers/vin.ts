@@ -1,15 +1,12 @@
 // lib/orpc/routers/vin.ts
 
 import * as z from 'zod'
-import { after } from 'next/server'
 import { orgProcedure, adminProcedure } from '../procedures'
 import { ORPCError } from '../server'
 import { decodeVin } from '@/lib/services/nhtsa-decoder'
 import { decodeVinForTier, needsMarketCheckUpgrade, type EnhancedVehicleData } from '@/lib/services/vin-decoder'
 import { decodeVinMarketCheck } from '@/lib/services/marketcheck-decoder'
-import { RiskEngineService } from '@/lib/services/risk-engine'
-import { fetchNHTSARecalls, upsertVehicleRecalls } from '@/lib/services/nhtsa-recalls'
-import { enqueueReportJob, acquireJobSlot, completeJob, failJob, retryStaleJobs } from '@/lib/services/job-queue'
+import { inngest, analyzeReportEvent } from '@/lib/inngest/client'
 import type { PrismaClient } from '@prisma/client'
 import type { VehicleData } from '@/lib/services/nhtsa-decoder'
 
@@ -71,26 +68,36 @@ function createVehicleResponse(vehicleData: EnhancedVehicleData) {
  * @param vehicleData - Enhanced vehicle data
  * @returns Free preview response with temporary vehicle ID
  */
-function handleFreeTierFlow(vehicleData: EnhancedVehicleData) {
+function handleFreeTierFlow(vehicleData: EnhancedVehicleData): {
+  reportId: null
+  status: 'FREE_PREVIEW'
+  vehicle: ReturnType<typeof createVehicleResponse>
+  isPreview: true
+} {
   return {
     reportId: null,
     status: 'FREE_PREVIEW' as const,
     vehicle: createVehicleResponse(vehicleData),
-    isPreview: true,
+    isPreview: true as const,
   }
 }
 
 /**
  * Handle Paid Flow
- * Full analysis with database save, credit deduction, and risk assessment
+ * Full analysis with database save, credit deduction, and risk assessment via Inngest
  * 
  * @param db - Prisma client instance
  * @param orgId - Organization ID
  * @param projectId - Project ID
  * @param vehicleData - Enhanced vehicle data (NHTSA or MarketCheck)
- * @returns Full report response
+ * @returns Full report response with PENDING status (Inngest will complete async)
  */
-async function handlePaidFlow(db: PrismaClient, orgId: string, projectId: string, vehicleData: EnhancedVehicleData) {
+async function handlePaidFlow(db: PrismaClient, orgId: string, projectId: string, vehicleData: EnhancedVehicleData): Promise<{
+  reportId: string
+  status: 'PENDING' | 'COMPLETED' | 'FAILED'
+  vehicle: ReturnType<typeof createVehicleResponse>
+  isPreview: false
+}> {
   // Database Transaction
   const result = await db.$transaction(async (tx) => {
     // Upsert Vehicle (update if exists, create if not)
@@ -186,55 +193,28 @@ async function handlePaidFlow(db: PrismaClient, orgId: string, projectId: string
     return { report, vehicle }
   })
 
-  // Schedule Background Risk Assessment via Job Queue
-  const jobId = await enqueueReportJob(result.report.id, orgId)
-
-  after(async () => {
-    await retryStaleJobs()
-
-    const acquired = await acquireJobSlot(orgId, jobId)
-    if (!acquired) {
-      console.warn(`[JobQueue] Slot busy for org ${orgId}, job ${jobId} left PENDING`)
-      return
-    }
-
-    try {
-      const recallsResponse = await fetchNHTSARecalls(
-        result.vehicle.make,
-        result.vehicle.model,
-        result.vehicle.year
-      )
-
-      if (recallsResponse && recallsResponse.Count > 0) {
-        const upserted = await upsertVehicleRecalls(result.vehicle.id, recallsResponse.results)
-        console.log(`[JobQueue] Upserted ${upserted} recalls for vehicle ${result.vehicle.id}`)
-      }
-
-      // 200ms stagger before next external call (rate limit protection)
-      await new Promise((resolve) => setTimeout(resolve, 200))
-
-      await RiskEngineService.generateRiskAssessment(result.report.id)
-      await completeJob(jobId)
-    } catch (error) {
-      const msg = error instanceof Error ? error.message : 'Unknown error'
-      console.error(`[JobQueue] Job ${jobId} failed:`, msg)
-      await failJob(jobId, msg)
-      // Mark the report as FAILED so the UI stops polling
-      await db.report.update({
-        where: { id: result.report.id },
-        data: { status: 'FAILED' },
-      }).catch((e) => console.error(`[JobQueue] Could not mark report as FAILED:`, e))
-    }
-  })
+  // Dispatch Inngest event for async risk assessment.
+  // Only PAID tier (users with credits) trigger Inngest.
+  // Requirements: 6.1, 6.2, 6.3, 6.4
+  await inngest.send(
+    analyzeReportEvent.create({
+      reportId: result.report.id,
+      orgId,
+      vehicleId: result.vehicle.id,
+      vehicleMake: result.vehicle.make,
+      vehicleModel: result.vehicle.model,
+      vehicleYear: result.vehicle.year,
+    })
+  )
 
   return {
     reportId: result.report.id,
-    status: result.report.status,
+    status: result.report.status as 'PENDING' | 'COMPLETED' | 'FAILED',
     vehicle: {
       ...result.vehicle,
       decoderSource: result.vehicle.decoderSource as 'NHTSA' | 'MARKETCHECK' | 'NHTSA_FALLBACK',
     },
-    isPreview: false,
+    isPreview: false as const,
   }
 }
 
@@ -248,7 +228,12 @@ async function handlePaidFlow(db: PrismaClient, orgId: string, projectId: string
  * @param vehicleData - Enhanced vehicle data (NHTSA or MarketCheck)
  * @returns Zero credits response
  */
-async function handleZeroCreditsFlow(db: PrismaClient, orgId: string, projectId: string, vehicleData: EnhancedVehicleData) {
+async function handleZeroCreditsFlow(db: PrismaClient, orgId: string, projectId: string, vehicleData: EnhancedVehicleData): Promise<{
+  reportId: string
+  status: 'ZERO_CREDITS'
+  vehicle: ReturnType<typeof createVehicleResponse>
+  isPreview: true
+}> {
   const result = await db.$transaction(async (tx) => {
     const vehicle = await tx.vehicle.upsert({
       where: { vin: vehicleData.vin },
@@ -333,12 +318,12 @@ async function handleZeroCreditsFlow(db: PrismaClient, orgId: string, projectId:
 
   return {
     reportId: result.report.id,
-    status: result.report.status,
+    status: result.report.status as 'ZERO_CREDITS',
     vehicle: {
       ...result.vehicle,
       decoderSource: result.vehicle.decoderSource as 'NHTSA' | 'MARKETCHECK' | 'NHTSA_FALLBACK',
     },
-    isPreview: true,
+    isPreview: true as const,
   }
 }
 
@@ -488,12 +473,26 @@ export const analyzeInputSchema = z.object({
  * Supports free tier preview functionality with nullable reportId and isPreview flag
  * Validates: Requirements 6.3, 9.2
  */
-export const analyzeOutputSchema = z.object({
-  reportId: z.string().nullable(),
-  status: reportStatusSchema,
-  vehicle: vehicleDetailsSchema,
-  isPreview: z.boolean().default(false),
-})
+export const analyzeOutputSchema = z.union([
+  z.object({
+    reportId: z.string(),
+    status: z.enum(['PENDING', 'COMPLETED', 'FAILED']),
+    vehicle: vehicleDetailsSchema,
+    isPreview: z.literal(false),
+  }),
+  z.object({
+    reportId: z.string(),
+    status: z.literal('ZERO_CREDITS'),
+    vehicle: vehicleDetailsSchema,
+    isPreview: z.literal(true),
+  }),
+  z.object({
+    reportId: z.null(),
+    status: z.literal('FREE_PREVIEW'),
+    vehicle: vehicleDetailsSchema,
+    isPreview: z.literal(true),
+  }),
+])
 
 /**
  * Input schema for list procedure
@@ -627,13 +626,13 @@ export const vinRouter = {
       const hasSubscriptionHistory = organization.subscription !== null
 
       if (hasCredits) {
-        // PAID FLOW: Full analysis with DB save and credit deduction
+        // PAID FLOW: Full analysis with DB save, credit deduction, and Inngest dispatch
         return await handlePaidFlow(db, orgId, projectId, vehicleData)
       } else if (hasSubscriptionHistory) {
-        // ZERO CREDITS FLOW: Save to DB but no risk assessment
+        // ZERO CREDITS FLOW: Save to DB but no Inngest dispatch (no risk assessment)
         return await handleZeroCreditsFlow(db, orgId, projectId, vehicleData)
       } else {
-        // FREE TIER FLOW: No DB save, just return NHTSA data
+        // FREE TIER FLOW: No DB save, no Inngest dispatch, just return NHTSA data
         return handleFreeTierFlow(vehicleData)
       }
     }),

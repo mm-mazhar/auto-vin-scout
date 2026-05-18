@@ -15,7 +15,8 @@ export default defineConfig({
       include: ['lib/**', 'app/**'],
       exclude: ['**/*.test.ts', '**/*.spec.ts', '**/node_modules/**'],
     },
-    testTimeout: 30000, // Increased timeout for database operations
+    testTimeout: 60000, // Increased from 30s to 60s for slow database operations and Inngest processing
+    hookTimeout: 30000, // Increased from 10s to 30s for cleanup operations
   },
   resolve: {
     alias: {

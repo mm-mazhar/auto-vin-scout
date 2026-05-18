@@ -49,10 +49,20 @@ export async function fetchNHTSARecalls(
 
     clearTimeout(timeoutId)
 
+    // 404: Vehicle not found in NHTSA database (no recalls)
     if (response.status === 404) {
+      console.info(`[NHTSARecalls] Vehicle not found (404) for ${make} ${model} ${year} — treating as no recalls`)
       return EMPTY_RESPONSE
     }
 
+    // 400: Bad request (invalid vehicle parameters, unsupported make/model/year)
+    // Treat as "no recalls available" rather than a network error
+    if (response.status === 400) {
+      console.info(`[NHTSARecalls] Bad request (400) for ${make} ${model} ${year} — vehicle may be invalid or unsupported, treating as no recalls`)
+      return EMPTY_RESPONSE
+    }
+
+    // Other non-2xx errors: network/server error, should retry
     if (!response.ok) {
       console.warn(`[NHTSARecalls] API returned status ${response.status} for ${make} ${model} ${year}`)
       return null
@@ -119,7 +129,16 @@ export async function upsertVehicleRecalls(
       })
       upserted++
     } catch (error) {
-      console.warn(`[NHTSARecalls] Failed to upsert recall ${recall.NHTSACampaignNumber}:`, error)
+      // Log FK constraint violations but don't fail — this can happen in test isolation scenarios
+      // or if the vehicle was deleted between report creation and recall upsert
+      if (error instanceof Error && error.message.includes('Recall_vehicleId_fkey')) {
+        console.warn(
+          `[NHTSARecalls] FK constraint violation for recall ${recall.NHTSACampaignNumber} and vehicleId ${vehicleId}. ` +
+          `Vehicle may not exist or may have been deleted. Skipping this recall.`
+        )
+      } else {
+        console.warn(`[NHTSARecalls] Failed to upsert recall ${recall.NHTSACampaignNumber}:`, error)
+      }
     }
   }
 
