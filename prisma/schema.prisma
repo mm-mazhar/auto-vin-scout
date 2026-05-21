@@ -183,8 +183,9 @@ model Vehicle {
   // Decoder source tracking
   decoderSource        String  @default("NHTSA")
 
-  reports Report[]
-  recalls Recall[]
+  reports        Report[]
+  recalls        Recall[]
+  listingHistory VehicleListingHistory[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -208,10 +209,14 @@ model Report {
   marketData        Json?
   environmentalData Json?
 
+  executiveSummary  String? @db.Text
+  negotiationScript String? @db.Text
+
   // Relations
-  vehicle      Vehicle      @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
-  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  project      Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  vehicle        Vehicle            @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  organization   Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  project        Project            @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  vectorResults  RiskVectorResult[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -241,5 +246,57 @@ model Recall {
 
   @@index([vehicleId])
   @@index([campaignNumber])
+}
+
+model VehicleListingHistory {
+  id                 String    @id @default(cuid())
+  vehicleId          String
+  externalListingId  String    // MarketCheck "id" field
+  price              Float?
+  miles              Int?
+  msrp               Float?
+  sellerType         String?   // "dealer", "fsbo", "auction"
+  inventoryType      String?   // "new", "used"
+  isCertified        Boolean?
+  exteriorColor      String?
+  interiorColor      String?
+  dom                Int?      // Days on market (lifetime)
+  statusDate         DateTime?
+  firstSeenAt        DateTime?
+  lastSeenAt         DateTime?
+  sellerName         String?
+  city               String?
+  state              String?
+  zip                String?
+  latitude           Float?
+  longitude          Float?
+  source             String?   // Source website
+  vdpUrl             String?   // Vehicle Detail Page URL
+  dataSource         String?   // MarketCheck data_source field
+  fetchedAt          DateTime  @default(now())
+
+  vehicle Vehicle @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+
+  @@unique([vehicleId, externalListingId])
+  @@index([vehicleId])
+  @@index([statusDate])
+}
+
+model RiskVectorResult {
+  id          String   @id @default(cuid())
+  reportId    String
+  vectorIndex Int      // 0, 1, 2, ... (ordering)
+  vectorName  String   // "Baseline Health & Market Anomalies"
+  score       Int      // 0-100
+  label       String   // "Low", "Medium", "High"
+  weight      Float    // 0.0-1.0 (e.g., 0.20)
+  narrative   String   @db.Text
+  metadata    Json?    // Agent-specific structured data
+  createdAt   DateTime @default(now())
+
+  report Report @relation(fields: [reportId], references: [id], onDelete: Cascade)
+
+  @@index([reportId])
+  @@index([vectorIndex])
 }
 

@@ -1,14 +1,11 @@
 // lib/services/risk-engine.ts
+// ⚠️ DEPRECATED: Superseded by lib/services/risk-engine/orchestrator.ts
+// Kept temporarily for backward compatibility with legacy integration tests.
 
 import OpenAI from 'openai'
 import prisma from '@/app/lib/db'
 import { GoogleGenAI } from '@google/genai'
-import {
-  getFallbackLLMConfig,
-  getLLMSettings,
-  getPrimaryLLMConfig,
-  getSystemInstruction,
-} from '@/lib/ai-config'
+import { getAgentConfig } from '@/lib/ai-config'
 
 export class RiskEngineService {
   static async generateRiskAssessment(reportId: string): Promise<void> {
@@ -82,10 +79,8 @@ export class RiskEngineService {
         riskScore <= 30 ? 'Low' : riskScore <= 60 ? 'Moderate' : 'High'
 
       // Step 2c — AI Narrative Generation
-      const primary = getPrimaryLLMConfig()
-      const fallback = getFallbackLLMConfig()
-      const settings = getLLMSettings()
-      const systemInstruction = getSystemInstruction()
+      const config = getAgentConfig('baseline')
+      const systemInstruction = config.systemInstruction
 
       const userPrompt = `
 Vehicle Details:
@@ -164,16 +159,16 @@ Format: Return only the 3 bullets, one per line, starting with •
           try {
             const client = new OpenAI({
               apiKey: openRouterKey,
-              baseURL: primary.baseUrl,
+              baseURL: config.primary.baseUrl,
             })
             const response = await client.chat.completions.create({
-              model: primary.model,
+              model: config.primary.model,
               messages: [
                 { role: 'system', content: systemInstruction },
                 { role: 'user', content: userPrompt },
               ],
-              temperature: settings.temperature,
-              max_tokens: settings.maxTokens,
+              temperature: config.temperature,
+              max_tokens: config.maxTokens,
             })
             const text = response.choices[0]?.message?.content?.trim()
             if (text) return text
@@ -189,12 +184,12 @@ Format: Return only the 3 bullets, one per line, starting with •
           try {
             const ai = new GoogleGenAI({ apiKey: googleKey })
             const response = await ai.models.generateContent({
-              model: fallback.model,
+              model: config.fallback.model,
               contents: userPrompt,
               config: {
                 systemInstruction,
-                temperature: settings.temperature,
-                maxOutputTokens: settings.maxTokens,
+                temperature: config.temperature,
+                maxOutputTokens: config.maxTokens,
               }
             })
             const text = response.text?.trim()

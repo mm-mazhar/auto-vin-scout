@@ -391,6 +391,52 @@ export const recallDisplaySchema = z.object({
 })
 
 /**
+ * RiskVectorResult display schema for UI rendering
+ */
+export const riskVectorResultSchema = z.object({
+  id: z.string(),
+  vectorIndex: z.number(),
+  vectorName: z.string(),
+  score: z.number().min(0).max(100),
+  label: z.string(),
+  weight: z.number(),
+  narrative: z.string(),
+  metadata: z.any().nullable(),
+  createdAt: z.date(),
+})
+
+/**
+ * VehicleListingHistory display schema for UI rendering
+ */
+export const vehicleListingHistorySchema = z.object({
+  id: z.string(),
+  vehicleId: z.string(),
+  externalListingId: z.string(),
+  price: z.number().nullable(),
+  miles: z.number().nullable(),
+  msrp: z.number().nullable(),
+  sellerType: z.string().nullable(),
+  inventoryType: z.string().nullable(),
+  isCertified: z.boolean().nullable(),
+  exteriorColor: z.string().nullable(),
+  interiorColor: z.string().nullable(),
+  dom: z.number().nullable(),
+  statusDate: z.date().nullable(),
+  firstSeenAt: z.date().nullable(),
+  lastSeenAt: z.date().nullable(),
+  sellerName: z.string().nullable(),
+  city: z.string().nullable(),
+  state: z.string().nullable(),
+  zip: z.string().nullable(),
+  latitude: z.number().nullable(),
+  longitude: z.number().nullable(),
+  source: z.string().nullable(),
+  vdpUrl: z.string().nullable(),
+  dataSource: z.string().nullable(),
+  fetchedAt: z.date(),
+})
+
+/**
  * Vehicle details output schema
  * Represents decoded vehicle information from NHTSA vPIC API and MarketCheck API
  */
@@ -434,6 +480,9 @@ export const vehicleDetailsSchema = z.object({
   // Recalls (populated for PAID tier reports)
   recalls: z.array(recallDisplaySchema).optional(),
 
+  // Listing history (populated when included in query)
+  listingHistory: z.array(vehicleListingHistorySchema).optional(),
+
   createdAt: z.date(),
   updatedAt: z.date(),
 })
@@ -454,9 +503,12 @@ export const reportWithVehicleSchema = z.object({
   isAiFallback: z.boolean().default(false),
   marketData: z.any().nullable(),
   environmentalData: z.any().nullable(),
+  executiveSummary: z.string().nullable(),
+  negotiationScript: z.string().nullable(),
   createdAt: z.date(),
   updatedAt: z.date(),
   vehicle: vehicleDetailsSchema,
+  vectorResults: z.array(riskVectorResultSchema),
 })
 
 /**
@@ -522,6 +574,18 @@ export const deleteOutputSchema = z.object({
   success: z.boolean(),
   message: z.string(),
 })
+
+/**
+ * Input schema for listingHistory procedure
+ */
+export const listingHistoryInputSchema = z.object({
+  vehicleId: z.string().min(1, 'Vehicle ID is required'),
+})
+
+/**
+ * Output schema for listingHistory procedure
+ */
+export const listingHistoryOutputSchema = z.array(vehicleListingHistorySchema)
 
 /**
  * VIN Router
@@ -682,7 +746,13 @@ export const vinRouter = {
         },
         include: {
           vehicle: {
-            include: { recalls: true },
+            include: {
+              recalls: true,
+              listingHistory: { orderBy: { statusDate: 'asc' } },
+            },
+          },
+          vectorResults: {
+            orderBy: { vectorIndex: 'asc' },
           },
         },
         orderBy: {
@@ -697,6 +767,9 @@ export const vinRouter = {
           ...report.vehicle,
           decoderSource: report.vehicle.decoderSource as 'NHTSA' | 'MARKETCHECK' | 'NHTSA_FALLBACK',
         },
+        executiveSummary: report.executiveSummary ?? null,
+        negotiationScript: report.negotiationScript ?? null,
+        vectorResults: report.vectorResults,
         riskLabel: (() => {
           if (!report.riskLabel) return null
           // Handle legacy values
@@ -758,6 +831,47 @@ export const vinRouter = {
         message: 'Report deleted successfully',
       }
     }),
+
+  /**
+   * Get listing history for a vehicle
+   * 
+   * Returns all historical listings for a vehicle, sorted chronologically.
+   * Enforces organization-level access control.
+   */
+  listingHistory: orgProcedure
+    .input(listingHistoryInputSchema)
+    .output(listingHistoryOutputSchema)
+    .route({
+      method: 'GET',
+      path: '/vin/listing-history',
+      summary: 'Get listing history',
+      description: 'Returns all historical listings for a vehicle',
+    })
+    .handler(async ({ input, context }) => {
+      const { vehicleId } = input
+      const { db, orgId } = context
+
+      // Verify vehicle belongs to a report owned by this organization
+      const report = await db.report.findFirst({
+        where: {
+          vehicleId,
+          organizationId: orgId,
+        },
+        select: { id: true },
+      })
+
+      if (!report) {
+        throw new ORPCError('NOT_FOUND', {
+          message: 'Vehicle not found or not accessible',
+        })
+      }
+
+      // Return listings sorted chronologically (ascending)
+      return db.vehicleListingHistory.findMany({
+        where: { vehicleId },
+        orderBy: { statusDate: 'asc' },
+      })
+    }),
 }
 
 /**
@@ -774,6 +888,10 @@ export type VehicleDetails = z.infer<typeof vehicleDetailsSchema>
 export type ReportWithVehicle = z.infer<typeof reportWithVehicleSchema>
 export type ReportStatus = z.infer<typeof reportStatusSchema>
 export type RecallDisplay = z.infer<typeof recallDisplaySchema>
+export type RiskVectorResultDisplay = z.infer<typeof riskVectorResultSchema>
+export type VehicleListingHistoryDisplay = z.infer<typeof vehicleListingHistorySchema>
+export type ListingHistoryInput = z.infer<typeof listingHistoryInputSchema>
+export type ListingHistoryOutput = z.infer<typeof listingHistoryOutputSchema>
 
 /**
  * Export the determineUserTier function for use in other parts of the application

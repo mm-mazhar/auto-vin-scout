@@ -1,4 +1,15 @@
 // tests/integration/risk-engine.test.ts
+//
+// ⚠️ DEPRECATED: These tests cover the MONOLITHIC RiskEngineService (lib/services/risk-engine.ts).
+// The monolithic service is superseded by the Multi-Agent Orchestrator architecture.
+// New tests live in:
+//   - tests/integration/orchestrator.test.ts (orchestrator + master LLM synthesis)
+//   - tests/integration/baseline-agent.test.ts (Baseline Health & Market Anomalies agent)
+//   - tests/integration/marketcheck-history-service.test.ts (MarketCheck History API)
+//
+// These tests remain to validate the legacy service still functions correctly
+// until it is fully removed from the codebase.
+//
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { TestUtils, testDb } from './setup'

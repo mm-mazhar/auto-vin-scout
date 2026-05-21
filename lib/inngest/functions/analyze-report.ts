@@ -2,7 +2,7 @@
 // Durable Inngest function that executes the full VIN risk assessment pipeline
 // for a single report. Replaces the hand-rolled after() + JobQueue orchestration.
 //
-// Step order: fetch-recalls → upsert-recalls (conditional) → generate-risk
+// Step order: verify-vehicle → fetch-recalls → upsert-recalls (conditional) → fetch-market-history → run-orchestrator
 
 import prisma from '@/app/lib/db'
 import { inngest, analyzeReportEvent } from '@/lib/inngest/client'
@@ -10,7 +10,8 @@ import {
   fetchNHTSARecalls,
   upsertVehicleRecalls,
 } from '@/lib/services/nhtsa-recalls'
-import { RiskEngineService } from '@/lib/services/risk-engine'
+import { MarketCheckHistoryService } from '@/lib/services/marketcheck-history-service'
+import { RiskEngineOrchestrator } from '@/lib/services/risk-engine/orchestrator'
 
 export const analyzeReportFn = inngest.createFunction(
   {
@@ -112,12 +113,28 @@ export const analyzeReportFn = inngest.createFunction(
     }
 
     // -------------------------------------------------------------------------
-    // Step 3: generate-risk
-    // Calls RiskEngineService which writes riskScore, riskLabel, riskNarrative,
-    // isAiFallback, and sets Report.status = 'COMPLETED'.
+    // Step 3: fetch-market-history
+    // Fetches historical listing data from MarketCheck and persists to DB.
+    // Graceful degradation: logs warning and continues if fetch fails.
     // -------------------------------------------------------------------------
-    await step.run('generate-risk', () =>
-      RiskEngineService.generateRiskAssessment(reportId)
+    await step.run('fetch-market-history', async () => {
+      try {
+        await MarketCheckHistoryService.fetchAndPersist(vehicle.vin, vehicleId)
+      } catch (error) {
+        console.warn(
+          `[analyzeReportFn] fetch-market-history failed for VIN ${vehicle.vin} (report ${reportId}). ` +
+            `Continuing with empty market history. Error: ${error instanceof Error ? error.message : String(error)}`
+        )
+      }
+    })
+
+    // -------------------------------------------------------------------------
+    // Step 4: run-orchestrator
+    // Invokes the multi-agent risk engine orchestrator which coordinates all
+    // risk agents, computes composite score, and updates the Report.
+    // -------------------------------------------------------------------------
+    await step.run('run-orchestrator', () =>
+      RiskEngineOrchestrator.run(reportId)
     )
   }
 )

@@ -3,6 +3,8 @@
 //
 // Tests the Inngest function in isolation without a running Inngest server.
 // Uses @inngest/test to verify function execution and step handling.
+//
+// Step order: verify-vehicle → fetch-recalls → upsert-recalls → fetch-market-history → run-orchestrator
 
 import { describe, it, expect, beforeEach } from 'vitest'
 import { InngestTestEngine } from '@inngest/test'
@@ -20,6 +22,7 @@ describe('analyzeReportFn', () => {
   describe('Happy path: all steps execute in order', () => {
     it('should execute all steps when recalls > 0', async () => {
       // Arrange
+      const mockVehicle = { id: 'vehicle-789', vin: '1HGBH41JXMN109186' }
       const mockRecallsResponse = {
         Count: 2,
         results: [
@@ -45,6 +48,10 @@ describe('analyzeReportFn', () => {
         ],
         steps: [
           {
+            id: 'verify-vehicle',
+            handler: () => mockVehicle,
+          },
+          {
             id: 'fetch-recalls',
             handler: () => mockRecallsResponse,
           },
@@ -53,7 +60,11 @@ describe('analyzeReportFn', () => {
             handler: () => undefined,
           },
           {
-            id: 'generate-risk',
+            id: 'fetch-market-history',
+            handler: () => undefined,
+          },
+          {
+            id: 'run-orchestrator',
             handler: () => undefined,
           },
         ],
@@ -65,6 +76,7 @@ describe('analyzeReportFn', () => {
 
     it('should complete successfully with valid event data', async () => {
       // Arrange
+      const mockVehicle = { id: 'vehicle-789', vin: '1HGBH41JXMN109186' }
       const mockRecallsResponse = {
         Count: 1,
         results: [{ campaignNumber: 'RECALL001', description: 'Test recall' }],
@@ -87,6 +99,10 @@ describe('analyzeReportFn', () => {
         ],
         steps: [
           {
+            id: 'verify-vehicle',
+            handler: () => mockVehicle,
+          },
+          {
             id: 'fetch-recalls',
             handler: () => mockRecallsResponse,
           },
@@ -95,7 +111,11 @@ describe('analyzeReportFn', () => {
             handler: () => undefined,
           },
           {
-            id: 'generate-risk',
+            id: 'fetch-market-history',
+            handler: () => undefined,
+          },
+          {
+            id: 'run-orchestrator',
             handler: () => undefined,
           },
         ],
@@ -109,6 +129,7 @@ describe('analyzeReportFn', () => {
   describe('Zero-recall path: upsert-recalls step is skipped', () => {
     it('should skip upsert-recalls when Count === 0', async () => {
       // Arrange
+      const mockVehicle = { id: 'vehicle-789', vin: '1HGBH41JXMN109186' }
       const mockRecallsResponse = {
         Count: 0,
         results: [],
@@ -131,11 +152,19 @@ describe('analyzeReportFn', () => {
         ],
         steps: [
           {
+            id: 'verify-vehicle',
+            handler: () => mockVehicle,
+          },
+          {
             id: 'fetch-recalls',
             handler: () => mockRecallsResponse,
           },
           {
-            id: 'generate-risk',
+            id: 'fetch-market-history',
+            handler: () => undefined,
+          },
+          {
+            id: 'run-orchestrator',
             handler: () => undefined,
           },
         ],
@@ -145,8 +174,9 @@ describe('analyzeReportFn', () => {
       expect(state).toBeDefined()
     })
 
-    it('should still run generate-risk even when no recalls exist', async () => {
+    it('should still run run-orchestrator even when no recalls exist', async () => {
       // Arrange
+      const mockVehicle = { id: 'vehicle-111', vin: '5YJSA1DG9DFP14705' }
       const mockRecallsResponse = {
         Count: 0,
         results: [],
@@ -169,11 +199,19 @@ describe('analyzeReportFn', () => {
         ],
         steps: [
           {
+            id: 'verify-vehicle',
+            handler: () => mockVehicle,
+          },
+          {
             id: 'fetch-recalls',
             handler: () => mockRecallsResponse,
           },
           {
-            id: 'generate-risk',
+            id: 'fetch-market-history',
+            handler: () => undefined,
+          },
+          {
+            id: 'run-orchestrator',
             handler: () => undefined,
           },
         ],

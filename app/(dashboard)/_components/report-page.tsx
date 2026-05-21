@@ -7,10 +7,12 @@ import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { AlertCircle, Car, Gauge, Info, MapPin, Wrench, FileText, TrendingUp, Shield, CheckSquare, TriangleAlert, Scale, Zap, Bell } from 'lucide-react'
+import { AlertCircle, Car, Gauge, Info, MapPin, Wrench, FileText, TrendingUp, Shield, CheckSquare, Scale, Zap, Bell, MessageSquare, Copy } from 'lucide-react'
 import type { ReportWithVehicle, VehicleDetails } from '@/lib/orpc/routers/vin'
 import { PreviewReport } from './preview-report'
 import { RecallsSection } from './recalls-section'
+import { ExecutiveOverviewTab } from './executive-overview-tab'
+import { MarketBehaviorTab } from './market-behavior-tab'
 
 // Type for preview reports (from analyze output)
 type PreviewReportType = {
@@ -251,7 +253,7 @@ function FullReportWithTabs({
           <FileText className="h-4 w-4" />
           Executive Overview
         </TabsTrigger>
-        <TabsTrigger value="market" className="flex items-center gap-2" disabled>
+        <TabsTrigger value="market" className="flex items-center gap-2">
           <TrendingUp className="h-4 w-4" />
           Market & Behavior
         </TabsTrigger>
@@ -259,7 +261,7 @@ function FullReportWithTabs({
           <Shield className="h-4 w-4" />
           NHTSA Recalls
         </TabsTrigger>
-        <TabsTrigger value="guidance" className="flex items-center gap-2" disabled>
+        <TabsTrigger value="guidance" className="flex items-center gap-2">
           <CheckSquare className="h-4 w-4" />
           Buyer Guidance
         </TabsTrigger>
@@ -565,130 +567,37 @@ function FullReportWithTabs({
         )}
 
         {/* Risk Assessment Section */}
-        <Card>
-          <CardHeader>
-            <div className="flex items-center gap-2">
-              <AlertCircle className="h-5 w-5" />
-              <CardTitle>Risk Assessment</CardTitle>
-            </div>
-            <CardDescription>
-              AI-powered risk analysis and buyer guidance. Remember AI makes mistakes. It is your responsibility to confirm the Data and Narratives
-            </CardDescription>
-            {isAiFallback && (
-              <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-lg">
-                <p className="text-sm text-red-700 flex items-center gap-2">
-                  <AlertCircle className="h-4 w-4 shrink-0" />
-                  Analysis based on general rules due to temporary service limitations. Enhanced AI analysis is currently unavailable. Please contact support.
-                </p>
+        {status === 'PENDING' && (
+          <Card>
+            <CardHeader>
+              <div className="flex items-center gap-2">
+                <AlertCircle className="h-5 w-5" />
+                <CardTitle>Risk Assessment</CardTitle>
               </div>
-            )}
-          </CardHeader>
-          <CardContent>
-            {status === 'PENDING' && (
+              <CardDescription>
+                AI-powered risk analysis and buyer guidance
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
               <AnalysisProgress />
-            )}
+            </CardContent>
+          </Card>
+        )}
 
-            {status === 'COMPLETED' && (
-              <div className="space-y-6">
-                {/* Side-by-side Layout: Risk Score + Assessment Details */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
-                  
-                  {/* Left Side: Circular Risk Score Display */}
-                  <div className="flex flex-col items-center text-center">
-                    <h3 className="text-lg font-medium text-muted-foreground mb-6 tracking-wider uppercase">
-                      Overall Risk Index
-                    </h3>
-                    
-                    {/* Circular Progress */}
-                    <div className="relative w-32 h-32 mb-4">
-                      {/* Background Circle */}
-                      <svg className="w-32 h-32 transform -rotate-90" viewBox="0 0 120 120">
-                        <circle
-                          cx="60"
-                          cy="60"
-                          r="50"
-                          stroke="currentColor"
-                          strokeWidth="8"
-                          fill="none"
-                          className="text-muted/20"
-                        />
-                        {/* Progress Circle with Dynamic Color */}
-                        <circle
-                          cx="60"
-                          cy="60"
-                          r="50"
-                          stroke={getRiskColor(riskLabel)}
-                          strokeWidth="8"
-                          fill="none"
-                          strokeLinecap="round"
-                          strokeDasharray={`${2 * Math.PI * 50}`}
-                          strokeDashoffset={`${2 * Math.PI * 50 * (1 - (riskScore ?? 0) / 100)}`}
-                          className="transition-all duration-1000 ease-out"
-                        />
-                      </svg>
-                      
-                      {/* Score Text */}
-                      <div className="absolute inset-0 flex flex-col items-center justify-center">
-                        <div className="text-3xl font-bold text-foreground">
-                          {riskScore ?? 'N/A'}
-                        </div>
-                        <div className="text-sm text-muted-foreground">
-                          / 100
-                        </div>
-                      </div>
-                    </div>
+        {status === 'COMPLETED' && (
+          <ExecutiveOverviewTab
+            report={report}
+            riskScore={riskScore}
+            riskLabel={riskLabel}
+            riskNarrative={riskNarrative}
+            isAiFallback={isAiFallback}
+            getRiskColor={getRiskColor}
+          />
+        )}
 
-                    {/* Risk Label Badge */}
-                    {riskLabel && (
-                      <div 
-                        className="text-sm px-4 py-2 rounded-full text-white font-medium"
-                        style={{ backgroundColor: getRiskColor(riskLabel) }}
-                      >
-                        {riskLabel} Risk
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Right Side: Assessment Details with Curved Border */}
-                  {riskNarrative && (
-                    <div className="relative bg-card border border-border rounded-lg p-6">
-                      {/* Curved Left Border extending to corners - wider and more curved */}
-                      <div 
-                        className="absolute left-0 top-0 bottom-0 w-2 rounded-l-xl"
-                        style={{
-                          backgroundColor: getRiskColor(riskLabel)
-                        }}
-                      ></div>
-                      
-                      <div className="pl-6">
-                        <h4 className="font-medium mb-4 capitalize tracking-wide text-sm"
-                            style={{ color: getRiskColor(riskLabel) }}>
-                          Assessment Details
-                        </h4>
-                        <div className="space-y-3">
-                          {riskNarrative
-                            .split(/[•·-]\s*/)
-                            .filter(item => item.trim())
-                            .map((item, index) => (
-                              <div key={index} className="flex items-start gap-3">
-                                <TriangleAlert 
-                                  className="w-4 h-4 mt-0.5 shrink-0" 
-                                  style={{ color: getRiskColor(riskLabel) }}
-                                />
-                                <p className="text-sm leading-relaxed text-muted-foreground">
-                                  {item.trim()}
-                                </p>
-                              </div>
-                            ))}
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {status === 'FAILED' && (
+        {status === 'FAILED' && (
+          <Card>
+            <CardContent className="pt-6">
               <div className="flex items-center gap-3 p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
                 <AlertCircle className="h-5 w-5 text-destructive" />
                 <div>
@@ -698,9 +607,9 @@ function FullReportWithTabs({
                   </p>
                 </div>
               </div>
-            )}
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Report Metadata */}
         <Card>
@@ -717,28 +626,9 @@ function FullReportWithTabs({
         </Card>
       </TabsContent>
 
-      {/* Market & Behavior Tab - Placeholder */}
+      {/* Market & Behavior Tab */}
       <TabsContent value="market" className="space-y-6">
-        <Card>
-          <CardHeader>
-            <div className="flex items-center gap-2">
-              <TrendingUp className="h-5 w-5" />
-              <CardTitle>Market & Behavior Analysis</CardTitle>
-            </div>
-            <CardDescription>
-              Market pricing analysis and listing behavior insights
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center justify-center h-64 text-muted-foreground">
-              <div className="text-center">
-                <TrendingUp className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p className="text-lg font-medium">Coming Soon</p>
-                <p className="text-sm">Market analysis and pricing insights will be available in a future update.</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <MarketBehaviorTab listings={report.vehicle.listingHistory ?? []} />
       </TabsContent>
 
       {/* Safety & Environment Tab */}
@@ -749,26 +639,60 @@ function FullReportWithTabs({
         />
       </TabsContent>
 
-      {/* Buyer Guidance Tab - Placeholder */}
+      {/* Buyer Guidance Tab — AI Negotiation Script */}
       <TabsContent value="guidance" className="space-y-6">
         <Card>
           <CardHeader>
             <div className="flex items-center gap-2">
               <CheckSquare className="h-5 w-5" />
-              <CardTitle>Buyer Guidance & Inspection Checklist</CardTitle>
+              <CardTitle>Buyer Guidance & Negotiation Script</CardTitle>
             </div>
             <CardDescription>
-              Actionable recommendations and inspection checklist for buyers
+              AI-generated talking points and inspection checklist based on risk findings
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="flex items-center justify-center h-64 text-muted-foreground">
-              <div className="text-center">
-                <CheckSquare className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p className="text-lg font-medium">Coming Soon</p>
-                <p className="text-sm">Buyer guidance and inspection checklist will be available in a future update.</p>
+          <CardContent className="space-y-6">
+            {report.negotiationScript ? (
+              <div className="space-y-4">
+                <div className="bg-muted/30 border-l-4 border-l-primary rounded-lg p-5">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-2">
+                      <MessageSquare className="h-4 w-4 text-primary" />
+                      <h3 className="text-sm font-medium">AI Negotiation Script</h3>
+                    </div>
+                    <button
+                      onClick={async () => {
+                        await navigator.clipboard.writeText(report.negotiationScript!)
+                      }}
+                      className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      <Copy className="h-3 w-3" />
+                      Copy
+                    </button>
+                  </div>
+                  <div className="bg-card rounded-lg p-4 text-sm whitespace-pre-wrap font-mono leading-relaxed">
+                    {report.negotiationScript}
+                  </div>
+                </div>
+
+                <div className="text-xs text-muted-foreground p-3 bg-muted/20 rounded-lg">
+                  <p className="font-medium mb-1">How to use this script:</p>
+                  <ul className="list-disc list-inside space-y-1">
+                    <li>Use these talking points when contacting the seller via text, email, or phone.</li>
+                    <li>Ask questions in a non-confrontational way — you&apos;re gathering information, not accusing.</li>
+                    <li>If the seller can&apos;t explain a finding, use it as leverage for a price reduction.</li>
+                  </ul>
+                </div>
               </div>
-            </div>
+            ) : (
+              <div className="flex items-center justify-center h-48 text-muted-foreground">
+                <div className="text-center">
+                  <CheckSquare className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                  <p className="text-lg font-medium">No Guidance Available</p>
+                  <p className="text-sm">Negotiation script will appear here once the risk assessment completes.</p>
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
       </TabsContent>
