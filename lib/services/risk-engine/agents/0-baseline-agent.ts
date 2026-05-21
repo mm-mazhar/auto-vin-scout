@@ -141,10 +141,12 @@ export class BaselineAgent implements RiskAgent {
 
     // --- Narrative (LLM with fallback) ---
     let narrative: string
+    let usedFallbackNarrative = false
     try {
       narrative = await this.generateNarrative(input, score, label, findings)
     } catch {
       narrative = this.generateFallbackNarrative(score, label, findings, input)
+      usedFallbackNarrative = true
     }
 
     return {
@@ -163,6 +165,7 @@ export class BaselineAgent implements RiskAgent {
           band: usageIntensityBand,
           milesPerYear: Math.round(avgAnnualMiles),
         },
+        usedFallbackNarrative,
         findings,
       },
     }

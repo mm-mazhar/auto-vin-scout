@@ -40,10 +40,11 @@ console.log('📊 DATABASE_URL:', process.env.DATABASE_URL?.replace(/\/\/.*@/, '
 import { vi } from 'vitest'
 
 vi.mock('@/lib/inngest/client', async () => {
-  const actual = await vi.importActual('@/lib/inngest/client')
+  const actual = await vi.importActual<typeof import('@/lib/inngest/client')>('@/lib/inngest/client')
   return {
     ...actual,
     inngest: {
+      ...actual.inngest,
       send: vi.fn().mockResolvedValue({ ids: ['mock-evt-id'] }),
     },
   }

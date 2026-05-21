@@ -144,6 +144,7 @@ function makeAgentResult(overrides: Partial<RiskVectorResult> = {}): RiskVectorR
       rollbackDetected: false,
       recallCount: 1,
       listingCount: 1,
+      usedFallbackNarrative: false,
       findings: ['1 NHTSA recall(s) on record'],
     },
     ...overrides,
@@ -331,6 +332,7 @@ describe('RiskEngineOrchestrator', () => {
         data: expect.objectContaining({
           executiveSummary: expect.stringContaining('Overall Risk:'),
           negotiationScript: expect.stringContaining('Based on our research'),
+          isAiFallback: true,
           status: 'COMPLETED',
         }),
       })
@@ -349,6 +351,7 @@ describe('RiskEngineOrchestrator', () => {
           rollbackDetected: false,
           recallCount: 0,
           listingCount: 0,
+          usedFallbackNarrative: false,
           findings: [],
         },
       })
@@ -360,6 +363,7 @@ describe('RiskEngineOrchestrator', () => {
       expect.objectContaining({
         data: expect.objectContaining({
           negotiationScript: expect.stringContaining('Negotiation Talking Points:'),
+          isAiFallback: true,
         }),
       })
     )
@@ -378,6 +382,7 @@ describe('RiskEngineOrchestrator', () => {
         riskLabel: expect.stringMatching(/^(Low|Medium|High)$/),
         executiveSummary: expect.any(String),
         negotiationScript: expect.any(String),
+        isAiFallback: expect.any(Boolean),
         riskNarrative: expect.any(String),
         status: 'COMPLETED',
       },

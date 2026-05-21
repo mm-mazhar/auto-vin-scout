@@ -304,6 +304,7 @@ describe('BaselineAgent', () => {
     expect(result.narrative).toContain('Baseline Health assessment')
     expect(result.narrative).toContain('risk')
     expect(result.score).toBe(10) // 1 recall = 10 points
+    expect(result.metadata?.usedFallbackNarrative).toBe(true)
   })
 
   // --- Additional label boundary assertions ---

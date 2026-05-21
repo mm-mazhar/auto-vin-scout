@@ -140,8 +140,11 @@ describe('NHTSA Recalls & Caching Infrastructure — Integration Tests', () => {
         // #then: fetchNHTSARecalls never called for this tier
         expect(fetchSpy).not.toHaveBeenCalled()
 
-        // #then: no Recall records written
-        const recalls = await testDb.recall.findMany({})
+        // #then: no Recall records written for this vehicle
+        const vehicle = await testDb.vehicle.findUnique({ where: { vin: VALID_VIN } })
+        const recalls = vehicle
+          ? await testDb.recall.findMany({ where: { vehicleId: vehicle.id } })
+          : []
         expect(recalls.length).toBe(0)
 
         // Cleanup

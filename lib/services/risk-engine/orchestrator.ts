@@ -83,6 +83,7 @@ export class RiskEngineOrchestrator {
       // 5. Generate executive summary + negotiation script via Master LLM
       let executiveSummary: string
       let negotiationScript: string
+      let masterLLMFailed = false
 
       try {
         const synthesis = await generateMasterSynthesis(results, compositeScore, compositeLabel)
@@ -92,9 +93,17 @@ export class RiskEngineOrchestrator {
         console.warn('[Orchestrator] Master LLM failed, using rules-based fallback:', error)
         executiveSummary = generateFallbackSummary(results, compositeScore, compositeLabel)
         negotiationScript = generateFallbackNegotiationScript(results)
+        masterLLMFailed = true
       }
 
-      // 6. Update Report with final results
+      // 6. Determine isAiFallback: true if any agent or master used fallback
+      const anyAgentUsedFallback = results.some((r) => {
+        const meta = r.metadata as Record<string, unknown> | undefined
+        return meta?.usedFallbackNarrative === true
+      })
+      const isAiFallback = masterLLMFailed || anyAgentUsedFallback
+
+      // 7. Update Report with final results
       await prisma.report.update({
         where: { id: reportId },
         data: {
@@ -102,6 +111,7 @@ export class RiskEngineOrchestrator {
           riskLabel: compositeLabel,
           executiveSummary,
           negotiationScript,
+          isAiFallback,
           riskNarrative: executiveSummary, // backward compat
           status: 'COMPLETED',
         },
