@@ -27,3 +27,24 @@ if (prodRef && process.env.DATABASE_URL.includes(prodRef)) {
 
 console.log('✅ Environment variables loaded successfully')
 console.log('📊 DATABASE_URL:', process.env.DATABASE_URL?.replace(/\/\/.*@/, '//***@'))
+
+// ─── Global Mock: Inngest ────────────────────────────────────────────────────
+// Prevent ALL tests from dispatching real Inngest events.
+// Without this, any test calling vinRouter.analyze (PAID tier) fires a real
+// Inngest event → analyzeReportFn → MarketCheckHistoryService.fetchAndPersist
+// → real MarketCheck API call → burns monthly quota.
+//
+// Tests that specifically need to test Inngest behavior can override this
+// with vi.mock('@/lib/inngest/client', ...) in their own file.
+
+import { vi } from 'vitest'
+
+vi.mock('@/lib/inngest/client', async () => {
+  const actual = await vi.importActual('@/lib/inngest/client')
+  return {
+    ...actual,
+    inngest: {
+      send: vi.fn().mockResolvedValue({ ids: ['mock-evt-id'] }),
+    },
+  }
+})
