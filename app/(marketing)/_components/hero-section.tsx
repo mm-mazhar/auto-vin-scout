@@ -38,8 +38,11 @@ import {
 } from '@/lib/constants'
 import { cn } from '@/lib/utils'
 
-const HERO_LIGHT_IMAGE_PATH = '/HeroDark-02.png'
-const HERO_DARK_IMAGE_PATH = '/HeroDark-03.png'
+// const HERO_LIGHT_IMAGE_PATH = '/HeroDark-02.png'
+// const HERO_DARK_IMAGE_PATH = '/HeroDark-03.png'
+
+const HERO_LIGHT_IMAGE_PATH = '/HeroDark-05.png'
+const HERO_DARK_IMAGE_PATH = '/HeroDark-05.png'
 
 const transitionVariants = {
   item: {
@@ -353,7 +356,7 @@ export default async function HeroSection() {
             
             <div className='mx-auto max-w-3xl text-center relative z-10'>
               <h2 className='text-3xl font-bold tracking-tight md:text-4xl'>
-                VIN intelligence for smarter used-car decisions
+                AI VIN intelligence for smarter used-car decisions
               </h2>
               <p className='mt-4 text-muted-foreground'>
                 Auto VIN Scout starts with public data, marketplace signals, and transparent scoring so buyers can spot risk before they commit to the wrong car.

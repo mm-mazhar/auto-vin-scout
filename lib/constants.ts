@@ -46,11 +46,11 @@ export function formatPrice(
 
 // ✅ SOCIALS AND SEO
 export const NEXT_PUBLIC_SITE_NAME = `Auto VIN Scout` as string
-export const APP_SLOGAN = `⚡ VIN intelligence for smarter used-car buying.` as string
+export const APP_SLOGAN = `⚡ AI Risk Intelligence for smarter used-car buying.` as string
 export const APP_DESCRIPTION = `Probabilistic Risk Modeling` as string
 // export const APP_DESCRIPTION = `Probabilistic Risk Modeling. Check a VIN before you trust the listing.` as string
 export const APP_DESCRIPTION_LONG =
-  `Decode the vehicle, compare listing behavior against the market, and review flood and recall signals in one report built for buyers who want clearer next steps.` as string
+  `Check a VIN before you trust the listing. Buying expensive Reports. Decode the vehicle, compare listing behavior against the market, and review flood and recall signals in one report built for buyers who want clearer next steps.` as string
 export const KEYWORDS_LST: string[] = [
   'Saas,Next.js',
   'TypeScript',

@@ -437,6 +437,48 @@ export const vehicleListingHistorySchema = z.object({
 })
 
 /**
+ * VehicleSafetyRating display schema for NHTSA crash test data
+ * Validates: Requirements 7.2
+ */
+export const vehicleSafetyRatingSchema = z.object({
+  id: z.string(),
+  vehicleId: z.string(),
+  nhtsaVehicleId: z.number().nullable(),
+  vehicleDescription: z.string().nullable(),
+
+  // Top-level ratings
+  overallRating: z.string().nullable(),
+  overallFrontCrashRating: z.string().nullable(),
+  overallSideCrashRating: z.string().nullable(),
+  rolloverRating: z.string().nullable(),
+
+  // Granular crash test fields
+  frontCrashDriversideRating: z.string().nullable(),
+  frontCrashPassengersideRating: z.string().nullable(),
+  sideCrashDriversideRating: z.string().nullable(),
+  sideCrashPassengersideRating: z.string().nullable(),
+  sidePoleCrashRating: z.string().nullable(),
+  rolloverPossibility: z.number().nullable(),
+  dynamicTipResult: z.string().nullable(),
+
+  // ADAS fields
+  nhtsaElectronicStabilityControl: z.string().nullable(),
+  nhtsaForwardCollisionWarning: z.string().nullable(),
+  nhtsaLaneDepartureWarning: z.string().nullable(),
+
+  // Reputation fields
+  complaintsCount: z.number().nullable(),
+  investigationCount: z.number().nullable(),
+
+  // Media
+  frontCrashPicture: z.string().nullable(),
+
+  // Timestamps
+  createdAt: z.date(),
+  updatedAt: z.date(),
+})
+
+/**
  * Vehicle details output schema
  * Represents decoded vehicle information from NHTSA vPIC API and MarketCheck API
  */
@@ -482,6 +524,9 @@ export const vehicleDetailsSchema = z.object({
 
   // Listing history (populated when included in query)
   listingHistory: z.array(vehicleListingHistorySchema).optional(),
+
+  // Safety rating (populated when included in query)
+  safetyRating: vehicleSafetyRatingSchema.nullable().optional(),
 
   createdAt: z.date(),
   updatedAt: z.date(),
@@ -749,6 +794,7 @@ export const vinRouter = {
             include: {
               recalls: true,
               listingHistory: { orderBy: { statusDate: 'asc' } },
+              safetyRating: true,
             },
           },
           vectorResults: {
@@ -890,6 +936,7 @@ export type ReportStatus = z.infer<typeof reportStatusSchema>
 export type RecallDisplay = z.infer<typeof recallDisplaySchema>
 export type RiskVectorResultDisplay = z.infer<typeof riskVectorResultSchema>
 export type VehicleListingHistoryDisplay = z.infer<typeof vehicleListingHistorySchema>
+export type VehicleSafetyRatingDisplay = z.infer<typeof vehicleSafetyRatingSchema>
 export type ListingHistoryInput = z.infer<typeof listingHistoryInputSchema>
 export type ListingHistoryOutput = z.infer<typeof listingHistoryOutputSchema>
 

@@ -20,13 +20,13 @@ interface OdometerChartProps {
   listings: VehicleListingHistory[]
 }
 
-type IntensityBand = 'Low' | 'Standard' | 'Elevated' | 'High'
+export type IntensityBand = 'Low' | 'Standard' | 'Elevated' | 'High'
 
 function formatDate(date: Date): string {
   return date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
 }
 
-function computeIntensity(listings: VehicleListingHistory[]): {
+export function computeIntensity(listings: VehicleListingHistory[]): {
   band: IntensityBand
   milesPerYear: number
 } | null {
@@ -51,7 +51,7 @@ function computeIntensity(listings: VehicleListingHistory[]): {
   return { band, milesPerYear: Math.round(milesPerYear) }
 }
 
-const INTENSITY_STYLES: Record<IntensityBand, { bg: string; text: string; label: string }> = {
+export const INTENSITY_STYLES: Record<IntensityBand, { bg: string; text: string; label: string }> = {
   Low: { bg: 'bg-blue-500/15 border-blue-500/20', text: 'text-blue-400', label: 'Low Intensity' },
   Standard: { bg: 'bg-emerald-500/15 border-emerald-500/20', text: 'text-emerald-400', label: 'Standard' },
   Elevated: { bg: 'bg-amber-500/15 border-amber-500/20', text: 'text-amber-400', label: 'Elevated' },
@@ -95,6 +95,7 @@ export function OdometerChart({ listings }: OdometerChartProps) {
                 tickFormatter={(v: number) => `${(v / 1000).toFixed(0)}k`}
               />
               <Tooltip
+                cursor={false}
                 contentStyle={{
                   backgroundColor: 'hsl(var(--card))',
                   border: '1px solid hsl(var(--border))',

@@ -137,6 +137,7 @@ const agentInputArb = fc
     },
     recalls,
     listingHistory,
+    safetyRating: null,
   }))
 
 // --- Property Tests ---

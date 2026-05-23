@@ -132,6 +132,93 @@ export class BaselineAgent implements RiskAgent {
       score = Math.max(score, 95)
     }
 
+    // --- Days on Market (DOM) Analysis ---
+    // High DOM signals stale inventory — possible hidden issue or overpricing
+    const domValues = listingHistory
+      .map((l) => l.dom)
+      .filter((d): d is number => d !== null && d > 0)
+
+    let avgDom = 0
+    if (domValues.length > 0) {
+      avgDom = Math.round(domValues.reduce((a, b) => a + b, 0) / domValues.length)
+      if (avgDom > 200) {
+        score += 10
+        findings.push(
+          `High days on market: avg ${avgDom} days across ${domValues.length} listing(s) — stale inventory may indicate hidden issues`
+        )
+      }
+    }
+
+    // --- Repeated Price Cuts ---
+    // 3+ distinct price drops signal seller desperation
+    let priceCutCount = 0
+    for (let i = 1; i < listingsWithPrice.length; i++) {
+      if (listingsWithPrice[i].price! < listingsWithPrice[i - 1].price!) {
+        priceCutCount++
+      }
+    }
+    if (priceCutCount >= 3) {
+      score += 5
+      findings.push(
+        `Price reduced ${priceCutCount} times across listing history — seller likely motivated`
+      )
+    }
+
+    // --- Geographic Spread ---
+    // Multi-state movement is a strong auction-flipping indicator
+    const states = new Set(
+      listingHistory.map((l) => l.state).filter((s): s is string => s !== null)
+    )
+    const withCoords = listingHistory.filter(
+      (l) => l.latitude !== null && l.longitude !== null
+    )
+    let maxDistanceMiles = 0
+    if (withCoords.length >= 2) {
+      for (let i = 0; i < withCoords.length; i++) {
+        for (let j = i + 1; j < withCoords.length; j++) {
+          const d = this.haversineDistance(
+            withCoords[i].latitude!,
+            withCoords[i].longitude!,
+            withCoords[j].latitude!,
+            withCoords[j].longitude!
+          )
+          if (d > maxDistanceMiles) maxDistanceMiles = d
+        }
+      }
+    }
+    if (states.size >= 3 || maxDistanceMiles > 500) {
+      score += 15
+      const detail = maxDistanceMiles > 500
+        ? `spread across ${Math.round(maxDistanceMiles).toLocaleString()} miles`
+        : `listed in ${states.size} states`
+      findings.push(
+        `Geographic spread detected: ${detail} (${Array.from(states).join(', ')}) — possible auction flipping or title washing`
+      )
+    }
+
+    // --- Listing Freshness / Gap Detection ---
+    // A car that disappears for 180+ days and reappears is suspicious
+    // Requires 3+ date points to detect a gap (2 points is just the tracking span)
+    const allDates = listingHistory
+      .flatMap((l) => [l.firstSeenAt, l.lastSeenAt, l.statusDate])
+      .filter((d): d is Date => d !== null)
+      .map((d) => new Date(d).getTime())
+      .sort((a, b) => a - b)
+
+    if (allDates.length >= 3) {
+      let maxGapDays = 0
+      for (let i = 1; i < allDates.length; i++) {
+        const gapDays = (allDates[i] - allDates[i - 1]) / (24 * 60 * 60 * 1000)
+        if (gapDays > maxGapDays) maxGapDays = gapDays
+      }
+      if (maxGapDays > 180) {
+        score += 10
+        findings.push(
+          `Listing gap of ${Math.round(maxGapDays)} days detected — vehicle disappeared and reappeared (possible title wash or repair flip)`
+        )
+      }
+    }
+
     // --- Cap at 100 ---
     score = Math.min(score, 100)
 
@@ -164,6 +251,12 @@ export class BaselineAgent implements RiskAgent {
         usageIntensity: {
           band: usageIntensityBand,
           milesPerYear: Math.round(avgAnnualMiles),
+        },
+        daysOnMarket: avgDom > 0 ? { avg: avgDom, count: domValues.length } : null,
+        priceCutCount,
+        geoSpread: {
+          stateCount: states.size,
+          maxDistanceMiles: Math.round(maxDistanceMiles),
         },
         usedFallbackNarrative,
         findings,
@@ -245,5 +338,17 @@ Write a 2-3 sentence narrative summarizing the baseline health assessment for a 
       return `Baseline Health assessment: ${label} risk (score ${score}/100). No significant market anomalies detected in available listing history.`
     }
     return `Baseline Health assessment: ${label} risk (score ${score}/100). Findings: ${findings.join('. ')}.`
+  }
+
+  private haversineDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
+    const R = 3958.8 // Earth radius in miles
+    const dLat = ((lat2 - lat1) * Math.PI) / 180
+    const dLon = ((lon2 - lon1) * Math.PI) / 180
+    const a =
+      Math.sin(dLat / 2) ** 2 +
+      Math.cos((lat1 * Math.PI) / 180) *
+        Math.cos((lat2 * Math.PI) / 180) *
+        Math.sin(dLon / 2) ** 2
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
   }
 }

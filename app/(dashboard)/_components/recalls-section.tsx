@@ -45,6 +45,8 @@ function RecallCard({ recall }: { recall: RecallDisplay }) {
           <div className="flex items-start gap-3 flex-1 min-w-0">
             {isCritical ? (
               <TriangleAlert className="h-5 w-5 text-red-500 shrink-0 mt-0.5" />
+            ) : recall.overTheAirUpdate ? (
+              <Shield className="h-5 w-5 text-blue-400 shrink-0 mt-0.5" />
             ) : (
               <Shield className="h-5 w-5 text-yellow-500 shrink-0 mt-0.5" />
             )}
@@ -58,16 +60,17 @@ function RecallCard({ recall }: { recall: RecallDisplay }) {
                   </span>
                 )}
               </p>
-              {isCritical && (
-                <div className="flex gap-2 mt-1">
-                  {recall.parkIt && (
-                    <Badge variant="destructive" className="text-xs">Park Vehicle</Badge>
-                  )}
-                  {recall.parkOutSide && (
-                    <Badge variant="destructive" className="text-xs">Park Outside</Badge>
-                  )}
-                </div>
-              )}
+              <div className="flex gap-2 mt-1">
+                {recall.parkIt && (
+                  <Badge variant="destructive" className="text-xs">Park Vehicle</Badge>
+                )}
+                {recall.parkOutSide && (
+                  <Badge variant="destructive" className="text-xs">Park Outside</Badge>
+                )}
+                {recall.overTheAirUpdate && (
+                  <Badge className="text-xs bg-blue-500/15 text-blue-400 border-blue-500/20 hover:bg-blue-500/25">OTA Fix Available</Badge>
+                )}
+              </div>
             </div>
           </div>
           {open ? (

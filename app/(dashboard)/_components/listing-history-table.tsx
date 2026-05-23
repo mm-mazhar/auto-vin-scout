@@ -26,6 +26,7 @@ export function ListingHistoryTable({ listings }: ListingHistoryTableProps) {
                 <th className="py-2 px-3">Seller</th>
                 <th className="py-2 px-3">Location</th>
                 <th className="py-2 px-3">Seller Type</th>
+                <th className="py-2 px-3">Inventory Type</th>
               </tr>
             </thead>
             <tbody>
@@ -48,6 +49,9 @@ export function ListingHistoryTable({ listings }: ListingHistoryTableProps) {
                   <td className="py-2 px-3">{listing.sellerName ?? '—'}</td>
                   <td className="py-2 px-3">
                     {[listing.city, listing.state].filter(Boolean).join(', ') || '—'}
+                  </td>
+                  <td className="py-2 px-3">
+                    <span className="capitalize">{listing.sellerType ?? '—'}</span>
                   </td>
                   <td className="py-2 px-3">
                     <span className="capitalize">{listing.inventoryType ?? '—'}</span>

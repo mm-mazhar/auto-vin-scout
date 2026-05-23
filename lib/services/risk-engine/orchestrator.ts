@@ -6,11 +6,13 @@ import prisma from '@/app/lib/db'
 import { getMasterAgentConfig } from '@/lib/ai-config'
 import type { RiskAgent, AgentInput, RiskVectorResult, RiskLabel } from './types'
 import { BaselineAgent } from './agents/0-baseline-agent'
+import { SafetyAgent } from './agents/1-safety-agent'
 import { Prisma } from '@prisma/client'
 
 // Agent registry — add new agents here
 const AGENT_REGISTRY: RiskAgent[] = [
   new BaselineAgent(),
+  new SafetyAgent(),
 ]
 
 // Planned agents not yet implemented — used for UI transparency
@@ -32,6 +34,7 @@ export class RiskEngineOrchestrator {
             include: {
               recalls: true,
               listingHistory: { orderBy: { statusDate: 'asc' } },
+              safetyRating: true,
             },
           },
         },
@@ -47,6 +50,7 @@ export class RiskEngineOrchestrator {
         vehicle: report.vehicle,
         recalls: report.vehicle.recalls,
         listingHistory: report.vehicle.listingHistory,
+        safetyRating: report.vehicle.safetyRating ?? null,
       }
 
       // 2. Execute all agents in parallel

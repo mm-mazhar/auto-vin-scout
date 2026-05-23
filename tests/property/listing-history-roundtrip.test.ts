@@ -23,7 +23,7 @@ function buildListingData(vehicleId: string, raw: Record<string, unknown>) {
     msrp: (raw.msrp as number | null) ?? null,
     sellerType: (raw.seller_type as string | null) ?? null,
     inventoryType: (raw.inventory_type as string | null) ?? null,
-    isCertified: (raw.is_certified as boolean | null) ?? null,
+    isCertified: raw.is_certified != null ? Boolean(raw.is_certified) : null,
     exteriorColor: (raw.exterior_color as string | null) ?? null,
     interiorColor: (raw.interior_color as string | null) ?? null,
     dom: (raw.dom as number | null) ?? null,

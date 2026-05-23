@@ -2,7 +2,7 @@
 // Durable Inngest function that executes the full VIN risk assessment pipeline
 // for a single report. Replaces the hand-rolled after() + JobQueue orchestration.
 //
-// Step order: verify-vehicle → fetch-recalls → upsert-recalls (conditional) → fetch-market-history → run-orchestrator
+// Step order: verify-vehicle → fetch-recalls → upsert-recalls (conditional) → fetch-market-history → fetch-safety-ratings → run-orchestrator
 
 import prisma from '@/app/lib/db'
 import { inngest, analyzeReportEvent } from '@/lib/inngest/client'
@@ -11,6 +11,7 @@ import {
   upsertVehicleRecalls,
 } from '@/lib/services/nhtsa-recalls'
 import { MarketCheckHistoryService } from '@/lib/services/marketcheck-history-service'
+import { NhtsaNcapService } from '@/lib/services/nhtsa-ncap-service'
 import { RiskEngineOrchestrator } from '@/lib/services/risk-engine/orchestrator'
 
 export const analyzeReportFn = inngest.createFunction(
@@ -129,7 +130,24 @@ export const analyzeReportFn = inngest.createFunction(
     })
 
     // -------------------------------------------------------------------------
-    // Step 4: run-orchestrator
+    // Step 4: fetch-safety-ratings
+    // Fetches NHTSA NCAP safety ratings and caches them in VehicleSafetyRating.
+    // Graceful degradation: fetchAndSaveSafetyRatings returns null on API
+    // failure (never throws), so the pipeline continues without safety data.
+    // Placed before run-orchestrator because SafetyAgent needs cached data.
+    // -------------------------------------------------------------------------
+    await step.run('fetch-safety-ratings', async () => {
+      const fullVehicle = await prisma.vehicle.findUnique({
+        where: { id: vehicleId },
+        select: { id: true, make: true, model: true, year: true, driveType: true, doors: true, vehicleType: true, bodySubtype: true }
+      })
+      if (fullVehicle) {
+        await NhtsaNcapService.fetchAndSaveSafetyRatings(fullVehicle)
+      }
+    })
+
+    // -------------------------------------------------------------------------
+    // Step 5: run-orchestrator
     // Invokes the multi-agent risk engine orchestrator which coordinates all
     // risk agents, computes composite score, and updates the Report.
     // -------------------------------------------------------------------------

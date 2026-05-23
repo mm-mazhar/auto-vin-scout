@@ -15,14 +15,14 @@ ai:
       provider: "google"
       model: "gemma-4-31b-it"
     temperature: 0.2
-    maxTokens: 800
+    maxTokens: 1400
     systemInstruction: |
       You are the Master Automotive Risk Analyst for AutoVinScout.
       You receive risk narratives from specialized analysis agents.
 
       YOUR TASK:
-      1. Write a concise 3-sentence executive summary synthesizing all agent findings.
-      2. Generate an actionable "Negotiation Script" — 3-5 bullet points the buyer
+      1. Write a concise executive summary synthesizing all agent findings.
+      2. Generate an actionable "Negotiation Script" — in bullet points the buyer
          can text or say to the seller to negotiate price based on identified risks.
 
       RULES:
@@ -37,9 +37,14 @@ ai:
       • [bullet 1]
       • [bullet 2]
       • [bullet 3]
+      • ..........
+      • ..........
+      • ..........
+      • [bullet n]
+
 
   agents:
-    baseline:
+    safety:
       primary:
         provider: "openrouter"
         baseUrl: "https://openrouter.ai/api/v1"
@@ -49,6 +54,19 @@ ai:
         model: "gemma-4-31b-it"
       temperature: 0.1
       maxTokens: 400
+      systemInstruction: |
+        State the NHTSA crash test ratings and translate them into real-world chassis safety and passenger risk.
+
+    baseline:
+      primary:
+        provider: "openrouter"
+        baseUrl: "https://openrouter.ai/api/v1"
+        model: "anthropic/claude-3.5-sonnet"
+      fallback:
+        provider: "google"
+        model: "gemma-4-31b-it"
+      temperature: 0.1
+      maxTokens: 600
       systemInstruction: |
         You are a Baseline Health & Market Anomalies analyst.
         Analyze vehicle age, chronological marketplace history, and federal recall data to detect:
@@ -60,7 +78,10 @@ ai:
           * Elevated (15k-25k mi/yr): above-average commuter wear
           * High (>25k mi/yr): likely commercial/rideshare abuse
         - Unresolved safety recalls (compounded by high mileage on aged vehicles)
-        - Suspicious pricing anomalies (fire-sale drops >30%)
+        - Suspicious pricing anomalies (fire-sale drops >30%, repeated price cuts)
+        - Days on market patterns (avg DOM >200 days = stale inventory, possible hidden issues)
+        - Geographic movement (multi-state listing or >500 mile spread = possible auction flipping/title washing)
+        - Listing gaps (disappearance >180 days then reappearance = possible title wash or repair flip)
 
-        Write a 2-3 sentence narrative summarizing your findings.
+        Write few sentence narrative summarizing your findings.
         Be factual. Reference specific numbers. Do not speculate beyond the data.

@@ -74,6 +74,7 @@ export function PriceChart({ listings }: PriceChartProps) {
                 tickFormatter={(v: number) => `$${(v / 1000).toFixed(0)}k`}
               />
               <Tooltip
+                cursor={false}
                 contentStyle={{
                   backgroundColor: 'hsl(var(--card))',
                   border: '1px solid hsl(var(--border))',

@@ -89,6 +89,7 @@ function makeInput(overrides: Partial<AgentInput> = {}): AgentInput {
     },
     recalls: [],
     listingHistory: [],
+    safetyRating: null,
     ...overrides,
   }
 }

@@ -1,5 +1,7 @@
 // lib/services/risk-engine/types.ts
 
+import type { VehicleSafetyRating } from '@prisma/client'
+
 export type RiskLabel = 'Low' | 'Medium' | 'High'
 
 export interface RiskVectorResult {
@@ -45,6 +47,7 @@ export interface AgentInput {
     price: number | null
     miles: number | null
     msrp: number | null
+    dom: number | null
     statusDate: Date | null
     firstSeenAt: Date | null
     lastSeenAt: Date | null
@@ -52,7 +55,11 @@ export interface AgentInput {
     sellerName: string | null
     city: string | null
     state: string | null
+    latitude: number | null
+    longitude: number | null
+    isCertified: boolean | null
   }>
+  safetyRating: VehicleSafetyRating | null
 }
 
 /**

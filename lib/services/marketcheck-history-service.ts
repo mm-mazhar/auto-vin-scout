@@ -40,7 +40,7 @@ export interface MarketCheckListingRaw {
   msrp?: number | null
   seller_type?: string | null
   inventory_type?: string | null
-  is_certified?: boolean | null
+  is_certified?: boolean | number | null
   exterior_color?: string | null
   interior_color?: string | null
   dom?: number | null
@@ -188,7 +188,7 @@ function buildListingData(vehicleId: string, raw: MarketCheckListingRaw) {
     msrp: raw.msrp ?? null,
     sellerType: raw.seller_type ?? null,
     inventoryType: raw.inventory_type ?? null,
-    isCertified: raw.is_certified ?? null,
+    isCertified: raw.is_certified != null ? Boolean(raw.is_certified) : null,
     exteriorColor: raw.exterior_color ?? null,
     interiorColor: raw.interior_color ?? null,
     dom: raw.dom ?? null,
