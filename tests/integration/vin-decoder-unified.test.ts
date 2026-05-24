@@ -13,7 +13,7 @@ const mockNHTSAData = {
   model: 'F-150',
   year: 2021,
   trim: 'XL',
-  engine: '2.7L V6',
+  engineDesc: '2.7L V6',
   driveType: '4WD',
   vehicleType: 'Truck',
   manufacturer: 'Ford Motor Company',
@@ -25,10 +25,12 @@ const mockNHTSAData = {
   fuelTypePrimary: 'Gasoline',
   fuelTypeSecondary: null,
   electrificationLevel: null,
+  turbo: null,
 }
 
 const mockMarketCheckData = {
   ...mockNHTSAData,
+  bodyType: 'Truck',
   bodySubtype: 'Crew',
   transmission: 'Automatic',
   doors: 4,
@@ -97,21 +99,22 @@ describe('Unified VIN Decoder Service', () => {
   })
 
   describe('PAID tier', () => {
-    it('Test 4: PAID tier uses MarketCheck on success', async () => {
-      // #given: MarketCheck returns premium data
+    it('Test 4: PAID tier uses NHTSA base + MarketCheck premium fields on success', async () => {
+      // #given: NHTSA returns base data, MarketCheck returns premium data
+      vi.spyOn(nhtsaDecoder, 'decodeVin').mockResolvedValue(mockNHTSAData)
       vi.spyOn(marketcheckDecoder, 'decodeVinMarketCheck').mockResolvedValue(mockMarketCheckData)
-      const nhtSASpy = vi.spyOn(nhtsaDecoder, 'decodeVin')
 
       // #when: Decode for PAID tier
       const result = await decodeVinForTier(VALID_VIN, 'PAID')
 
-      // #then: Should use MarketCheck and not call NHTSA
+      // #then: Should cherry-pick premium fields from MarketCheck onto NHTSA base
       expect(result).toBeDefined()
       expect(result?.decoderSource).toBe('MARKETCHECK')
       expect(result?.bodySubtype).toBe('Crew')
       expect(result?.transmission).toBe('Automatic')
       expect(result?.doors).toBe(4)
-      expect(nhtSASpy).not.toHaveBeenCalled()
+      expect(nhtsaDecoder.decodeVin).toHaveBeenCalledOnce()
+      expect(marketcheckDecoder.decodeVinMarketCheck).toHaveBeenCalledOnce()
     })
 
     it('Test 5: PAID tier falls back to NHTSA when MarketCheck returns null', async () => {
@@ -173,19 +176,19 @@ describe('Unified VIN Decoder Service', () => {
       )
     })
 
-    it('Test 13: logs error when MarketCheck throws and fallback occurs', async () => {
-      // #given: MarketCheck throws, NHTSA returns data, console.error is spied on
+    it('Test 13: logs warning when MarketCheck throws and fallback occurs', async () => {
+      // #given: MarketCheck throws, NHTSA returns data, console.warn is spied on
       const marketCheckError = new Error('Connection refused')
       vi.spyOn(marketcheckDecoder, 'decodeVinMarketCheck').mockRejectedValue(marketCheckError)
       vi.spyOn(nhtsaDecoder, 'decodeVin').mockResolvedValue(mockNHTSAData)
-      const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
 
       // #when: Decode for PAID tier
       await decodeVinForTier(VALID_VIN, 'PAID')
 
-      // #then: Should log the error with the VIN and message
-      expect(errorSpy).toHaveBeenCalledWith(
-        'MarketCheck decoder failed:',
+      // #then: Should log a warning with the VIN and error message
+      expect(warnSpy).toHaveBeenCalledWith(
+        'MarketCheck decoder failed, using NHTSA only:',
         expect.objectContaining({
           vin: VALID_VIN,
           error: marketCheckError.message,
@@ -208,6 +211,7 @@ describe('Unified VIN Decoder Service', () => {
     })
 
     it('Test 10: decoderSource is MARKETCHECK for PAID with successful MarketCheck', async () => {
+      vi.spyOn(nhtsaDecoder, 'decodeVin').mockResolvedValue(mockNHTSAData)
       vi.spyOn(marketcheckDecoder, 'decodeVinMarketCheck').mockResolvedValue(mockMarketCheckData)
       const result = await decodeVinForTier(VALID_VIN, 'PAID')
       expect(result?.decoderSource).toBe('MARKETCHECK')

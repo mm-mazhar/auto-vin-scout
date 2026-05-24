@@ -109,7 +109,7 @@ function makeTestReport(overrides: Record<string, unknown> = {}) {
       model: 'Accord',
       year: 2019,
       trim: 'EX',
-      engine: '2.0L I4',
+      engineDesc: '2.0L I4',
       decoderSource: 'nhtsa',
       safetyRating: null,
       recalls: [

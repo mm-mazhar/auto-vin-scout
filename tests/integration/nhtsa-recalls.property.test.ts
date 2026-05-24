@@ -22,7 +22,7 @@ function makeVehicle(decoderSource: string): Vehicle {
     model: 'F-150',
     year: 2021,
     trim: null,
-    engine: null,
+    engineDesc: null,
     driveType: null,
     vehicleType: null,
     manufacturer: null,
@@ -34,6 +34,9 @@ function makeVehicle(decoderSource: string): Vehicle {
     fuelTypePrimary: null,
     fuelTypeSecondary: null,
     electrificationLevel: null,
+
+    turbo: null,
+    bodyType: null,
     bodySubtype: null,
     transmission: null,
     doors: null,

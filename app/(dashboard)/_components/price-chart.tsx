@@ -82,7 +82,7 @@ export function PriceChart({ listings }: PriceChartProps) {
                   color: 'hsl(var(--foreground))',
                 }}
                 labelStyle={{ color: '#a1a1aa' }}
-                formatter={(value: number) => [`$${value.toLocaleString()}`, 'Price']}
+                formatter={(value) => [`$${Number(value).toLocaleString()}`, 'Price']}
               />
               {msrpLine}
               <Bar
@@ -110,7 +110,7 @@ export function PriceChart({ listings }: PriceChartProps) {
                   color: 'hsl(var(--foreground))',
                 }}
                 labelStyle={{ color: '#a1a1aa' }}
-                formatter={(value: number) => [`$${value.toLocaleString()}`, 'Price']}
+                formatter={(value) => [`$${Number(value).toLocaleString()}`, 'Price']}
               />
               {msrpLine}
               <Line

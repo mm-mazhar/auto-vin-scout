@@ -81,7 +81,7 @@ describe('RiskEngineService', () => {
         model: 'Camry',
         year: 2015,
         trim: 'LE',
-        engine: '2.5L I4',
+        engineDesc: '2.5L I4',
         driveType: 'FWD',
       },
     })

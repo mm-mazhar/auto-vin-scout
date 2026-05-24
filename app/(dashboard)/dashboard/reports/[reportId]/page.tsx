@@ -78,7 +78,7 @@ export default async function ReportPageRoute({ params, searchParams }: ReportPa
           model: vehicleData.model,
           year: vehicleData.year,
           trim: vehicleData.trim,
-          engine: vehicleData.engine,
+          engineDesc: vehicleData.engineDesc,
           driveType: vehicleData.driveType,
           vehicleType: vehicleData.vehicleType,
           manufacturer: vehicleData.manufacturer,
@@ -90,6 +90,8 @@ export default async function ReportPageRoute({ params, searchParams }: ReportPa
           fuelTypePrimary: vehicleData.fuelTypePrimary,
           fuelTypeSecondary: vehicleData.fuelTypeSecondary,
           electrificationLevel: vehicleData.electrificationLevel,
+
+          turbo: vehicleData.turbo,
           bodySubtype: null,
           transmission: null,
           doors: null,

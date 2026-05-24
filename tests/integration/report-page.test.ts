@@ -84,7 +84,7 @@ describe('ReportPage Data Integration Tests (Task 13.3)', () => {
         model: 'Civic',
         year: 2023,
         trim: 'EX',
-        engine: '2.0L 4-Cylinder',
+        engineDesc: '2.0L 4-Cylinder',
         driveType: 'FWD',
         vehicleType: 'Passenger Car',
         manufacturer: 'Honda Motor Co.',
@@ -125,7 +125,7 @@ describe('ReportPage Data Integration Tests (Task 13.3)', () => {
     expect(fetchedReport!.vehicle.trim).toBe('EX')
 
     // #then - Vehicle configuration data should be available
-    expect(fetchedReport!.vehicle.engine).toBe('2.0L 4-Cylinder')
+    expect(fetchedReport!.vehicle.engineDesc).toBe('2.0L 4-Cylinder')
     expect(fetchedReport!.vehicle.driveType).toBe('FWD')
     expect(fetchedReport!.vehicle.fuelTypePrimary).toBe('Gasoline')
     expect(fetchedReport!.vehicle.manufacturer).toBe('Honda Motor Co.')
@@ -283,7 +283,7 @@ describe('ReportPage Data Integration Tests (Task 13.3)', () => {
         year: 2022,
         // All optional fields are null
         trim: null,
-        engine: null,
+        engineDesc: null,
         driveType: null,
         vehicleType: null,
         manufacturer: null,
@@ -323,7 +323,7 @@ describe('ReportPage Data Integration Tests (Task 13.3)', () => {
 
     // #then - Optional fields should be null
     expect(fetchedReport!.vehicle.trim).toBeNull()
-    expect(fetchedReport!.vehicle.engine).toBeNull()
+    expect(fetchedReport!.vehicle.engineDesc).toBeNull()
     expect(fetchedReport!.vehicle.driveType).toBeNull()
     expect(fetchedReport!.vehicle.manufacturer).toBeNull()
   })
@@ -443,7 +443,7 @@ describe('ReportPage Data Integration Tests (Task 13.3)', () => {
         model: 'Camry',
         year: 2014,
         trim: 'LE',
-        engine: '2.5L 4-Cylinder',
+        engineDesc: '2.5L 4-Cylinder',
         driveType: 'FWD',
         vehicleType: 'Passenger Car',
         manufacturer: 'Toyota Motor Co.',

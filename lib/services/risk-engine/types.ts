@@ -31,7 +31,7 @@ export interface AgentInput {
     model: string
     year: number
     trim: string | null
-    engine: string | null
+    engineDesc: string | null
     decoderSource: string
   }
   recalls: Array<{

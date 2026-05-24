@@ -89,7 +89,7 @@ Vehicle Details:
 - Model: ${vehicle.model}
 - Year: ${vehicle.year} (Age: ${vehicleAge} years)
 - Trim: ${vehicle.trim || 'N/A'}
-- Engine: ${vehicle.engine || 'N/A'}
+- Engine: ${vehicle.engineDesc || 'N/A'}
 - Drive Type: ${vehicle.driveType || 'N/A'}
 - Fuel Type: ${vehicle.fuelTypePrimary || 'N/A'}
 - Vehicle Type: ${vehicle.vehicleType || 'N/A'}

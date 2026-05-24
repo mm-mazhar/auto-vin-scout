@@ -26,6 +26,7 @@ interface NHTSAApiResponse {
     FuelTypePrimary: string | null
     FuelTypeSecondary: string | null
     ElectrificationLevel: string | null
+    Turbo: string | null
   }>
 }
 
@@ -35,7 +36,7 @@ export interface VehicleData {
   model: string
   year: number
   trim: string | null
-  engine: string | null
+  engineDesc: string | null
   driveType: string | null
   vehicleType: string | null
   manufacturer: string | null
@@ -47,6 +48,7 @@ export interface VehicleData {
   fuelTypePrimary: string | null
   fuelTypeSecondary: string | null
   electrificationLevel: string | null
+  turbo: string | null
 }
 
 /**
@@ -133,7 +135,7 @@ export async function decodeVin(vin: string): Promise<VehicleData | null> {
       model,
       year,
       trim: normalizeValue(results.Trim),
-      engine: generateEngineDescription(results),
+      engineDesc: generateEngineDescription(results),
       driveType: normalizeValue(results.DriveType),
       vehicleType: normalizeValue(results.VehicleType),
       manufacturer: normalizeValue(results.Manufacturer),
@@ -145,6 +147,7 @@ export async function decodeVin(vin: string): Promise<VehicleData | null> {
       fuelTypePrimary: normalizeValue(results.FuelTypePrimary),
       fuelTypeSecondary: normalizeValue(results.FuelTypeSecondary),
       electrificationLevel: normalizeValue(results.ElectrificationLevel),
+      turbo: normalizeValue(results.Turbo),
     }
 
     return vehicleData

@@ -52,7 +52,7 @@ describe('VIN Router - Database Transaction (Task 4.3)', () => {
       model: 'Accord',
       year: 2021,
       trim: 'EX-L',
-      engine: '4-cylinder 1.5L Turbo',
+      engineDesc: '4-cylinder 1.5L Turbo',
       driveType: 'FWD',
       vehicleType: 'Sedan',
       manufacturer: 'Honda Motor Company',
@@ -64,6 +64,8 @@ describe('VIN Router - Database Transaction (Task 4.3)', () => {
       fuelTypePrimary: 'Gasoline',
       fuelTypeSecondary: null,
       electrificationLevel: null,
+
+      turbo: null,
     })
 
     // Mock MarketCheck to prevent real API calls — PAID tier triggers MarketCheck
@@ -179,7 +181,7 @@ describe('VIN Router - Database Transaction (Task 4.3)', () => {
         model: 'Accord',
         year: 2021,
         trim: 'Sport', // Updated trim
-        engine: '4-cylinder 1.5L Turbo',
+        engineDesc: '4-cylinder 1.5L Turbo',
         driveType: 'FWD',
         vehicleType: 'Sedan',
         manufacturer: 'Honda Motor Company',
@@ -191,6 +193,8 @@ describe('VIN Router - Database Transaction (Task 4.3)', () => {
         fuelTypePrimary: 'Gasoline',
         fuelTypeSecondary: null,
         electrificationLevel: null,
+
+        turbo: null,
       })
 
       await client.vin.analyze({

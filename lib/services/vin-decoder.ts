@@ -24,6 +24,7 @@ export type DecoderSource = 'NHTSA' | 'MARKETCHECK' | 'NHTSA_FALLBACK'
  */
 export interface EnhancedVehicleData extends VehicleData {
   // Premium fields (nullable - only populated by MarketCheck)
+  bodyType?: string | null
   bodySubtype?: string | null
   transmission?: string | null
   doors?: number | null
@@ -64,7 +65,7 @@ export function needsMarketCheckUpgrade(
  * Decodes a VIN using the appropriate decoder based on user tier
  * 
  * Tier-based routing:
- * - PAID: MarketCheck → NHTSA fallback on failure
+ * - PAID: NHTSA first (base fields), then cherry-pick premium fields from MarketCheck
  * - FREE_TIER/ZERO_CREDITS: NHTSA only
  * 
  * @param vin - Valid 17-character VIN
@@ -88,32 +89,43 @@ export async function decodeVinForTier(
     }
   }
 
-  // PAID tier: Try MarketCheck first
+  // PAID tier: NHTSA first, then cherry-pick premium fields from MarketCheck
+  const nhtsaData = await decodeVin(vin)
+  if (!nhtsaData) {
+    return null
+  }
+
+  let premiumFields: Awaited<ReturnType<typeof decodeVinMarketCheck>> | null = null
   try {
-    const premiumData = await decodeVinMarketCheck(vin)
-    if (premiumData) {
-      return {
-        ...premiumData,
-        decoderSource: 'MARKETCHECK',
-      }
-    }
+    premiumFields = await decodeVinMarketCheck(vin)
   } catch (error) {
-    console.error('MarketCheck decoder failed:', {
+    console.warn('MarketCheck decoder failed, using NHTSA only:', {
       vin,
       error: error instanceof Error ? error.message : 'Unknown error',
       timestamp: new Date().toISOString(),
     })
   }
 
-  // Fallback to NHTSA
-  console.warn(`MarketCheck failed for VIN ${vin}, falling back to NHTSA`)
-  const basicData = await decodeVin(vin)
-  if (!basicData) {
-    return null
+  if (!premiumFields) {
+    console.warn(`MarketCheck returned null for VIN ${vin}, using NHTSA only`)
   }
 
   return {
-    ...basicData,
-    decoderSource: 'NHTSA_FALLBACK',
+    ...nhtsaData,
+    // Cherry-pick premium fields from MarketCheck
+    bodyType: premiumFields?.bodyType ?? null,
+    bodySubtype: premiumFields?.bodySubtype ?? null,
+    transmission: premiumFields?.transmission ?? null,
+    doors: premiumFields?.doors ?? null,
+    engineSize: premiumFields?.engineSize ?? null,
+    cylinders: premiumFields?.cylinders ?? null,
+    overallHeight: premiumFields?.overallHeight ?? null,
+    overallLength: premiumFields?.overallLength ?? null,
+    overallWidth: premiumFields?.overallWidth ?? null,
+    stdSeating: premiumFields?.stdSeating ?? null,
+    highwayMpg: premiumFields?.highwayMpg ?? null,
+    cityMpg: premiumFields?.cityMpg ?? null,
+    powertrainType: premiumFields?.powertrainType ?? null,
+    decoderSource: premiumFields ? 'MARKETCHECK' : 'NHTSA_FALLBACK',
   }
 }

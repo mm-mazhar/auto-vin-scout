@@ -153,7 +153,7 @@ model Vehicle {
   model                String
   year                 Int
   trim                 String?
-  engine               String?
+  engineDesc           String?
   driveType            String?
   vehicleType          String?
   manufacturer         String?
@@ -165,8 +165,10 @@ model Vehicle {
   fuelTypePrimary      String?
   fuelTypeSecondary    String?
   electrificationLevel String?
+  turbo                String?
 
   // Premium fields from MarketCheck API
+  bodyType       String?
   bodySubtype    String?
   transmission   String?
   doors          Int?

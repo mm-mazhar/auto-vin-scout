@@ -103,7 +103,7 @@ export function OdometerChart({ listings }: OdometerChartProps) {
                   color: 'hsl(var(--foreground))',
                 }}
                 labelStyle={{ color: '#a1a1aa' }}
-                formatter={(value: number) => [`${value.toLocaleString()} mi`, 'Miles']}
+                formatter={(value) => [`${Number(value).toLocaleString()} mi`, 'Miles']}
               />
               <Bar
                 dataKey="miles"
@@ -130,7 +130,7 @@ export function OdometerChart({ listings }: OdometerChartProps) {
                   color: 'hsl(var(--foreground))',
                 }}
                 labelStyle={{ color: '#a1a1aa' }}
-                formatter={(value: number) => [`${value.toLocaleString()} mi`, 'Miles']}
+                formatter={(value) => [`${Number(value).toLocaleString()} mi`, 'Miles']}
               />
               <Line
                 type="monotone"

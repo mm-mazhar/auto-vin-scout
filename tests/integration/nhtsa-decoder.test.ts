@@ -66,7 +66,7 @@ describe('NHTSA Decoder Service', () => {
     expect(result?.fuelTypePrimary).toBe('Gasoline')
     expect(result?.fuelTypeSecondary).toBeNull()
     expect(result?.electrificationLevel).toBeNull() // "Not Applicable" normalized to null
-    expect(result?.engine).toBe('4-cylinder 2AR-FE Direct Gasoline')
+    expect(result?.engineDesc).toBe('4-cylinder 2AR-FE Direct Gasoline')
   })
 
   it('Test 2: Successful decode with minimal data (only required fields)', async () => {
@@ -118,7 +118,7 @@ describe('NHTSA Decoder Service', () => {
     expect(result?.fuelTypePrimary).toBeNull()
     expect(result?.fuelTypeSecondary).toBeNull()
     expect(result?.electrificationLevel).toBeNull()
-    expect(result?.engine).toBeNull()
+    expect(result?.engineDesc).toBeNull()
   })
 
   it('Test 3: Engine description generation with partial data', async () => {
@@ -155,7 +155,7 @@ describe('NHTSA Decoder Service', () => {
 
     // #then: Should generate engine description from available fields
     expect(result).toBeDefined()
-    expect(result?.engine).toBe('6-cylinder EcoBoost Gasoline')
+    expect(result?.engineDesc).toBe('6-cylinder EcoBoost Gasoline')
   })
 
   it('Test 4: Normalize empty strings to null', async () => {

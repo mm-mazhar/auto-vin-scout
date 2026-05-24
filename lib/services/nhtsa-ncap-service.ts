@@ -57,6 +57,7 @@ export type VehicleInput = {
   driveType: string | null
   doors: number | null
   vehicleType: string | null
+  bodyType: string | null
   bodySubtype: string | null
 }
 
@@ -68,10 +69,15 @@ const DRIVE_TYPE_MAP: Record<string, string> = {
   'All-Wheel Drive': 'AWD',
   '4WD/4-Wheel Drive/4x4': '4WD',
   '4x4': '4WD',
+  'FWD': 'FWD',
+  'RWD': 'RWD',
+  'AWD': 'AWD',
+  '4WD': '4WD',
 }
 
 const BODY_CLASS_MAP: Record<string, string> = {
   'Sport Utility Vehicle (SUV)': 'SUV',
+  'SUV': 'SUV',
   'Hatchback': 'HB',
   'Sedan': 'SDN',
   'Wagon': 'WGN',
@@ -247,12 +253,19 @@ export class NhtsaNcapService {
     }
 
     // Doors → "{N} DR"
+    // NHTSA is inconsistent with hatchbacks: some use "5 HB" (Corolla), others "4 DR" (Civic).
+    // When doors=5, generate both "5" and "4 DR" keywords to match either pattern.
     if (vehicle.doors != null && vehicle.doors > 0) {
-      keywords.push(`${vehicle.doors} DR`)
+      if (vehicle.doors === 5) {
+        keywords.push('5')
+        keywords.push('4 DR')
+      } else {
+        keywords.push(`${vehicle.doors} DR`)
+      }
     }
 
-    // Body class: prefer bodySubtype over vehicleType
-    const bodySource = vehicle.bodySubtype ?? vehicle.vehicleType
+    // Body class: prefer bodyType over bodySubtype over vehicleType
+    const bodySource = vehicle.bodyType ?? vehicle.bodySubtype ?? vehicle.vehicleType
     if (bodySource && BODY_CLASS_MAP[bodySource]) {
       keywords.push(BODY_CLASS_MAP[bodySource])
     }

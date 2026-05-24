@@ -331,16 +331,16 @@ function FullReportWithTabs({
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {/* Engine Information */}
-              {(vehicle.engine || vehicle.engineModel || vehicle.engineCylinders) && (
+              {(vehicle.engineDesc || vehicle.engineModel || vehicle.engineCylinders) && (
                 <div className="space-y-2">
                   <h4 className="font-medium flex items-center gap-2">
                     <Gauge className="h-8 w-8 text-primary" />
                     Engine
                   </h4>
-                  {vehicle.engine && (
+                  {vehicle.engineDesc && (
                     <div>
                       <label className="text-sm text-muted-foreground">Description</label>
-                      <p className="text-sm">{vehicle.engine}</p>
+                      <p className="text-sm">{vehicle.engineDesc}</p>
                     </div>
                   )}
                   {vehicle.engineModel && (
@@ -506,16 +506,22 @@ function FullReportWithTabs({
                   <span className="text-foreground">Key Specs</span>
                 </h4>
                 <div className="space-y-2.5">
-                  {vehicle.engine && (
+                  {vehicle.engineDesc && (
                     <div>
                       <p className="text-xs text-muted-foreground">Engine</p>
-                      <p className="text-sm font-medium">{vehicle.engine}</p>
+                      <p className="text-sm font-medium">{vehicle.engineDesc}</p>
                     </div>
                   )}
                   {vehicle.driveType && (
                     <div>
                       <p className="text-xs text-muted-foreground">Drivetrain</p>
                       <p className="text-sm font-medium">{vehicle.driveType}</p>
+                    </div>
+                  )}
+                  {vehicle.turbo && (
+                    <div>
+                      <p className="text-xs text-muted-foreground">Turbo</p>
+                      <p className="text-sm font-medium">{vehicle.turbo}</p>
                     </div>
                   )}
                   {vehicle.highwayMpg != null && (

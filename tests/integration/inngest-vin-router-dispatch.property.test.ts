@@ -39,7 +39,7 @@ describe('Property 6: VIN Router Dispatch Correctness', () => {
     model: fc.string({ minLength: 1, maxLength: 50 }),
     year: fc.integer({ min: 1900, max: 2100 }),
     trim: fc.option(fc.string({ maxLength: 50 })),
-    engine: fc.option(fc.string({ maxLength: 100 })),
+    engineDesc: fc.option(fc.string({ maxLength: 100 })),
     driveType: fc.option(fc.string({ maxLength: 50 })),
     vehicleType: fc.option(fc.string({ maxLength: 50 })),
     manufacturer: fc.option(fc.string({ maxLength: 100 })),

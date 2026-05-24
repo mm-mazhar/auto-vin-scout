@@ -139,7 +139,7 @@ export const analyzeReportFn = inngest.createFunction(
     await step.run('fetch-safety-ratings', async () => {
       const fullVehicle = await prisma.vehicle.findUnique({
         where: { id: vehicleId },
-        select: { id: true, make: true, model: true, year: true, driveType: true, doors: true, vehicleType: true, bodySubtype: true }
+        select: { id: true, make: true, model: true, year: true, driveType: true, doors: true, vehicleType: true, bodyType: true, bodySubtype: true }
       })
       if (fullVehicle) {
         await NhtsaNcapService.fetchAndSaveSafetyRatings(fullVehicle)

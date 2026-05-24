@@ -3,9 +3,7 @@
 import * as z from 'zod'
 import { orgProcedure, adminProcedure } from '../procedures'
 import { ORPCError } from '../server'
-import { decodeVin } from '@/lib/services/nhtsa-decoder'
 import { decodeVinForTier, needsMarketCheckUpgrade, type EnhancedVehicleData } from '@/lib/services/vin-decoder'
-import { decodeVinMarketCheck } from '@/lib/services/marketcheck-decoder'
 import { inngest, analyzeReportEvent } from '@/lib/inngest/client'
 import type { PrismaClient } from '@prisma/client'
 import type { VehicleData } from '@/lib/services/nhtsa-decoder'
@@ -30,7 +28,7 @@ function createVehicleResponse(vehicleData: EnhancedVehicleData) {
     model: vehicleData.model,
     year: vehicleData.year,
     trim: vehicleData.trim,
-    engine: vehicleData.engine,
+    engineDesc: vehicleData.engineDesc,
     driveType: vehicleData.driveType,
     vehicleType: vehicleData.vehicleType,
     manufacturer: vehicleData.manufacturer,
@@ -42,7 +40,9 @@ function createVehicleResponse(vehicleData: EnhancedVehicleData) {
     fuelTypePrimary: vehicleData.fuelTypePrimary,
     fuelTypeSecondary: vehicleData.fuelTypeSecondary,
     electrificationLevel: vehicleData.electrificationLevel,
+    turbo: vehicleData.turbo,
     // Premium fields
+    bodyType: vehicleData.bodyType ?? null,
     bodySubtype: vehicleData.bodySubtype ?? null,
     transmission: vehicleData.transmission ?? null,
     doors: vehicleData.doors ?? null,
@@ -108,7 +108,7 @@ async function handlePaidFlow(db: PrismaClient, orgId: string, projectId: string
         model: vehicleData.model,
         year: vehicleData.year,
         trim: vehicleData.trim,
-        engine: vehicleData.engine,
+        engineDesc: vehicleData.engineDesc,
         driveType: vehicleData.driveType,
         vehicleType: vehicleData.vehicleType,
         manufacturer: vehicleData.manufacturer,
@@ -120,7 +120,9 @@ async function handlePaidFlow(db: PrismaClient, orgId: string, projectId: string
         fuelTypePrimary: vehicleData.fuelTypePrimary,
         fuelTypeSecondary: vehicleData.fuelTypeSecondary,
         electrificationLevel: vehicleData.electrificationLevel,
+        turbo: vehicleData.turbo,
         // Premium fields
+        bodyType: vehicleData.bodyType,
         bodySubtype: vehicleData.bodySubtype,
         transmission: vehicleData.transmission,
         doors: vehicleData.doors,
@@ -141,7 +143,7 @@ async function handlePaidFlow(db: PrismaClient, orgId: string, projectId: string
         model: vehicleData.model,
         year: vehicleData.year,
         trim: vehicleData.trim,
-        engine: vehicleData.engine,
+        engineDesc: vehicleData.engineDesc,
         driveType: vehicleData.driveType,
         vehicleType: vehicleData.vehicleType,
         manufacturer: vehicleData.manufacturer,
@@ -153,7 +155,9 @@ async function handlePaidFlow(db: PrismaClient, orgId: string, projectId: string
         fuelTypePrimary: vehicleData.fuelTypePrimary,
         fuelTypeSecondary: vehicleData.fuelTypeSecondary,
         electrificationLevel: vehicleData.electrificationLevel,
+        turbo: vehicleData.turbo,
         // Premium fields
+        bodyType: vehicleData.bodyType,
         bodySubtype: vehicleData.bodySubtype,
         transmission: vehicleData.transmission,
         doors: vehicleData.doors,
@@ -242,7 +246,7 @@ async function handleZeroCreditsFlow(db: PrismaClient, orgId: string, projectId:
         model: vehicleData.model,
         year: vehicleData.year,
         trim: vehicleData.trim,
-        engine: vehicleData.engine,
+        engineDesc: vehicleData.engineDesc,
         driveType: vehicleData.driveType,
         vehicleType: vehicleData.vehicleType,
         manufacturer: vehicleData.manufacturer,
@@ -254,7 +258,9 @@ async function handleZeroCreditsFlow(db: PrismaClient, orgId: string, projectId:
         fuelTypePrimary: vehicleData.fuelTypePrimary,
         fuelTypeSecondary: vehicleData.fuelTypeSecondary,
         electrificationLevel: vehicleData.electrificationLevel,
+        turbo: vehicleData.turbo,
         // Premium fields
+        bodyType: vehicleData.bodyType,
         bodySubtype: vehicleData.bodySubtype,
         transmission: vehicleData.transmission,
         doors: vehicleData.doors,
@@ -275,7 +281,7 @@ async function handleZeroCreditsFlow(db: PrismaClient, orgId: string, projectId:
         model: vehicleData.model,
         year: vehicleData.year,
         trim: vehicleData.trim,
-        engine: vehicleData.engine,
+        engineDesc: vehicleData.engineDesc,
         driveType: vehicleData.driveType,
         vehicleType: vehicleData.vehicleType,
         manufacturer: vehicleData.manufacturer,
@@ -287,7 +293,9 @@ async function handleZeroCreditsFlow(db: PrismaClient, orgId: string, projectId:
         fuelTypePrimary: vehicleData.fuelTypePrimary,
         fuelTypeSecondary: vehicleData.fuelTypeSecondary,
         electrificationLevel: vehicleData.electrificationLevel,
+        turbo: vehicleData.turbo,
         // Premium fields
+        bodyType: vehicleData.bodyType,
         bodySubtype: vehicleData.bodySubtype,
         transmission: vehicleData.transmission,
         doors: vehicleData.doors,
@@ -489,7 +497,7 @@ export const vehicleDetailsSchema = z.object({
   model: z.string(),
   year: z.number(),
   trim: z.string().nullable(),
-  engine: z.string().nullable(),
+  engineDesc: z.string().nullable(),
   driveType: z.string().nullable(),
   vehicleType: z.string().nullable(),
   manufacturer: z.string().nullable(),
@@ -501,6 +509,7 @@ export const vehicleDetailsSchema = z.object({
   fuelTypePrimary: z.string().nullable(),
   fuelTypeSecondary: z.string().nullable(),
   electrificationLevel: z.string().nullable(),
+  turbo: z.string().nullable(),
   
   // Premium fields from MarketCheck API
   bodySubtype: z.string().nullable(),
@@ -706,17 +715,8 @@ export const vinRouter = {
       let vehicleData: EnhancedVehicleData | null
 
       if (needsMarketCheckUpgrade(existingVehicle, tier)) {
-        // PAID user with NHTSA-only cached record — force MarketCheck call
-        const premiumData = await decodeVinMarketCheck(vin)
-        if (premiumData) {
-          vehicleData = { ...premiumData, decoderSource: 'MARKETCHECK' }
-        } else {
-          // MarketCheck failed — fall back to NHTSA for fresh data
-          vehicleData = await decodeVinForTier(vin, 'PAID')
-          if (vehicleData) {
-            vehicleData = { ...vehicleData, decoderSource: 'NHTSA_FALLBACK' as const }
-          }
-        }
+        // PAID user with NHTSA-only cached record — upgrade via NHTSA-first flow
+        vehicleData = await decodeVinForTier(vin, 'PAID')
       } else if (existingVehicle?.decoderSource === 'MARKETCHECK' && tier === 'PAID') {
         // Cache hit — premium data already present, skip MarketCheck call
         vehicleData = existingVehicle as unknown as EnhancedVehicleData

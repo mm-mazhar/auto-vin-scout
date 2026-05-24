@@ -18,7 +18,7 @@ const mockNHTSAData = {
   model: 'F-150',
   year: 2021,
   trim: 'XL',
-  engine: '2.7L V6',
+  engineDesc: '2.7L V6',
   driveType: '4WD',
   vehicleType: 'Truck',
   manufacturer: 'Ford Motor Company',
@@ -30,10 +30,12 @@ const mockNHTSAData = {
   fuelTypePrimary: 'Gasoline',
   fuelTypeSecondary: null,
   electrificationLevel: null,
+  turbo: null,
 }
 
 const mockMarketCheckData = {
   ...mockNHTSAData,
+  bodyType: 'Truck',
   bodySubtype: 'Crew',
   transmission: 'Automatic',
   doors: 4,

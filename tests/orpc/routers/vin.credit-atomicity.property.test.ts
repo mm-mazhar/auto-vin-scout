@@ -62,7 +62,7 @@ describe('VIN Router - Credit Atomicity Properties', () => {
       model: 'Accord',
       year: 2021,
       trim: 'EX-L',
-      engine: '4-cylinder 1.5L Turbo',
+      engineDesc: '4-cylinder 1.5L Turbo',
       driveType: 'FWD',
       vehicleType: 'Sedan',
       manufacturer: 'Honda Motor Company',
@@ -74,6 +74,8 @@ describe('VIN Router - Credit Atomicity Properties', () => {
       fuelTypePrimary: 'Gasoline',
       fuelTypeSecondary: null,
       electrificationLevel: null,
+
+      turbo: null,
     })
 
     // Mock MarketCheck to prevent real API calls — PAID tier triggers MarketCheck
@@ -129,7 +131,7 @@ describe('VIN Router - Credit Atomicity Properties', () => {
             model: 'Accord',
             year: 2021,
             trim: 'EX-L',
-            engine: '4-cylinder 1.5L Turbo',
+            engineDesc: '4-cylinder 1.5L Turbo',
             driveType: 'FWD',
             vehicleType: 'Sedan',
             manufacturer: 'Honda Motor Company',
@@ -141,6 +143,8 @@ describe('VIN Router - Credit Atomicity Properties', () => {
             fuelTypePrimary: 'Gasoline',
             fuelTypeSecondary: null,
             electrificationLevel: null,
+
+            turbo: null,
           })
 
           const context = {
@@ -228,7 +232,7 @@ describe('VIN Router - Credit Atomicity Properties', () => {
               model: 'Accord',
               year: 2021,
               trim: 'EX-L',
-              engine: '4-cylinder 1.5L Turbo',
+              engineDesc: '4-cylinder 1.5L Turbo',
               driveType: 'FWD',
               vehicleType: 'Sedan',
               manufacturer: 'Honda Motor Company',
@@ -240,6 +244,8 @@ describe('VIN Router - Credit Atomicity Properties', () => {
               fuelTypePrimary: 'Gasoline',
               fuelTypeSecondary: null,
               electrificationLevel: null,
+
+              turbo: null,
             })
 
             // Inject failure based on failure type
@@ -374,7 +380,7 @@ describe('VIN Router - Credit Atomicity Properties', () => {
               model: 'Accord',
               year: 2021,
               trim: 'EX-L',
-              engine: '4-cylinder 1.5L Turbo',
+              engineDesc: '4-cylinder 1.5L Turbo',
               driveType: 'FWD',
               vehicleType: 'Sedan',
               manufacturer: 'Honda Motor Company',
@@ -386,6 +392,8 @@ describe('VIN Router - Credit Atomicity Properties', () => {
               fuelTypePrimary: 'Gasoline',
               fuelTypeSecondary: null,
               electrificationLevel: null,
+
+              turbo: null,
             })
 
             await client.vin.analyze({
@@ -463,7 +471,7 @@ describe('VIN Router - Credit Atomicity Properties', () => {
               model: 'Accord',
               year: 2021,
               trim: 'EX-L',
-              engine: '4-cylinder 1.5L Turbo',
+              engineDesc: '4-cylinder 1.5L Turbo',
               driveType: 'FWD',
               vehicleType: 'Sedan',
               manufacturer: 'Honda Motor Company',
@@ -475,6 +483,8 @@ describe('VIN Router - Credit Atomicity Properties', () => {
               fuelTypePrimary: 'Gasoline',
               fuelTypeSecondary: null,
               electrificationLevel: null,
+
+              turbo: null,
             })
 
             if (operation === 'failure') {

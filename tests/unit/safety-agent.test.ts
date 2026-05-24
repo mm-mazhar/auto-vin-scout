@@ -46,7 +46,7 @@ function makeAgentInput(overrides: Partial<AgentInput> = {}): AgentInput {
       model: 'Corolla',
       year: 2020,
       trim: 'LE',
-      engine: '1.8L I4',
+      engineDesc: '1.8L I4',
       decoderSource: 'vpic',
     },
     recalls: [],

@@ -68,7 +68,7 @@ describe('CreateReportDialog Integration Tests (Task 12.1)', () => {
       model: 'Civic',
       year: 2023,
       trim: 'EX',
-      engine: '2.0L 4-Cylinder',
+      engineDesc: '2.0L 4-Cylinder',
       driveType: 'FWD',
       vehicleType: 'Passenger Car',
       manufacturer: 'Honda Motor Co.',
@@ -80,6 +80,8 @@ describe('CreateReportDialog Integration Tests (Task 12.1)', () => {
       fuelTypePrimary: 'Gasoline',
       fuelTypeSecondary: null,
       electrificationLevel: 'None',
+
+      turbo: null,
     })
     // Mock MarketCheck to return null so tests use NHTSA data predictably
     vi.spyOn(marketcheckDecoder, 'decodeVinMarketCheck').mockResolvedValue(null)
@@ -387,7 +389,7 @@ describe('CreateReportDialog Integration Tests (Task 12.1)', () => {
         model: 'Civic',
         year: 2023,
         trim: 'EX',
-        engine: '2.0L 4-Cylinder',
+        engineDesc: '2.0L 4-Cylinder',
         driveType: 'FWD',
         vehicleType: 'Passenger Car',
         manufacturer: 'Honda Motor Co.',
@@ -399,6 +401,8 @@ describe('CreateReportDialog Integration Tests (Task 12.1)', () => {
         fuelTypePrimary: 'Gasoline',
         fuelTypeSecondary: null,
         electrificationLevel: 'None',
+
+        turbo: null,
       })
     }
   })

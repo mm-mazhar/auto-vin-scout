@@ -72,6 +72,7 @@ const listingArb = fc.record({
   price: fc.option(fc.integer({ min: 0, max: 500000 }), { nil: null }),
   miles: fc.option(fc.integer({ min: 0, max: 500000 }), { nil: null }),
   msrp: fc.option(fc.integer({ min: 0, max: 500000 }), { nil: null }),
+  dom: fc.option(fc.integer({ min: 0, max: 365 }), { nil: null }),
   statusDate: fc.option(
     fc.integer({ min: 2015, max: 2025 }).chain((year) =>
       fc.integer({ min: 0, max: 364 }).map((dayOffset) => {
@@ -106,6 +107,9 @@ const listingArb = fc.record({
   sellerName: fc.option(fc.string({ minLength: 1, maxLength: 30 }), { nil: null }),
   city: fc.option(fc.string({ minLength: 1, maxLength: 20 }), { nil: null }),
   state: fc.option(fc.string({ minLength: 2, maxLength: 2 }), { nil: null }),
+  latitude: fc.option(fc.double({ min: -90, max: 90, noNaN: true }), { nil: null }),
+  longitude: fc.option(fc.double({ min: -180, max: 180, noNaN: true }), { nil: null }),
+  isCertified: fc.option(fc.boolean(), { nil: null }),
 })
 
 const listingHistoryArb = fc.array(listingArb, { minLength: 0, maxLength: 20 })
@@ -132,7 +136,7 @@ const agentInputArb = fc
       model: 'Accord',
       year,
       trim: null,
-      engine: null,
+      engineDesc: null,
       decoderSource: 'nhtsa',
     },
     recalls,

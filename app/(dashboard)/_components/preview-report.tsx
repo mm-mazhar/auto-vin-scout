@@ -68,16 +68,16 @@ export function PreviewReport({
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {/* Engine Information */}
-            {(vehicle.engine || vehicle.engineModel || vehicle.engineCylinders) && (
+            {(vehicle.engineDesc || vehicle.engineModel || vehicle.engineCylinders) && (
               <div className="space-y-2">
                 <h4 className="font-medium flex items-center gap-2">
                   <Gauge className="h-8 w-8 text-primary" />
                   Engine
                 </h4>
-                {vehicle.engine && (
+                {vehicle.engineDesc && (
                   <div>
                     <label className="text-sm text-muted-foreground">Description</label>
-                    <p className="text-sm">{vehicle.engine}</p>
+                    <p className="text-sm">{vehicle.engineDesc}</p>
                   </div>
                 )}
                 {vehicle.engineModel && (

@@ -40,6 +40,7 @@ function makeVehicle(overrides: Partial<VehicleInput> = {}): VehicleInput {
     driveType: 'Front-Wheel Drive',
     doors: 4,
     vehicleType: null,
+    bodyType: null,
     bodySubtype: null,
     ...overrides,
   }

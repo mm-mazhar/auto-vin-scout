@@ -51,6 +51,7 @@ interface MarketCheckApiResponse {
  * Extends base VehicleData with MarketCheck-specific fields
  */
 export interface MarketCheckVehicleData extends VehicleData {
+  bodyType: string | null
   bodySubtype: string | null
   transmission: string | null
   doors: number | null
@@ -181,7 +182,7 @@ export async function decodeVinMarketCheck(
       model: data.model,
       year: data.year,
       trim: normalizeString(data.trim),
-      engine: normalizeString(data.engine),
+      engineDesc: normalizeString(data.engine),
       driveType: normalizeString(data.drivetrain),
       vehicleType: normalizeString(data.vehicle_type),
       manufacturer: null, // MarketCheck doesn't provide this
@@ -193,8 +194,10 @@ export async function decodeVinMarketCheck(
       fuelTypePrimary: normalizeString(data.fuel_type),
       fuelTypeSecondary: null, // MarketCheck doesn't provide this
       electrificationLevel: null, // MarketCheck doesn't provide this
+      turbo: null, // MarketCheck doesn't provide this
 
       // Premium fields with validation
+      bodyType: normalizeString(data.body_type),
       bodySubtype: normalizeString(data.body_subtype),
       transmission: normalizeString(data.transmission),
       doors: validateInt(data.doors, 1, 10),

@@ -57,19 +57,23 @@ function makeRecall(overrides: Partial<AgentInput['recalls'][number]> = {}) {
   }
 }
 
-function makeListing(overrides: Partial<AgentInput['listingHistory'][number]> = {}) {
+function makeListing(overrides: Partial<AgentInput['listingHistory'][number]> = {}): AgentInput['listingHistory'][number] {
   return {
     externalListingId: `listing-${Math.random().toString(36).slice(2, 8)}`,
-    price: null as number | null,
-    miles: null as number | null,
-    msrp: null as number | null,
-    statusDate: null as Date | null,
-    firstSeenAt: null as Date | null,
-    lastSeenAt: null as Date | null,
-    sellerType: null as string | null,
-    sellerName: null as string | null,
-    city: null as string | null,
-    state: null as string | null,
+    price: null,
+    miles: null,
+    msrp: null,
+    dom: null,
+    statusDate: null,
+    firstSeenAt: null,
+    lastSeenAt: null,
+    sellerType: null,
+    sellerName: null,
+    city: null,
+    state: null,
+    latitude: null,
+    longitude: null,
+    isCertified: null,
     ...overrides,
   }
 }
@@ -84,7 +88,7 @@ function makeInput(overrides: Partial<AgentInput> = {}): AgentInput {
       model: 'Accord',
       year: new Date().getFullYear() - 5, // 5 years old by default
       trim: 'EX',
-      engine: '2.0L I4',
+      engineDesc: '2.0L I4',
       decoderSource: 'nhtsa',
     },
     recalls: [],
@@ -120,7 +124,7 @@ describe('BaselineAgent', () => {
         model: 'Camry',
         year: new Date().getFullYear() - 12, // 12 years old
         trim: null,
-        engine: null,
+        engineDesc: null,
         decoderSource: 'nhtsa',
       },
     })
@@ -142,7 +146,7 @@ describe('BaselineAgent', () => {
         model: 'Camry',
         year: new Date().getFullYear() - 10, // exactly 10 years old
         trim: null,
-        engine: null,
+        engineDesc: null,
         decoderSource: 'nhtsa',
       },
     })
@@ -222,7 +226,7 @@ describe('BaselineAgent', () => {
         model: 'Focus',
         year: new Date().getFullYear() - 15, // +15 (age)
         trim: null,
-        engine: null,
+        engineDesc: null,
         decoderSource: 'nhtsa',
       },
       recalls: [makeRecall(), makeRecall(), makeRecall()], // +30 (recalls)
@@ -273,7 +277,7 @@ describe('BaselineAgent', () => {
         model: 'Malibu',
         year: new Date().getFullYear() - 12, // +15 (age)
         trim: null,
-        engine: null,
+        engineDesc: null,
         decoderSource: 'nhtsa',
       },
       recalls: [makeRecall(), makeRecall()], // +20 (recalls)

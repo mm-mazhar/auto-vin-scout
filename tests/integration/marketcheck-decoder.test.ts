@@ -22,7 +22,7 @@ const fullMarketCheckResponse = {
   transmission: 'Automatic',
   drivetrain: '4WD',
   fuel_type: 'Unleaded',
-  engine: '2.7L V6',
+  engineDesc: '2.7L V6',
   engine_size: 2.7,
   doors: 4,
   cylinders: 6,

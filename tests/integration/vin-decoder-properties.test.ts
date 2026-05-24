@@ -38,7 +38,7 @@ function makeNHTSAData(vin: string) {
     model: 'F-150',
     year: 2021,
     trim: 'XL',
-    engine: '2.7L V6',
+    engineDesc: '2.7L V6',
     driveType: '4WD',
     vehicleType: 'Truck',
     manufacturer: 'Ford Motor Company',
@@ -50,12 +50,14 @@ function makeNHTSAData(vin: string) {
     fuelTypePrimary: 'Gasoline',
     fuelTypeSecondary: null,
     electrificationLevel: null,
+    turbo: null,
   }
 }
 
 function makeMarketCheckData(vin: string) {
   return {
     ...makeNHTSAData(vin),
+    bodyType: 'Truck',
     bodySubtype: 'Crew',
     transmission: 'Automatic',
     doors: 4,

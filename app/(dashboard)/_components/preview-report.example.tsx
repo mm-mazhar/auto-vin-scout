@@ -12,7 +12,7 @@ const exampleVehicle: VehicleDetails = {
   model: 'Civic',
   year: 2022,
   trim: 'LX',
-  engine: '2.0L 4-Cylinder',
+  engineDesc: '2.0L 4-Cylinder',
   driveType: 'FWD',
   vehicleType: 'Passenger Car',
   manufacturer: 'Honda Motor Co.',
@@ -24,6 +24,8 @@ const exampleVehicle: VehicleDetails = {
   fuelTypePrimary: 'Gasoline',
   fuelTypeSecondary: null,
   electrificationLevel: null,
+
+  turbo: null,
   bodySubtype: null,
   transmission: null,
   doors: null,
