@@ -1,6 +1,7 @@
 'use client'
 
-import { Shield, CheckCircle2, AlertTriangle, XCircle } from 'lucide-react'
+import Image from 'next/image'
+import { Shield, CheckCircle2, AlertTriangle, XCircle, Info } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { StarRating } from './star-rating'
@@ -38,6 +39,21 @@ export function NhtsaSafetyTab({ safetyRating }: NhtsaSafetyTabProps) {
 
   return (
     <div className="space-y-6">
+      {/* Data Accuracy Caution Note */}
+      <div className="flex items-start gap-2 px-1">
+        <Info className="h-3.5 w-3.5 text-muted-foreground/60 mt-0.5 shrink-0" />
+        <p className="text-xs text-muted-foreground/60 leading-relaxed">
+          Safety data is matched using NHTSA&apos;s vehicle identification system
+          {safetyRating.nhtsaVehicleId != null && (
+            <span className="font-mono"> (ID: {safetyRating.nhtsaVehicleId})</span>
+          )}
+          . Since NHTSA doesn&apos;t put it under `VIN` some cases, the matched vehicle ID may not correspond exactly to this
+          vehicle&apos;s specific Trim, Doors or other configuration. Ratings should be used as a general
+          reference. We are actively improving
+          match accuracy....
+        </p>
+      </div>
+
       {/* Hero Section: Crash photo + Overall star rating */}
       <Card>
         <CardContent className="pt-6">
@@ -45,10 +61,13 @@ export function NhtsaSafetyTab({ safetyRating }: NhtsaSafetyTabProps) {
             {/* Left: Crash test photo */}
             <div className="rounded-lg overflow-hidden bg-muted">
               {safetyRating.frontCrashPicture ? (
-                <img
+                <Image
                   src={safetyRating.frontCrashPicture}
                   alt={`${safetyRating.vehicleDescription ?? 'Vehicle'} frontal crash test`}
+                  width={600}
+                  height={400}
                   className="w-full h-auto object-cover"
+                  unoptimized
                 />
               ) : (
                 <div className="flex flex-col items-center justify-center h-48 gap-2">
@@ -64,6 +83,11 @@ export function NhtsaSafetyTab({ safetyRating }: NhtsaSafetyTabProps) {
               <p className="text-sm text-muted-foreground text-center">
                 {safetyRating.vehicleDescription ?? 'NHTSA Crash Test Results'}
               </p>
+              {safetyRating.nhtsaVehicleId != null && (
+                <p className="text-xs text-muted-foreground/70 font-mono">
+                  NHTSA Vehicle ID: {safetyRating.nhtsaVehicleId}
+                </p>
+              )}
             </div>
           </div>
         </CardContent>

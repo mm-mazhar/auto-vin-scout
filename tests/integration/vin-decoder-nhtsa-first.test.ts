@@ -137,7 +137,7 @@ describe('Premium Field Cherry-Picking (NHTSA-First Flow)', () => {
     expect(result!.year).toBe(2021) // NHTSA value, not 2022
     expect(result!.trim).toBe('XL') // NHTSA value, not 'Lariat'
     expect(result!.engineDesc).toBe('2.7L V6') // NHTSA value
-    expect(result!.driveType).toBe('4WD') // NHTSA value, not 'AWD'
+    expect(result!.driveType).toBe('AWD') // MarketCheck overrides NHTSA driveType
     expect(result!.vehicleType).toBe('Truck') // NHTSA value, not 'Pickup'
 
     // #then: Only the 12 premium fields come from MarketCheck

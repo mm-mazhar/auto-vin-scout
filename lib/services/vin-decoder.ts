@@ -112,6 +112,8 @@ export async function decodeVinForTier(
 
   return {
     ...nhtsaData,
+    // Override base fields where MarketCheck provides better data
+    driveType: premiumFields?.driveType ?? nhtsaData.driveType,
     // Cherry-pick premium fields from MarketCheck
     bodyType: premiumFields?.bodyType ?? null,
     bodySubtype: premiumFields?.bodySubtype ?? null,
