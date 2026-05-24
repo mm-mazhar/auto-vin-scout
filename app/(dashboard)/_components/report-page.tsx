@@ -80,7 +80,8 @@ export function ReportPage({ report: initialReport, projectId }: ReportPageProps
       case 'Low':
         return 'oklch(0.696 0.17 162.48)' // chart-2: Green
       case 'Moderate':
-        return 'oklch(0.828 0.189 84.429)' // chart-4: Yellow/Orange
+        // return 'oklch(0.828 0.189 84.429)' // chart-4: Yellow/Orange
+        return 'oklch(0.6 0.189 55)' // Darker amber — better contrast with white text
       case 'Elevated':
         return 'oklch(0.577 0.245 27.325)' // destructive: Red
       case 'High':

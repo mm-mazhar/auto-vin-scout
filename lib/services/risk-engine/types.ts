@@ -32,6 +32,12 @@ export interface AgentInput {
     year: number
     trim: string | null
     engineDesc: string | null
+    engineCylinders: string | null
+    turbo: string | null
+    fuelTypePrimary: string | null
+    fuelTypeSecondary: string | null
+    electrificationLevel: string | null
+    engineModel: string | null
     decoderSource: string
   }
   recalls: Array<{

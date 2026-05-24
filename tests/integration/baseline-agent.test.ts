@@ -78,7 +78,8 @@ function makeListing(overrides: Partial<AgentInput['listingHistory'][number]> = 
   }
 }
 
-function makeInput(overrides: Partial<AgentInput> = {}): AgentInput {
+function makeInput(overrides: { vehicle?: Partial<AgentInput['vehicle']> } & Omit<Partial<AgentInput>, 'vehicle'> = {}): AgentInput {
+  const { vehicle: vehicleOverrides, ...rest } = overrides
   return {
     reportId: 'report-test-001',
     vehicle: {
@@ -89,12 +90,19 @@ function makeInput(overrides: Partial<AgentInput> = {}): AgentInput {
       year: new Date().getFullYear() - 5, // 5 years old by default
       trim: 'EX',
       engineDesc: '2.0L I4',
+      engineCylinders: '4',
+      turbo: null,
+      fuelTypePrimary: 'Gasoline',
+      fuelTypeSecondary: null,
+      electrificationLevel: null,
+      engineModel: null,
       decoderSource: 'nhtsa',
+      ...vehicleOverrides,
     },
     recalls: [],
     listingHistory: [],
     safetyRating: null,
-    ...overrides,
+    ...rest,
   }
 }
 

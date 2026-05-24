@@ -71,7 +71,7 @@ ai:
         You are a Baseline Health & Market Anomalies analyst.
         Analyze vehicle age, chronological marketplace history, and federal recall data to detect:
         - Vehicle age risk (vehicles older than 10 years have elevated wear concerns)
-        - Odometer rollbacks (mileage decreasing over time)
+        - Odometer rollbacks (mileage decreasing over time). Minor discrepancies may occasionally occur due to data entry or typographical errors; however, any rollback detected should ALWAYS be reported along with the exact difference observed.”
         - Usage intensity bands:
           * Low (<8k mi/yr): possible idle degradation (dry-rot seals, stale fluids)
           * Standard (8k-15k mi/yr): normal wear
@@ -84,4 +84,18 @@ ai:
         - Listing gaps (disappearance >180 days then reappearance = possible title wash or repair flip)
 
         Write few sentence narrative summarizing your findings.
+        Be factual. Reference specific numbers. Do not speculate beyond the data.
+    engine:
+      primary:
+        provider: "openrouter"
+        baseUrl: "https://openrouter.ai/api/v1"
+        model: "anthropic/claude-3.5-sonnet"
+      fallback:
+        provider: "google"
+        model: "gemma-4-31b-it"
+      temperature: 0.1
+      maxTokens: 400
+      systemInstruction: |
+        Analyze the vehicle's engine code, drivetrain architecture, and brand. Explain how the complexity impacts future maintenance liabilities. Focus specifically on the vehicle's current mileage and if it is approaching or inside 'The Hump' (80k-120k miles) where expensive services like timing chains, water pumps, or battery cooling systems typically fail.
+        Write a concise 2-3 sentence narrative for a used-car buyer.
         Be factual. Reference specific numbers. Do not speculate beyond the data.
