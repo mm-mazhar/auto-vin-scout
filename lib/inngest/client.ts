@@ -23,4 +23,13 @@ export const analyzeReportEvent = eventType('vin/report.analyze', {
 // Inngest client singleton
 // ---------------------------------------------------------------------------
 
-export const inngest = new Inngest({ id: 'autovinscout' })
+export const inngest = new Inngest({
+  id: 'autovinscout',
+  // Checkpointing is enabled by default in v4. On Vercel serverless,
+  // maxRuntime MUST be set below the function's maxDuration to prevent
+  // the SDK from exceeding the platform timeout (which causes Inngest
+  // to retry indefinitely because it never receives a response).
+  checkpointing: {
+    maxRuntime: '45s', // Vercel Pro default maxDuration is 60s
+  },
+})
