@@ -15,7 +15,7 @@ ai:
       provider: "google"
       model: "gemma-4-31b-it"
     temperature: 0.2
-    maxTokens: 1400
+    maxTokens: 2000
     systemInstruction: |
       You are the Master Automotive Risk Analyst for AutoVinScout.
       You receive risk narratives from specialized analysis agents.
@@ -99,3 +99,16 @@ ai:
         Analyze the vehicle's engine code, drivetrain architecture, and brand. Explain how the complexity impacts future maintenance liabilities. Focus specifically on the vehicle's current mileage and if it is approaching or inside 'The Hump' (80k-120k miles) where expensive services like timing chains, water pumps, or battery cooling systems typically fail.
         Write a concise 2-3 sentence narrative for a used-car buyer.
         Be factual. Reference specific numbers. Do not speculate beyond the data.
+
+    corrosion:
+      primary:
+        provider: "openrouter"
+        baseUrl: "https://openrouter.ai/api/v1"
+        model: "anthropic/claude-3.5-sonnet"
+      fallback:
+        provider: "google"
+        model: "gemma-4-31b-it"
+      temperature: 0.1
+      maxTokens: 400
+      systemInstruction: |
+        Analyze the vehicle's historical location data (Salt Belt vs. Sun Belt percentages). Explain the cumulative environmental stress on the vehicle. High Salt Belt exposure means severe undercarriage rust and compromised brake lines. High Sun Belt exposure means UV dry-rot on rubber seals and dashboard cracking. Keep the narrative concise.

@@ -8,6 +8,7 @@ import type { RiskAgent, AgentInput, RiskVectorResult, RiskLabel } from './types
 import { BaselineAgent } from './agents/0-baseline-agent'
 import { SafetyAgent } from './agents/1-safety-agent'
 import { EngineAgent } from './agents/2-engine-agent'
+import { CorrosionAgent } from './agents/4-corrosion-agent'
 import { Prisma } from '@prisma/client'
 
 // Agent registry — add new agents here
@@ -15,13 +16,13 @@ const AGENT_REGISTRY: RiskAgent[] = [
   new BaselineAgent(),
   new SafetyAgent(),
   new EngineAgent(),
+  new CorrosionAgent(),
 ]
 
 // Planned agents not yet implemented — used for UI transparency
 export const PENDING_AGENTS = [
   { vectorName: 'Title & Ownership History', weight: 0.25, description: 'Salvage/rebuilt titles, lien records, ownership chain' },
   { vectorName: 'Market Valuation Analysis', weight: 0.20, description: 'Fair market value comparison, depreciation curve' },
-  { vectorName: 'Flood & Environmental Risk', weight: 0.15, description: 'Flood zone history, environmental damage indicators' },
 ] as const
 
 export class RiskEngineOrchestrator {

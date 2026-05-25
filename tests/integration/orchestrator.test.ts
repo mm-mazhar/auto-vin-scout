@@ -97,6 +97,16 @@ vi.mock('@/lib/services/risk-engine/agents/2-engine-agent', () => ({
   },
 }))
 
+// --- Mock CorrosionAgent ---
+vi.mock('@/lib/services/risk-engine/agents/4-corrosion-agent', () => ({
+  CorrosionAgent: class MockCorrosionAgent {
+    readonly vectorIndex = 4
+    readonly vectorName = 'Regional Corrosion & Environmental Stress'
+    readonly weight = 0.05
+    execute = mockAgentExecute
+  },
+}))
+
 // --- Mock @prisma/client for Prisma namespace ---
 vi.mock('@prisma/client', () => ({
   Prisma: {
@@ -207,7 +217,7 @@ describe('RiskEngineOrchestrator', () => {
   it('executes all registered agents with correct input', async () => {
     await RiskEngineOrchestrator.run('report-001')
 
-    expect(mockAgentExecute).toHaveBeenCalledTimes(3)
+    expect(mockAgentExecute).toHaveBeenCalledTimes(4)
     expect(mockAgentExecute).toHaveBeenCalledWith(
       expect.objectContaining({
         reportId: 'report-001',
@@ -227,7 +237,7 @@ describe('RiskEngineOrchestrator', () => {
 
   // --- Test 2: Composite score = weighted sum, capped at 100 ---
   it('computes composite score as weighted sum of agent scores', async () => {
-    // All 3 agents return score 60, weight 0.20 → composite = 60*0.20 * 3 = 36
+    // All 4 agents return score 60, weight 0.20 → composite = 60*0.20 * 4 = 48
     mockAgentExecute.mockResolvedValue(makeAgentResult({ score: 60, label: 'Medium' }))
 
     await RiskEngineOrchestrator.run('report-001')
@@ -235,7 +245,7 @@ describe('RiskEngineOrchestrator', () => {
     expect(mockUpdate).toHaveBeenCalledWith(
       expect.objectContaining({
         data: expect.objectContaining({
-          riskScore: 36,
+          riskScore: 48,
         }),
       })
     )
@@ -274,13 +284,13 @@ describe('RiskEngineOrchestrator', () => {
   })
 
   it('assigns "Medium" label for composite score 31-70', async () => {
-    // Need composite > 30. With 3 agents all using weight from result:
-    // Score 50, weight 0.40 → 50*0.40 * 3 = 60 → Medium
-    mockAgentExecute.mockResolvedValue(makeAgentResult({ score: 50, weight: 0.40 }))
+    // Need composite > 30. With 4 agents all using weight from result:
+    // Score 50, weight 0.30 → 50*0.30 * 4 = 60 → Medium
+    mockAgentExecute.mockResolvedValue(makeAgentResult({ score: 50, weight: 0.30 }))
 
     await RiskEngineOrchestrator.run('report-001')
 
-    // 50 * 0.40 * 3 = 60 → Medium
+    // 50 * 0.30 * 4 = 60 → Medium
     expect(mockUpdate).toHaveBeenCalledWith(
       expect.objectContaining({
         data: expect.objectContaining({
