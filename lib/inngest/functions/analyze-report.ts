@@ -18,7 +18,7 @@ export const analyzeReportFn = inngest.createFunction(
   {
     id: 'analyze-report',
     concurrency: { limit: 1, key: 'event.data.orgId' },
-    retries: 1, // Reduced from 3 to 1: only retry on transient network errors, not on invalid vehicles
+    retries: 0, // Orchestrator handles primary→fallback internally; Inngest retries are redundant
     triggers: [{ event: analyzeReportEvent }],
   },
   async ({ event, step }) => {

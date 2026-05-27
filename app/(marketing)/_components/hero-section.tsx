@@ -11,12 +11,14 @@ import { ShineBorder } from '@/components/ui/shine-border'
 import {
     Briefcase,
     Building2,
+    Code,
     FlaskConical,
     Lightbulb,
     Microscope,
     Rocket,
     ShieldCheck,
-    Wrench
+    Wrench,
+    Zap
 } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -702,8 +704,22 @@ export default async function HeroSection() {
               </p>
             </div>
 
-            <div className={cn('relative z-10 mx-auto mt-10 grid w-full gap-8 md:mt-12 md:grid-cols-2', alignedSurfaceWidth)}>
-              <div className={cn(glassCardBase, GLASS_CARD)}>
+            <div className={cn('relative z-10 mx-auto mt-10 flex w-full justify-center md:mt-12', alignedSurfaceWidth)}>
+              <div className={cn(glassCardBase, 'max-w-md', GLASS_CARD)}>
+                <div className='flex items-center gap-3'>
+                  <Briefcase className='h-6 w-6 shrink-0 text-primary' />
+                  <h3 className='text-sm font-semibold tracking-tight'>
+                    Market forecasting and dealer tools
+                  </h3>
+                </div>
+                <ul className='mt-3 list-disc space-y-2 pl-5 text-sm text-muted-foreground'>
+                  <li>Add depreciation analytics based on historical model performance and local market behavior.</li>
+                  <li>Expand into white-label workflows for dealerships evaluating inventory or sharing transparency reports.</li>
+                </ul>
+              </div>
+
+              {/* Hidden upcoming feature cards — uncomment when ready to ship */}
+              {/* <div className={cn(glassCardBase, GLASS_CARD)}>
                 <div className='flex items-center gap-3'>
                   <ShieldCheck className='h-6 w-6 shrink-0 text-primary' />
                   <h3 className='text-sm font-semibold tracking-tight'>
@@ -714,9 +730,9 @@ export default async function HeroSection() {
                   <li>Integrate NMVTIS for official title brands such as salvage, rebuilt, or junk.</li>
                   <li>Bring verified odometer readings into the report instead of relying on derived signals alone.</li>
                 </ul>
-              </div>
+              </div> */}
 
-              <div className={cn(glassCardBase, GLASS_CARD)}>
+              {/* <div className={cn(glassCardBase, GLASS_CARD)}>
                 <div className='flex items-center gap-3'>
                   <Building2 className='h-6 w-6 shrink-0 text-primary' />
                   <h3 className='text-sm font-semibold tracking-tight'>
@@ -727,9 +743,9 @@ export default async function HeroSection() {
                   <li>Connect NICB VINCheck style signals for theft confirmation and salvage indicators.</li>
                   <li>Close some of the biggest trust gaps that public sources alone cannot resolve.</li>
                 </ul>
-              </div>
+              </div> */}
 
-              <div className={cn(glassCardBase, GLASS_CARD)}>
+              {/* <div className={cn(glassCardBase, GLASS_CARD)}>
                 <div className='flex items-center gap-3'>
                   <Microscope className='h-6 w-6 shrink-0 text-primary' />
                   <h3 className='text-sm font-semibold tracking-tight'>
@@ -740,18 +756,67 @@ export default async function HeroSection() {
                   <li>Layer in time-series odometer signals from commercial inspection partners.</li>
                   <li>Improve fraud detection when listing mileage does not fit the vehicle timeline.</li>
                 </ul>
+              </div> */}
+            </div>
+          </PageSection>
+          
+          
+          {/* SECTION: API First Platform */}
+          <PageSection id='api' className='bg-background py-6 md:py-10 relative overflow-hidden'>
+            <div
+              aria-hidden
+              className='absolute inset-0 pointer-events-none opacity-40'
+              style={{
+                background: 'radial-gradient(ellipse 100% 60% at 50% 40%, rgba(255,255,255,0.06), transparent 70%)'
+              }}
+            />
+
+            <div className='mx-auto max-w-3xl text-center relative z-10'>
+              <h2 className='text-3xl font-bold tracking-tight md:text-4xl'>
+                Upcoming - API First Platform
+              </h2>
+              <p className='mt-4 text-muted-foreground'>
+                Integrate VIN intelligence directly into your own applications, workflows, and dealer tools with a clean, developer-friendly API.
+              </p>
+            </div>
+
+            <div className={cn('relative z-10 mx-auto mt-10 grid w-full gap-8 md:mt-12 md:grid-cols-3', alignedSurfaceWidth)}>
+              <div className={cn(glassCardBase, GLASS_CARD)}>
+                <div className='flex items-center gap-3'>
+                  <Code className='h-6 w-6 shrink-0 text-primary' />
+                  <h3 className='text-sm font-semibold tracking-tight'>
+                    Simple REST endpoints
+                  </h3>
+                </div>
+                <ul className='mt-3 list-disc space-y-2 pl-5 text-sm text-muted-foreground'>
+                  <li>Decode any VIN and retrieve structured risk data in a single request.</li>
+                  <li>JSON responses designed for easy integration with any stack.</li>
+                </ul>
               </div>
 
               <div className={cn(glassCardBase, GLASS_CARD)}>
                 <div className='flex items-center gap-3'>
-                  <Briefcase className='h-6 w-6 shrink-0 text-primary' />
+                  <Zap className='h-6 w-6 shrink-0 text-primary' />
                   <h3 className='text-sm font-semibold tracking-tight'>
-                    Market forecasting and dealer tools
+                    Built for scale
                   </h3>
                 </div>
                 <ul className='mt-3 list-disc space-y-2 pl-5 text-sm text-muted-foreground'>
-                  <li>Add depreciation analytics based on historical model performance and local market behavior.</li>
-                  <li>Expand into white-label workflows for dealerships evaluating inventory or sharing transparency reports.</li>
+                  <li>Rate-limited tiers from individual developers to high-volume dealer integrations.</li>
+                  <li>Cached NHTSA and marketplace data for fast, consistent response times.</li>
+                </ul>
+              </div>
+
+              <div className={cn(glassCardBase, GLASS_CARD)}>
+                <div className='flex items-center gap-3'>
+                  <Rocket className='h-6 w-6 shrink-0 text-primary' />
+                  <h3 className='text-sm font-semibold tracking-tight'>
+                    Extend your product
+                  </h3>
+                </div>
+                <ul className='mt-3 list-disc space-y-2 pl-5 text-sm text-muted-foreground'>
+                  <li>Embed risk scores, flood signals, and recall data into your own UI or reports.</li>
+                  <li>White-label ready for dealerships, inspectors, and marketplace platforms.</li>
                 </ul>
               </div>
             </div>

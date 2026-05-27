@@ -9,15 +9,20 @@ import { BaselineAgent } from './agents/0-baseline-agent'
 import { SafetyAgent } from './agents/1-safety-agent'
 import { EngineAgent } from './agents/2-engine-agent'
 import { CorrosionAgent } from './agents/4-corrosion-agent'
+import { FloodAgent } from './agents/5-flood-agent'
+import { WeatherService } from '@/lib/services/weather-service'
 import { Prisma } from '@prisma/client'
 
 // Agent registry — add new agents here
-const AGENT_REGISTRY: RiskAgent[] = [
+const STANDARD_AGENTS: RiskAgent[] = [
   new BaselineAgent(),
   new SafetyAgent(),
   new EngineAgent(),
   new CorrosionAgent(),
 ]
+
+// FloodAgent needs weather data injected before execution
+const floodAgent = new FloodAgent()
 
 // Planned agents not yet implemented — used for UI transparency
 export const PENDING_AGENTS = [
@@ -55,12 +60,21 @@ export class RiskEngineOrchestrator {
         safetyRating: report.vehicle.safetyRating ?? null,
       }
 
-      // 2. Execute all agents in parallel
+      // 2. Fetch weather data concurrently with agent preparation
+      const weatherData = await WeatherService.getMaxPrecipitation(agentInput.listingHistory)
+
+      // Inject weather data into FloodAgent
+      floodAgent.setWeatherData(weatherData)
+
+      // Combine all agents
+      const allAgents: RiskAgent[] = [...STANDARD_AGENTS, floodAgent]
+
+      // 3. Execute all agents in parallel
       const results = await Promise.all(
-        AGENT_REGISTRY.map((agent) => agent.execute(agentInput))
+        allAgents.map((agent) => agent.execute(agentInput))
       )
 
-      // 3. Persist RiskVectorResult records
+      // 4. Persist RiskVectorResult records
       await prisma.riskVectorResult.createMany({
         data: results.map((r): Prisma.RiskVectorResultCreateManyInput => ({
           reportId,
@@ -76,7 +90,7 @@ export class RiskEngineOrchestrator {
         })),
       })
 
-      // 4. Compute composite score
+      // 5. Compute composite score
       const compositeScore = Math.min(
         100,
         Math.round(
@@ -86,7 +100,7 @@ export class RiskEngineOrchestrator {
       const compositeLabel: RiskLabel =
         compositeScore <= 30 ? 'Low' : compositeScore <= 70 ? 'Medium' : 'High'
 
-      // 5. Generate executive summary + negotiation script via Master LLM
+      // 6. Generate executive summary + negotiation script via Master LLM
       let executiveSummary: string
       let negotiationScript: string
       let masterLLMFailed = false
@@ -102,14 +116,14 @@ export class RiskEngineOrchestrator {
         masterLLMFailed = true
       }
 
-      // 6. Determine isAiFallback: true if any agent or master used fallback
+      // 7. Determine isAiFallback: true if any agent or master used fallback
       const anyAgentUsedFallback = results.some((r) => {
         const meta = r.metadata as Record<string, unknown> | undefined
         return meta?.usedFallbackNarrative === true
       })
       const isAiFallback = masterLLMFailed || anyAgentUsedFallback
 
-      // 7. Update Report with final results
+      // 8. Update Report with final results
       await prisma.report.update({
         where: { id: reportId },
         data: {

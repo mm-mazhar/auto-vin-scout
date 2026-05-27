@@ -37,6 +37,9 @@ export function PriceChart({ listings }: PriceChartProps) {
 
   // Find MSRP if available (use first non-null msrp)
   const msrp = listings.find((l) => l.msrp !== null)?.msrp ?? null
+  
+  // DEBUG: Remove after confirming MSRP data flow
+  console.log('[PriceChart] msrp:', msrp, '| listings msrp values:', listings.map(l => l.msrp))
 
   const useBarChart = data.length <= 3
 

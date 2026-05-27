@@ -288,3 +288,9 @@ export const PREMIUM_VIN_API_SECRET = process.env.PREMIUM_VIN_API_SECRET || ''
 export const PREMIUM_VIN_BASE_URL = 'https://stag-mc-api.marketcheck.com'
 export const PREMIUM_VIN_TIMEOUT_MS = 10000 // 10 seconds
 
+// Weather Services
+export const OPEN_METEO_BASE = 'https://archive-api.open-meteo.com/v1/archive'
+export const MAX_CLUSTERS = 3
+export const DATE_WINDOW_DAYS = 5
+
+

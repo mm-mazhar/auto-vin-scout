@@ -1,0 +1,79 @@
+## FEMA Configuration File
+
+femaDisasters:
+  - name: "Louisiana Floods"
+    state: "LA"
+    year: 2016
+    month: 8
+  - name: "Hurricane Matthew"
+    state: "FL"
+    year: 2016
+    month: 10
+  - name: "Hurricane Matthew"
+    state: "NC"
+    year: 2016
+    month: 10
+  - name: "Hurricane Harvey"
+    state: "TX"
+    year: 2017
+    month: 8
+  - name: "Hurricane Irma"
+    state: "FL"
+    year: 2017
+    month: 9
+  - name: "Hurricane Florence"
+    state: "NC"
+    year: 2018
+    month: 9
+  - name: "Hurricane Michael"
+    state: "FL"
+    year: 2018
+    month: 10
+  - name: "Hurricane Laura"
+    state: "LA"
+    year: 2020
+    month: 8
+  - name: "Hurricane Ida"
+    state: "LA"
+    year: 2021
+    month: 8
+  - name: "Hurricane Ida (Remnants)"
+    state: "NY"
+    year: 2021
+    month: 9
+  - name: "Hurricane Ida (Remnants)"
+    state: "NJ"
+    year: 2021
+    month: 9
+  - name: "Eastern Kentucky Floods"
+    state: "KY"
+    year: 2022
+    month: 7
+  - name: "Hurricane Ian"
+    state: "FL"
+    year: 2022
+    month: 9
+  - name: "CA Atmospheric Rivers"
+    state: "CA"
+    year: 2023
+    month: 1
+  - name: "Hurricane Idalia"
+    state: "FL"
+    year: 2023
+    month: 8
+  - name: "Hurricane Beryl"
+    state: "TX"
+    year: 2024
+    month: 7
+  - name: "Hurricane Helene"
+    state: "FL"
+    year: 2024
+    month: 9
+  - name: "Hurricane Helene"
+    state: "NC"
+    year: 2024
+    month: 9
+  - name: "Hurricane Milton"
+    state: "FL"
+    year: 2024
+    month: 10

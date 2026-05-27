@@ -222,6 +222,41 @@ describe('NhtsaNcapService', () => {
       // 4WD → "4WD" (score 1) vs "2WD" (score 0)
       expect(bestId).toBe(14799)
     })
+
+    it('cross-matches 4WD vehicle against AWD description', () => {
+      const results = makeNhtsaResults([
+        '2016 Hyundai Tucson SUV AWD',
+        '2016 Hyundai Tucson SUV FWD',
+      ])
+      const vehicle = makeVehicle({
+        driveType: '4WD',
+        doors: 5,
+        bodyType: 'SUV',
+      })
+
+      const bestId = NhtsaNcapService.matchBestNhtsaId(results, vehicle)
+
+      // 4WD → keywords ['4WD', 'AWD', '5', '4 DR', 'SUV']
+      // "SUV AWD" matches AWD + SUV (score 2) vs "SUV FWD" matches SUV only (score 1)
+      expect(bestId).toBe(14799)
+    })
+
+    it('cross-matches AWD vehicle against 4WD description', () => {
+      const results = makeNhtsaResults([
+        '2020 Toyota 4Runner 4WD',
+        '2020 Toyota 4Runner 2WD',
+      ])
+      const vehicle = makeVehicle({
+        driveType: 'All-Wheel Drive',
+        doors: null,
+      })
+
+      const bestId = NhtsaNcapService.matchBestNhtsaId(results, vehicle)
+
+      // AWD → keywords ['AWD', '4WD']
+      // "4WD" matches 4WD (score 1) vs "2WD" matches nothing (score 0)
+      expect(bestId).toBe(14799)
+    })
   })
 
   // ─── API Failure Handling ──────────────────────────────────────────────────

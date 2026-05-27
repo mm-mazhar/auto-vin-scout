@@ -241,15 +241,20 @@ export class NhtsaNcapService {
 
   /**
    * Extracts scoring keywords from vehicle attributes.
-   * Maps driveType → FWD/RWD/AWD/4WD, doors → "{N} DR",
-   * vehicleType/bodySubtype → SUV/HB/SDN/WGN/CONV/CPE/PU/VAN.
+   * Maps driveType → FWD/RWD/AWD/4WD (with AWD↔4WD cross-matching),
+   * doors → "{N} DR", vehicleType/bodySubtype → SUV/HB/SDN/WGN/CONV/CPE/PU/VAN.
    */
   private static extractKeywords(vehicle: VehicleInput): string[] {
     const keywords: string[] = []
 
     // Drive type mapping
+    // NHTSA uses AWD/4WD interchangeably in descriptions (e.g., Hyundai Tucson "4WD"
+    // appears as "SUV AWD" in NHTSA). Treat them as equivalent for scoring.
     if (vehicle.driveType && DRIVE_TYPE_MAP[vehicle.driveType]) {
-      keywords.push(DRIVE_TYPE_MAP[vehicle.driveType])
+      const mapped = DRIVE_TYPE_MAP[vehicle.driveType]
+      keywords.push(mapped)
+      if (mapped === '4WD') keywords.push('AWD')
+      if (mapped === 'AWD') keywords.push('4WD')
     }
 
     // Doors → "{N} DR"
