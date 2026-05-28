@@ -3,16 +3,9 @@
 'use client'
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { TriangleAlert, Clock } from 'lucide-react'
+import { TriangleAlert } from 'lucide-react'
 import type { ReportWithVehicle } from '@/lib/orpc/routers/vin'
 
-// Planned agents not yet active — mirrors orchestrator's PENDING_AGENTS
-const PENDING_AGENTS = [
-  { vectorName: 'Title & Ownership History', weight: 0.25, description: 'Salvage/rebuilt titles, lien records, ownership chain' },
-  { vectorName: 'Market Valuation Analysis', weight: 0.20, description: 'Fair market value comparison, depreciation curve' },
-  { vectorName: 'Mechanical & Maintenance', weight: 0.20, description: 'Service records, known mechanical issues, TSBs' },
-  { vectorName: 'Flood & Environmental Risk', weight: 0.15, description: 'Flood zone history, environmental damage indicators' },
-] as const
 
 interface ExecutiveOverviewTabProps {
   report: ReportWithVehicle
@@ -89,7 +82,7 @@ export function ExecutiveOverviewTab({
               )}
 
               <p className="text-xs text-muted-foreground mt-3 max-w-[200px] text-center">
-                Based on {report.vectorResults?.length ?? 0} of 5 assessment vectors (20% weight active)
+                Based on {report.vectorResults?.length ?? 0} assessment vectors
               </p>
             </div>
 
@@ -157,35 +150,7 @@ export function ExecutiveOverviewTab({
               </div>
             ))}
 
-            {/* Pending Agents — show what's not yet contributing */}
-            {PENDING_AGENTS.length > 0 && (
-              <div className="pt-4 border-t border-border/50">
-                <div className="flex items-center gap-2 mb-3">
-                  <Clock className="h-3.5 w-3.5 text-muted-foreground" />
-                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                    Pending Data Sources ({Math.round(PENDING_AGENTS.reduce((s, a) => s + a.weight, 0) * 100)}% of total score)
-                  </p>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  {PENDING_AGENTS.map((agent) => (
-                    <div
-                      key={agent.vectorName}
-                      className="flex items-start gap-2 p-2 rounded-md bg-muted/30 border border-dashed border-border/50"
-                    >
-                      <div className="w-1.5 h-1.5 rounded-full bg-muted-foreground/40 mt-1.5 shrink-0" />
-                      <div>
-                        <p className="text-xs font-medium text-muted-foreground">
-                          {agent.vectorName}
-                        </p>
-                        <p className="text-xs text-muted-foreground/70">
-                          {agent.description}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
+
           </CardContent>
         </Card>
       )}

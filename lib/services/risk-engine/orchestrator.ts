@@ -15,8 +15,10 @@ import { EngineAgent } from './agents/2-engine-agent'
 import { CorrosionAgent } from './agents/4-corrosion-agent'
 import { FloodAgent } from './agents/5-flood-agent'
 import { TheftAgent } from './agents/6-theft-agent'
+import { ForensicsAgent } from './agents/7-forensics-agent'
 import { WeatherService } from '@/lib/services/weather-service'
 import { SerpService } from '@/lib/services/serp-service'
+import type { VinSearchResult } from '@/lib/services/serp-service'
 import { Prisma } from '@prisma/client'
 import type { MaxRainfallData } from '@/lib/services/weather-service'
 
@@ -26,12 +28,13 @@ export const PENDING_AGENTS = [
   { vectorName: 'Market Valuation Analysis', weight: 0.20, description: 'Fair market value comparison, depreciation curve' },
 ] as const
 
-/** Data dependencies that FloodAgent and TheftAgent need before execution. */
+/** Data dependencies that FloodAgent, TheftAgent, and ForensicsAgent need before execution. */
 export interface AgentDeps {
   weatherData: MaxRainfallData
   serpSnippets: string[]
   latestCity: string | null
   latestState: string | null
+  vinSearchData: VinSearchResult
 }
 
 export class RiskEngineOrchestrator {
@@ -76,14 +79,15 @@ export class RiskEngineOrchestrator {
     const latestCity = latestListing?.city ?? null
     const latestState = latestListing?.state ?? null
 
-    const [weatherData, serpSnippets] = await Promise.all([
+    const [weatherData, serpSnippets, vinSearchData] = await Promise.all([
       WeatherService.getMaxPrecipitation(agentInput.listingHistory),
       latestCity && latestState
         ? SerpService.fetchLocalTheftReports(latestCity, latestState, agentInput.vehicle.make, agentInput.vehicle.model)
         : Promise.resolve([]),
+      SerpService.fetchVinSearch(agentInput.vehicle.vin),
     ])
 
-    return { weatherData, serpSnippets, latestCity, latestState }
+    return { weatherData, serpSnippets, latestCity, latestState, vinSearchData }
   }
 
   // ---------------------------------------------------------------------------
@@ -114,6 +118,12 @@ export class RiskEngineOrchestrator {
   static async runTheftAgent(input: AgentInput, deps: AgentDeps): Promise<RiskVectorResult> {
     const agent = new TheftAgent()
     agent.setContext(deps.serpSnippets, deps.latestCity, deps.latestState)
+    return agent.execute(input)
+  }
+
+  static async runForensicsAgent(input: AgentInput, deps: AgentDeps): Promise<RiskVectorResult> {
+    const agent = new ForensicsAgent()
+    agent.setContext(deps.vinSearchData)
     return agent.execute(input)
   }
 

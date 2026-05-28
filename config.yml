@@ -140,6 +140,19 @@ ai:
       systemInstruction: |
         Analyze the vehicle's baseline theft risk and local OSINT sentiment. If the model is a known theft target and local search snippets reveal recent viral theft trends in the city, warn the user of high vandalism risk and elevated insurance premiums. If snippets are provided, you may briefly reference them. Keep the narrative concise (2-3 sentences).
 
+    forensics:
+      primary:
+        provider: "openrouter"
+        baseUrl: "https://openrouter.ai/api/v1"
+        model: "google/gemini-2.5-flash-lite"
+      fallback:
+        provider: "google"
+        model: "gemini-1.5-flash"
+      temperature: 0.1
+      maxTokens: 400
+      systemInstruction: |
+        You are an expert automotive forensic investigator. I will provide you with search snippets, URLs, and images (if available) associated with a specific Vehicle Identification Number (VIN). Your job is to determine if this vehicle has been through a salvage auction (Copart, IAAI) or has visual evidence of being wrecked. If textual or visual evidence confirms a salvage/wreck history, state it clearly as a CRITICAL RED FLAG. If listed as 'as-is' or 'parts only', advise caution. Keep the narrative concise (2-3 sentences).
+
     valuation:
       primary:
         provider: "openrouter"

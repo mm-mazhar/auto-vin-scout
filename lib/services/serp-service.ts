@@ -1,9 +1,17 @@
 // lib/services/serp-service.ts
 
+export interface VinSearchResult {
+  organicLinks: string[]
+  snippets: string[]
+  imageUrls: string[]
+}
+
 interface SerpOrganicResult {
   title?: string
   description?: string
   link?: string
+  image?: string
+  thumbnail?: string
 }
 
 interface SerpAiOverviewText {
@@ -183,6 +191,78 @@ export class SerpService {
     } catch (error) {
       console.warn('[SerpService] Failed to fetch price prediction:', error)
       return null
+    }
+  }
+
+  /**
+   * Fetches VIN-specific search results from Bright Data SERP API.
+   * Returns organic links, snippets, and image URLs for forensic analysis.
+   * On failure or missing API key, returns empty arrays so the pipeline never crashes.
+   */
+  static async fetchVinSearch(vin: string): Promise<VinSearchResult> {
+    const emptyResult: VinSearchResult = { organicLinks: [], snippets: [], imageUrls: [] }
+
+    const apiKey = process.env.BRIGHTDATA_SERP_API_KEY
+    if (!apiKey) {
+      console.warn('[SerpService] BRIGHTDATA_SERP_API_KEY not set, skipping VIN search.')
+      return emptyResult
+    }
+
+    try {
+      const query = `"${vin}" -site:instagram.com -site:facebook.com -site:tiktok.com -site:pinterest.com`
+      const zone = process.env.BRIGHTDATA_SERP_ZONE || 'serp_api1'
+
+      const response = await fetch('https://api.brightdata.com/request', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify({
+          zone,
+          url: `https://www.google.com/search?q=${encodeURIComponent(query)}`,
+          format: 'json',
+        }),
+        signal: AbortSignal.timeout(10_000),
+      })
+
+      if (!response.ok) {
+        console.warn(`[SerpService] VIN search API returned ${response.status}: ${response.statusText}`)
+        return emptyResult
+      }
+
+      const rawBody = await response.json()
+
+      // Handle stringified body if necessary
+      let parsed: SerpResponse
+      if (typeof rawBody === 'string') {
+        parsed = JSON.parse(rawBody) as SerpResponse
+      } else if (typeof rawBody?.body === 'string') {
+        parsed = JSON.parse(rawBody.body) as SerpResponse
+      } else {
+        parsed = rawBody as SerpResponse
+      }
+
+      const organic = parsed.organic ?? []
+
+      const organicLinks = organic
+        .map((r) => r.link)
+        .filter((link): link is string => Boolean(link))
+
+      const snippets = organic.map((r) => {
+        const parts = [r.title, r.description].filter(Boolean)
+        return parts.join(' — ')
+      })
+
+      const imageUrls = organic
+        .map((r) => r.image || r.thumbnail)
+        .filter((url): url is string => Boolean(url))
+        .slice(0, 2)
+
+      return { organicLinks, snippets, imageUrls }
+    } catch (error) {
+      console.warn('[SerpService] Failed to fetch VIN search:', error)
+      return emptyResult
     }
   }
 }
