@@ -102,17 +102,20 @@ export function extractEngineData(vehicle: AgentInput['vehicle']): EngineData {
  * Sorts listing history by most recent date and returns the first non-null miles.
  * Returns 0 if no mileage data is available.
  * Does NOT mutate the input array.
+ *
+ * Note: Dates may arrive as ISO strings after Inngest step serialization,
+ * so we wrap with `new Date()` to handle both Date objects and strings.
  */
 export function extractLatestMileage(
   listingHistory: AgentInput['listingHistory']
 ): number {
   const sorted = [...listingHistory].sort((a, b) => {
-    const dateA = a.lastSeenAt ?? a.statusDate
-    const dateB = b.lastSeenAt ?? b.statusDate
-    if (!dateA && !dateB) return 0
-    if (!dateA) return 1
-    if (!dateB) return -1
-    return dateB.getTime() - dateA.getTime()
+    const rawA = a.lastSeenAt ?? a.statusDate
+    const rawB = b.lastSeenAt ?? b.statusDate
+    if (!rawA && !rawB) return 0
+    if (!rawA) return 1
+    if (!rawB) return -1
+    return new Date(rawB).getTime() - new Date(rawA).getTime()
   })
 
   for (const listing of sorted) {

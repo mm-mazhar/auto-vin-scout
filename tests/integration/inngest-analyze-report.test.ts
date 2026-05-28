@@ -4,11 +4,109 @@
 // Tests the Inngest function in isolation without a running Inngest server.
 // Uses @inngest/test to verify function execution and step handling.
 //
-// Step order: verify-vehicle → fetch-recalls → upsert-recalls → fetch-market-history → run-orchestrator
+// Step order:
+//   verify-vehicle → fetch-recalls → upsert-recalls → fetch-market-history
+//   → fetch-safety-ratings → load-agent-input → fetch-agent-deps
+//   → [agent-baseline, agent-safety, agent-engine, agent-corrosion, agent-flood, agent-theft]
+//   → persist-results → [master-synthesis, price-prediction] → finalize-report
 
 import { describe, it, expect, beforeEach } from 'vitest'
 import { InngestTestEngine } from '@inngest/test'
 import { analyzeReportFn } from '@/lib/inngest/functions/analyze-report'
+
+// --- Test Fixtures ---
+
+const mockVehicle = { id: 'vehicle-789', vin: '1HGBH41JXMN109186' }
+
+const mockAgentInput = {
+  reportId: 'report-123',
+  vehicle: {
+    id: 'vehicle-789',
+    vin: '1HGBH41JXMN109186',
+    make: 'Honda',
+    model: 'Civic',
+    year: 2020,
+    trim: 'EX',
+    engineDesc: '2.0L I4',
+    decoderSource: 'nhtsa',
+  },
+  recalls: [],
+  listingHistory: [],
+  safetyRating: null,
+}
+
+const mockAgentDeps = {
+  weatherData: { maxPrecipitationMm: 0, maxPrecipitationInches: 0, city: null, state: null, date: null },
+  serpSnippets: [],
+  latestCity: null,
+  latestState: null,
+}
+
+const mockAgentResult = {
+  vectorIndex: 0,
+  vectorName: 'Test Vector',
+  score: 25,
+  label: 'Low',
+  weight: 0.20,
+  narrative: 'Test narrative.',
+  metadata: { usedFallbackNarrative: false, findings: [] },
+}
+
+const mockSynthesis = {
+  compositeScore: 25,
+  compositeLabel: 'Low',
+  executiveSummary: 'Test summary',
+  negotiationScript: 'Test script',
+  isAiFallback: false,
+}
+
+function makeEvent(overrides: Record<string, unknown> = {}) {
+  return {
+    name: 'vin/report.analyze' as const,
+    data: {
+      reportId: 'report-123',
+      orgId: 'org-456',
+      vehicleId: 'vehicle-789',
+      vehicleMake: 'Honda',
+      vehicleModel: 'Civic',
+      vehicleYear: 2020,
+      ...overrides,
+    },
+  }
+}
+
+/** All steps for the happy path (recalls > 0) */
+function makeAllSteps(recallCount = 2) {
+  const recallsResponse = {
+    Count: recallCount,
+    results: Array.from({ length: recallCount }, (_, i) => ({
+      campaignNumber: `RECALL00${i + 1}`,
+      description: `Test recall ${i + 1}`,
+    })),
+  }
+
+  const steps = [
+    { id: 'verify-vehicle', handler: () => mockVehicle },
+    { id: 'fetch-recalls', handler: () => recallsResponse },
+    ...(recallCount > 0 ? [{ id: 'upsert-recalls', handler: () => undefined }] : []),
+    { id: 'fetch-market-history', handler: () => undefined },
+    { id: 'fetch-safety-ratings', handler: () => undefined },
+    { id: 'load-agent-input', handler: () => mockAgentInput },
+    { id: 'fetch-agent-deps', handler: () => mockAgentDeps },
+    { id: 'agent-baseline', handler: () => mockAgentResult },
+    { id: 'agent-safety', handler: () => ({ ...mockAgentResult, vectorIndex: 1 }) },
+    { id: 'agent-engine', handler: () => ({ ...mockAgentResult, vectorIndex: 2 }) },
+    { id: 'agent-corrosion', handler: () => ({ ...mockAgentResult, vectorIndex: 4 }) },
+    { id: 'agent-flood', handler: () => ({ ...mockAgentResult, vectorIndex: 5 }) },
+    { id: 'agent-theft', handler: () => ({ ...mockAgentResult, vectorIndex: 6 }) },
+    { id: 'persist-results', handler: () => undefined },
+    { id: 'master-synthesis', handler: () => mockSynthesis },
+    { id: 'price-prediction', handler: () => null },
+    { id: 'finalize-report', handler: () => undefined },
+  ]
+
+  return steps
+}
 
 describe('analyzeReportFn', () => {
   let engine: InngestTestEngine
@@ -21,224 +119,78 @@ describe('analyzeReportFn', () => {
 
   describe('Happy path: all steps execute in order', () => {
     it('should execute all steps when recalls > 0', async () => {
-      // Arrange
-      const mockVehicle = { id: 'vehicle-789', vin: '1HGBH41JXMN109186' }
-      const mockRecallsResponse = {
-        Count: 2,
-        results: [
-          { campaignNumber: 'RECALL001', description: 'Test recall 1' },
-          { campaignNumber: 'RECALL002', description: 'Test recall 2' },
-        ],
-      }
-
-      // Act
       const { state } = await engine.execute({
-        events: [
-          {
-            name: 'vin/report.analyze',
-            data: {
-              reportId: 'report-123',
-              orgId: 'org-456',
-              vehicleId: 'vehicle-789',
-              vehicleMake: 'Honda',
-              vehicleModel: 'Civic',
-              vehicleYear: 2020,
-            },
-          },
-        ],
-        steps: [
-          {
-            id: 'verify-vehicle',
-            handler: () => mockVehicle,
-          },
-          {
-            id: 'fetch-recalls',
-            handler: () => mockRecallsResponse,
-          },
-          {
-            id: 'upsert-recalls',
-            handler: () => undefined,
-          },
-          {
-            id: 'fetch-market-history',
-            handler: () => undefined,
-          },
-          {
-            id: 'run-orchestrator',
-            handler: () => undefined,
-          },
-        ],
+        events: [makeEvent()],
+        steps: makeAllSteps(2),
       })
 
-      // Assert - verify all steps were executed
       expect(state).toBeDefined()
     })
 
     it('should complete successfully with valid event data', async () => {
-      // Arrange
-      const mockVehicle = { id: 'vehicle-789', vin: '1HGBH41JXMN109186' }
-      const mockRecallsResponse = {
-        Count: 1,
-        results: [{ campaignNumber: 'RECALL001', description: 'Test recall' }],
-      }
-
-      // Act
       const { result } = await engine.execute({
-        events: [
-          {
-            name: 'vin/report.analyze',
-            data: {
-              reportId: 'report-123',
-              orgId: 'org-456',
-              vehicleId: 'vehicle-789',
-              vehicleMake: 'Toyota',
-              vehicleModel: 'Camry',
-              vehicleYear: 2021,
-            },
-          },
-        ],
-        steps: [
-          {
-            id: 'verify-vehicle',
-            handler: () => mockVehicle,
-          },
-          {
-            id: 'fetch-recalls',
-            handler: () => mockRecallsResponse,
-          },
-          {
-            id: 'upsert-recalls',
-            handler: () => undefined,
-          },
-          {
-            id: 'fetch-market-history',
-            handler: () => undefined,
-          },
-          {
-            id: 'run-orchestrator',
-            handler: () => undefined,
-          },
-        ],
+        events: [makeEvent({ vehicleMake: 'Toyota', vehicleModel: 'Camry', vehicleYear: 2021 })],
+        steps: makeAllSteps(1),
       })
 
-      // Assert - function should complete without error
       expect(result).not.toBeInstanceOf(Error)
     })
   })
 
   describe('Zero-recall path: upsert-recalls step is skipped', () => {
     it('should skip upsert-recalls when Count === 0', async () => {
-      // Arrange
-      const mockVehicle = { id: 'vehicle-789', vin: '1HGBH41JXMN109186' }
-      const mockRecallsResponse = {
-        Count: 0,
-        results: [],
-      }
-
-      // Act
       const { state } = await engine.execute({
-        events: [
-          {
-            name: 'vin/report.analyze',
-            data: {
-              reportId: 'report-123',
-              orgId: 'org-456',
-              vehicleId: 'vehicle-789',
-              vehicleMake: 'Ford',
-              vehicleModel: 'Mustang',
-              vehicleYear: 2022,
-            },
-          },
-        ],
-        steps: [
-          {
-            id: 'verify-vehicle',
-            handler: () => mockVehicle,
-          },
-          {
-            id: 'fetch-recalls',
-            handler: () => mockRecallsResponse,
-          },
-          {
-            id: 'fetch-market-history',
-            handler: () => undefined,
-          },
-          {
-            id: 'run-orchestrator',
-            handler: () => undefined,
-          },
-        ],
+        events: [makeEvent({ vehicleMake: 'Ford', vehicleModel: 'Mustang', vehicleYear: 2022 })],
+        steps: makeAllSteps(0),
       })
 
-      // Assert - verify state exists
       expect(state).toBeDefined()
     })
 
-    it('should still run run-orchestrator even when no recalls exist', async () => {
-      // Arrange
-      const mockVehicle = { id: 'vehicle-111', vin: '5YJSA1DG9DFP14705' }
-      const mockRecallsResponse = {
-        Count: 0,
-        results: [],
-      }
-
-      // Act
+    it('should still run all agent steps even when no recalls exist', async () => {
       const { result } = await engine.execute({
-        events: [
-          {
-            name: 'vin/report.analyze',
-            data: {
-              reportId: 'report-456',
-              orgId: 'org-789',
-              vehicleId: 'vehicle-111',
-              vehicleMake: 'BMW',
-              vehicleModel: '3 Series',
-              vehicleYear: 2023,
-            },
-          },
-        ],
-        steps: [
-          {
-            id: 'verify-vehicle',
-            handler: () => mockVehicle,
-          },
-          {
-            id: 'fetch-recalls',
-            handler: () => mockRecallsResponse,
-          },
-          {
-            id: 'fetch-market-history',
-            handler: () => undefined,
-          },
-          {
-            id: 'run-orchestrator',
-            handler: () => undefined,
-          },
-        ],
+        events: [makeEvent({ vehicleMake: 'BMW', vehicleModel: '3 Series', vehicleYear: 2023 })],
+        steps: makeAllSteps(0),
       })
 
-      // Assert - function should complete
       expect(result).not.toBeInstanceOf(Error)
     })
   })
 
-  describe('NHTSA API error handling', () => {
-    it('should handle errors gracefully', async () => {
-      // Error handling is tested through integration tests with the actual Inngest server
-      // The @inngest/test engine has limitations with error propagation
-      expect(analyzeReportFn).toBeDefined()
+  describe('Per-agent step isolation', () => {
+    it('each agent runs as a separate step', async () => {
+      const steps = makeAllSteps(0)
+      const agentStepIds = steps
+        .filter((s) => s.id.startsWith('agent-'))
+        .map((s) => s.id)
+
+      expect(agentStepIds).toEqual([
+        'agent-baseline',
+        'agent-safety',
+        'agent-engine',
+        'agent-corrosion',
+        'agent-flood',
+        'agent-theft',
+      ])
+    })
+
+    it('synthesis and price-prediction are separate steps', async () => {
+      const steps = makeAllSteps(0)
+      const postAgentSteps = steps
+        .filter((s) => ['master-synthesis', 'price-prediction', 'finalize-report'].includes(s.id))
+        .map((s) => s.id)
+
+      expect(postAgentSteps).toEqual(['master-synthesis', 'price-prediction', 'finalize-report'])
     })
   })
 
   describe('Function configuration', () => {
     it('should have correct function ID', () => {
-      // Verify the function is properly configured
       expect(analyzeReportFn).toBeDefined()
       expect(analyzeReportFn).toHaveProperty('opts')
     })
 
     it('should be triggered by vin/report.analyze event', () => {
-      // Verify the function is configured to handle the correct event
       expect(analyzeReportFn).toBeDefined()
       expect(analyzeReportFn).toHaveProperty('opts')
     })

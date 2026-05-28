@@ -214,6 +214,7 @@ model Report {
 
   executiveSummary  String? @db.Text
   negotiationScript String? @db.Text
+  pricePrediction   String? @db.Text
 
   // Relations
   vehicle       Vehicle            @relation(fields: [vehicleId], references: [id], onDelete: Cascade)

@@ -95,7 +95,7 @@ export class BaselineAgent implements RiskAgent {
 
       if (firstDate && lastDate && first.miles !== null && last.miles !== null) {
         const yearSpan =
-          (lastDate.getTime() - firstDate.getTime()) / (365.25 * 24 * 60 * 60 * 1000)
+          (new Date(lastDate).getTime() - new Date(firstDate).getTime()) / (365.25 * 24 * 60 * 60 * 1000)
         if (yearSpan > 0.5) {
           avgAnnualMiles = (last.miles - first.miles) / yearSpan
 
@@ -201,7 +201,7 @@ export class BaselineAgent implements RiskAgent {
     // Requires 3+ date points to detect a gap (2 points is just the tracking span)
     const allDates = listingHistory
       .flatMap((l) => [l.firstSeenAt, l.lastSeenAt, l.statusDate])
-      .filter((d): d is Date => d !== null)
+      .filter((d): d is NonNullable<typeof d> => d !== null)
       .map((d) => new Date(d).getTime())
       .sort((a, b) => a - b)
 

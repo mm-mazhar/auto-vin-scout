@@ -6,7 +6,7 @@
 
 <p align="center">
   Enter a VIN. Get a probabilistic risk report that tells you what CARFAX won't.<br/>
-  Odometer forensics · Flood exposure · Salvage detection · Engine failure prediction · Negotiation scripts.
+  Odometer forensics · Flood exposure · Salvage detection · Engine failure prediction · Price valuation · Negotiation scripts.
 </p>
 
 <p align="center">
@@ -41,7 +41,8 @@ The core insight: the most valuable vehicle data (DMV registrations, insurance c
                                              │  4. Fetch Safety Ratings (NCAP) │
                                              │  5. Fetch Flood/Weather Data    │
                                              │  6. Fetch OSINT Signals         │
-                                             │  7. Run Risk Orchestrator       │
+                                             │  7. Fetch Price Prediction Data │
+                                             │  8. Run Risk Orchestrator       │
                                              │     ├─ 8 Risk Agents (parallel) │
                                              │     └─ Master LLM Synthesis     │
                                              └────────────────┬────────────────┘
@@ -104,6 +105,9 @@ The report landing tab shows the composite risk score, risk label badge, and an 
 - **Odometer Chart** — Chronological mileage snapshots from marketplace listings. Detects rollbacks (newer listing with fewer miles) and calculates miles/year velocity.
 - **Price Chart** — Historical asking prices vs. MSRP. Flags "fire sales" (sudden drops >25% below market).
 - **Listing History Table** — Every marketplace appearance with seller type, location, days-on-market, and certification status.
+
+### Price Prediction & Valuation
+AI-powered market valuation using real-time Google SERP data (AI Overviews, Featured Snippets, and organic results). The raw data is formatted by an LLM into a professional Markdown report with expected price ranges, factors affecting value, and a summary — rendered in a dedicated "Valuation" tab.
 
 ### NHTSA Safety Tab
 5-star crash test ratings (frontal, side, rollover), ADAS feature availability, and complaint/investigation counts pulled from the NCAP database.
@@ -186,7 +190,7 @@ e.g. Month/Year: 02/30, CCV: 123, Name on Card: John Doe
 | MarketCheck | Premium VIN decode + listing history | Paid |
 | FEMA Open Data | Disaster declarations for flood risk | Free |
 | Open-Meteo | Historical precipitation verification | Free |
-| Bright Data SERP API | Theft sentiment, regional crime OSINT | Paid |
+| Bright Data SERP API | Theft sentiment, regional crime OSINT, price prediction | Paid |
 | Bright Data Social Scrapers | Reddit/forum reliability sentiment | Paid |
 | Bright Data Managed Datasets | Auction/marketplace forensics | Paid |
 | Google Gemini (Multimodal) | Visual salvage yard / wreck detection | Paid |
@@ -207,7 +211,8 @@ RiskEngineOrchestrator.run(reportId)
   ├── EngineAgent         → Powertrain complexity vs. mileage lifecycle
   ├── CorrosionAgent      → Salt Belt / Sun Belt / Coastal exposure
   ├── FloodAgent          → FEMA + NOAA geospatial intersection (upcoming)
-  ├── TheftSentimentAgent → SERP-based regional theft OSINT (upcoming)
+  ├── TheftSentimentAgent → SERP-based regional theft OSINT
+  ├── ValuationAgent      → Real-time price prediction via Google SERP + LLM
   ├── AuctionForensics    → Multimodal visual salvage detection (upcoming)
   ├── ReliabilityAgent    → Social media failure sentiment (upcoming)
   │
@@ -230,6 +235,7 @@ The analysis runs as a durable Inngest function with 5 sequential steps:
 4. `fetch-market-history` — Fetches MarketCheck listing history (graceful degradation)
 5. `fetch-safety-ratings` — Fetches NHTSA NCAP data
 6. `run-orchestrator` — Executes all risk agents and Master LLM
+7. `price-prediction` — Fetches SERP valuation data and formats via LLM
 
 Concurrency is limited to 1 per organization to prevent credit race conditions.
 
@@ -435,6 +441,7 @@ Auto VIN Scout is different:
 | Corrosion | Not assessed | Calculated from lifetime location trail |
 | Theft risk | Not assessed | Real-time OSINT from Reddit/Nextdoor sentiment |
 | Reliability | Not assessed | Extracted from enthusiast community failure patterns |
+| Price prediction | Static book value | Real-time SERP-powered AI valuation with market context |
 | Output | Static PDF | Interactive report + AI negotiation script |
 | Cost | $40–$100/report | From $10/report (Basic tier) |
 

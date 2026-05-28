@@ -1,8 +1,15 @@
 // lib/inngest/functions/analyze-report.ts
 // Durable Inngest function that executes the full VIN risk assessment pipeline
-// for a single report. Replaces the hand-rolled after() + JobQueue orchestration.
+// for a single report.
 //
-// Step order: verify-vehicle → fetch-recalls → upsert-recalls (conditional) → fetch-market-history → fetch-safety-ratings → run-orchestrator
+// Each risk agent runs in its own step.run() call so Inngest can checkpoint
+// between them. On Vercel serverless, this means each agent gets its own
+// invocation and timeout budget — no single call exceeds maxRuntime.
+//
+// Step order:
+//   verify-vehicle → fetch-recalls → upsert-recalls → fetch-market-history
+//   → fetch-safety-ratings → load-agent-input → fetch-agent-deps
+//   → [agents in parallel] → persist-results → master-synthesis → finalize-report
 
 import prisma from '@/app/lib/db'
 import { inngest, analyzeReportEvent } from '@/lib/inngest/client'
@@ -13,6 +20,8 @@ import {
 import { MarketCheckHistoryService } from '@/lib/services/marketcheck-history-service'
 import { NhtsaNcapService } from '@/lib/services/nhtsa-ncap-service'
 import { RiskEngineOrchestrator } from '@/lib/services/risk-engine/orchestrator'
+import type { AgentInput, RiskVectorResult } from '@/lib/services/risk-engine/types'
+import type { AgentDeps } from '@/lib/services/risk-engine/orchestrator'
 
 export const analyzeReportFn = inngest.createFunction(
   {
@@ -26,8 +35,6 @@ export const analyzeReportFn = inngest.createFunction(
       event.data
 
     // Guard: all three vehicle fields required before any step executes.
-    // Missing fields indicate a malformed event — throw immediately so Inngest
-    // marks the run as failed rather than retrying a fundamentally broken payload.
     if (!vehicleMake || !vehicleModel || !vehicleYear) {
       throw new Error(
         `[analyzeReportFn] Missing required vehicle fields on event for report ${reportId}. ` +
@@ -35,10 +42,9 @@ export const analyzeReportFn = inngest.createFunction(
       )
     }
 
-    // Verify the vehicle exists in the database before proceeding.
-    // This ensures database isolation is respected and the vehicle record is visible
-    // to this Inngest function execution (which may run in a different connection/process).
-    // Retry with exponential backoff if the vehicle isn't found yet (transaction isolation).
+    // -------------------------------------------------------------------------
+    // Step 0: verify-vehicle
+    // -------------------------------------------------------------------------
     const vehicle = await step.run('verify-vehicle', async () => {
       const maxRetries = 5
       let lastError: Error | null = null
@@ -50,24 +56,17 @@ export const analyzeReportFn = inngest.createFunction(
             select: { id: true, vin: true },
           })
 
-          if (found) {
-            return found
-          }
+          if (found) return found
 
-          // Vehicle not found yet, wait before retrying
-          // Exponential backoff: 100ms, 200ms, 400ms, 800ms, 1600ms
           const delayMs = 100 * Math.pow(2, attempt)
           await new Promise((resolve) => setTimeout(resolve, delayMs))
         } catch (error) {
           lastError = error instanceof Error ? error : new Error(String(error))
-          // Continue to next retry
         }
       }
 
-      // After all retries, throw an error
       throw new Error(
         `[analyzeReportFn] Vehicle ${vehicleId} not found for report ${reportId} after ${maxRetries} retries. ` +
-          `This may indicate a database isolation issue or the vehicle record hasn't been committed yet. ` +
           `Last error: ${lastError?.message || 'unknown'}`
       )
     })
@@ -80,32 +79,19 @@ export const analyzeReportFn = inngest.createFunction(
 
     // -------------------------------------------------------------------------
     // Step 1: fetch-recalls
-    // Idempotent — pure HTTP read, safe to retry on transient errors.
-    // Returns EMPTY_RESPONSE (Count: 0) when:
-    //   - Vehicle not found (404)
-    //   - Invalid/unsupported vehicle (400)
-    //   - No recalls exist for the vehicle
-    // Returns null only on transient network errors (timeout, connection failure).
     // -------------------------------------------------------------------------
     const recallsResponse = await step.run('fetch-recalls', () =>
       fetchNHTSARecalls(vehicleMake, vehicleModel, vehicleYear)
     )
 
-    // A null response means fetchNHTSARecalls encountered a transient network error.
-    // This is retryable. Throw to let Inngest retry the entire function.
     if (recallsResponse === null) {
       throw new Error(
         `[analyzeReportFn] fetchNHTSARecalls returned null for ${vehicleMake} ${vehicleModel} ${vehicleYear} — transient network error, will retry`
       )
     }
 
-    // If we get here, recallsResponse is valid (either with recalls or empty).
-    // Count === 0 means no recalls found (404, 400, or genuinely no recalls).
-    // This is NOT an error — proceed to risk assessment.
-
     // -------------------------------------------------------------------------
-    // Step 2: upsert-recalls (conditional — skipped when Count === 0)
-    // Idempotent — upserts by campaignNumber, safe to retry.
+    // Step 2: upsert-recalls (conditional)
     // -------------------------------------------------------------------------
     if (recallsResponse.Count > 0) {
       await step.run('upsert-recalls', () =>
@@ -115,8 +101,6 @@ export const analyzeReportFn = inngest.createFunction(
 
     // -------------------------------------------------------------------------
     // Step 3: fetch-market-history
-    // Fetches historical listing data from MarketCheck and persists to DB.
-    // Graceful degradation: logs warning and continues if fetch fails.
     // -------------------------------------------------------------------------
     await step.run('fetch-market-history', async () => {
       try {
@@ -131,15 +115,11 @@ export const analyzeReportFn = inngest.createFunction(
 
     // -------------------------------------------------------------------------
     // Step 4: fetch-safety-ratings
-    // Fetches NHTSA NCAP safety ratings and caches them in VehicleSafetyRating.
-    // Graceful degradation: fetchAndSaveSafetyRatings returns null on API
-    // failure (never throws), so the pipeline continues without safety data.
-    // Placed before run-orchestrator because SafetyAgent needs cached data.
     // -------------------------------------------------------------------------
     await step.run('fetch-safety-ratings', async () => {
       const fullVehicle = await prisma.vehicle.findUnique({
         where: { id: vehicleId },
-        select: { id: true, make: true, model: true, year: true, driveType: true, doors: true, vehicleType: true, bodyType: true, bodySubtype: true }
+        select: { id: true, make: true, model: true, year: true, driveType: true, doors: true, vehicleType: true, bodyType: true, bodySubtype: true },
       })
       if (fullVehicle) {
         await NhtsaNcapService.fetchAndSaveSafetyRatings(fullVehicle)
@@ -147,12 +127,83 @@ export const analyzeReportFn = inngest.createFunction(
     })
 
     // -------------------------------------------------------------------------
-    // Step 5: run-orchestrator
-    // Invokes the multi-agent risk engine orchestrator which coordinates all
-    // risk agents, computes composite score, and updates the Report.
+    // Step 5: load-agent-input
+    // Loads the full AgentInput from DB (includes recalls, listings, safety
+    // ratings that were just persisted in prior steps).
     // -------------------------------------------------------------------------
-    await step.run('run-orchestrator', () =>
-      RiskEngineOrchestrator.run(reportId)
+    const agentInput = await step.run('load-agent-input', async () => {
+      const input = await RiskEngineOrchestrator.loadAgentInput(reportId)
+      if (!input) {
+        throw new Error(`[analyzeReportFn] Could not load AgentInput for report ${reportId}`)
+      }
+      return input
+    }) as AgentInput
+
+    // -------------------------------------------------------------------------
+    // Step 6: fetch-agent-deps
+    // Weather + SERP data needed by FloodAgent and TheftAgent.
+    // -------------------------------------------------------------------------
+    const agentDeps = await step.run('fetch-agent-deps', () =>
+      RiskEngineOrchestrator.fetchAgentDeps(agentInput)
+    ) as AgentDeps
+
+    // -------------------------------------------------------------------------
+    // Steps 7-12: Individual agent executions (parallel)
+    // Each agent = separate Vercel invocation = no timeout pressure.
+    // -------------------------------------------------------------------------
+    const [baseline, safety, engine, corrosion, flood, theft] = await Promise.all([
+      step.run('agent-baseline', () =>
+        RiskEngineOrchestrator.runBaselineAgent(agentInput)
+      ),
+      step.run('agent-safety', () =>
+        RiskEngineOrchestrator.runSafetyAgent(agentInput)
+      ),
+      step.run('agent-engine', () =>
+        RiskEngineOrchestrator.runEngineAgent(agentInput)
+      ),
+      step.run('agent-corrosion', () =>
+        RiskEngineOrchestrator.runCorrosionAgent(agentInput)
+      ),
+      step.run('agent-flood', () =>
+        RiskEngineOrchestrator.runFloodAgent(agentInput, agentDeps)
+      ),
+      step.run('agent-theft', () =>
+        RiskEngineOrchestrator.runTheftAgent(agentInput, agentDeps)
+      ),
+    ]) as [RiskVectorResult, RiskVectorResult, RiskVectorResult, RiskVectorResult, RiskVectorResult, RiskVectorResult]
+
+    const results: RiskVectorResult[] = [baseline, safety, engine, corrosion, flood, theft]
+
+    // -------------------------------------------------------------------------
+    // Step 13: persist-results
+    // -------------------------------------------------------------------------
+    await step.run('persist-results', () =>
+      RiskEngineOrchestrator.persistResults(reportId, results)
+    )
+
+    // -------------------------------------------------------------------------
+    // Steps 14-15: master-synthesis + price-prediction (parallel)
+    // These are independent — synthesis needs agent results, valuation needs
+    // only vehicle year/make/model. Running them concurrently saves ~2-5s.
+    // -------------------------------------------------------------------------
+    const [synthesis, pricePrediction] = await Promise.all([
+      step.run('master-synthesis', () =>
+        RiskEngineOrchestrator.synthesize(results)
+      ),
+      step.run('price-prediction', () =>
+        RiskEngineOrchestrator.runValuation(vehicleYear, vehicleMake, vehicleModel)
+      ),
+    ])
+
+    // -------------------------------------------------------------------------
+    // Step 16: finalize-report
+    // Updates the Report record with final score, label, and narratives.
+    // -------------------------------------------------------------------------
+    await step.run('finalize-report', () =>
+      RiskEngineOrchestrator.finalizeReport(reportId, {
+        ...synthesis,
+        pricePrediction,
+      })
     )
   }
 )

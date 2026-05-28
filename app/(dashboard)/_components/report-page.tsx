@@ -657,6 +657,7 @@ function FullReportWithTabs({
               fuelTypePrimary: vehicle.fuelTypePrimary,
               engineSize: vehicle.engineSize,
             }}
+            pricePrediction={report.pricePrediction ?? null}
           />
         )}
 

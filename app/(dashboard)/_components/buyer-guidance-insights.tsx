@@ -17,6 +17,7 @@ interface BuyerGuidanceInsightsProps {
     fuelTypePrimary: string | null
     engineSize: number | null
   }
+  pricePrediction?: string | null
 }
 
 // --- Negotiation Leverage ---
@@ -184,7 +185,7 @@ function computeOwnershipCost(
 
 // --- Component ---
 
-export function BuyerGuidanceInsights({ listings, vehicle }: BuyerGuidanceInsightsProps) {
+export function BuyerGuidanceInsights({ listings, vehicle, pricePrediction }: BuyerGuidanceInsightsProps) {
   const leveragePoints = computeLeveragePoints(listings, vehicle.year)
   const ownershipCost = computeOwnershipCost(
     vehicle.cityMpg,
@@ -240,6 +241,26 @@ export function BuyerGuidanceInsights({ listings, vehicle }: BuyerGuidanceInsigh
           )}
         </CardContent>
       </Card>
+
+      {/* Market Valuation */}
+      {pricePrediction && (
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <TrendingDown className="h-5 w-5" />
+              <CardTitle>Market Valuation</CardTitle>
+            </div>
+            <CardDescription>
+              Real-time price prediction based on current market data
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="text-sm whitespace-pre-wrap leading-relaxed text-muted-foreground">
+              {pricePrediction}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Ownership Cost Estimate */}
       {ownershipCost && (

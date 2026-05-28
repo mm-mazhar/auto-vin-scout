@@ -10,10 +10,10 @@ ai:
     primary:
       provider: "openrouter"
       baseUrl: "https://openrouter.ai/api/v1"
-      model: "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free"
+      model: "google/gemini-2.5-flash-lite"
     fallback:
       provider: "google"
-      model: "gemma-4-31b-it"
+      model: "gemini-3.1-flash-lite"
     temperature: 0.2
     maxTokens: 2000
     systemInstruction: |
@@ -48,10 +48,10 @@ ai:
       primary:
         provider: "openrouter"
         baseUrl: "https://openrouter.ai/api/v1"
-        model: "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free"
+        model: "google/gemini-2.5-flash-lite"
       fallback:
         provider: "google"
-        model: "gemma-4-31b-it"
+        model: "gemini-3.1-flash-lite"
       temperature: 0.1
       maxTokens: 400
       systemInstruction: |
@@ -61,10 +61,10 @@ ai:
       primary:
         provider: "openrouter"
         baseUrl: "https://openrouter.ai/api/v1"
-        model: "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free"
+        model: "google/gemini-2.5-flash-lite"
       fallback:
         provider: "google"
-        model: "gemma-4-31b-it"
+        model: "gemini-3.1-flash-lite"
       temperature: 0.1
       maxTokens: 600
       systemInstruction: |
@@ -89,10 +89,10 @@ ai:
       primary:
         provider: "openrouter"
         baseUrl: "https://openrouter.ai/api/v1"
-        model: "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free"
+        model: "google/gemini-2.5-flash-lite"
       fallback:
         provider: "google"
-        model: "gemma-4-31b-it"
+        model: "gemini-3.1-flash-lite"
       temperature: 0.1
       maxTokens: 400
       systemInstruction: |
@@ -104,10 +104,10 @@ ai:
       primary:
         provider: "openrouter"
         baseUrl: "https://openrouter.ai/api/v1"
-        model: "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free"
+        model: "google/gemini-2.5-flash-lite"
       fallback:
         provider: "google"
-        model: "gemma-4-31b-it"
+        model: "gemini-3.1-flash-lite"
       temperature: 0.1
       maxTokens: 400
       systemInstruction: |
@@ -117,11 +117,44 @@ ai:
       primary:
         provider: "openrouter"
         baseUrl: "https://openrouter.ai/api/v1"
-        model: "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free"
+        model: "google/gemini-2.5-flash-lite"
       fallback:
         provider: "google"
-        model: "gemma-4-31b-it"
+        model: "gemini-3.1-flash-lite"
       temperature: 0.1
       maxTokens: 400
       systemInstruction: |
         Intersect the vehicle's historical location timeline with the provided historical precipitation and FEMA disaster data. Explain the risk of hidden electrical damage. If a FEMA disaster (like Hurricane Ian) or rainfall > 10 inches is present, explicitly state the high probability of submersion. Mention that high-mileage vehicles are particularly vulnerable to 'capillary action' where water travels up aging electrical harnesses, leading to terminal 'ghost' failures. Keep the narrative concise (2-3 sentences).
+
+    theft:
+      primary:
+        provider: "openrouter"
+        baseUrl: "https://openrouter.ai/api/v1"
+        model: "google/gemini-2.5-flash-lite"
+      fallback:
+        provider: "google"
+        model: "gemini-3.1-flash-lite"
+      temperature: 0.1
+      maxTokens: 700
+      highTheftModels: ["CIVIC", "ACCORD", "F-150", "F150", "SILVERADO", "OPTIMA", "ELANTRA", "SONATA", "CHARGER", "CHALLENGER", "CR-V", "CRV", "SPORTAGE"]
+      systemInstruction: |
+        Analyze the vehicle's baseline theft risk and local OSINT sentiment. If the model is a known theft target and local search snippets reveal recent viral theft trends in the city, warn the user of high vandalism risk and elevated insurance premiums. If snippets are provided, you may briefly reference them. Keep the narrative concise (2-3 sentences).
+
+    valuation:
+      primary:
+        provider: "openrouter"
+        baseUrl: "https://openrouter.ai/api/v1"
+        model: "google/gemini-2.5-flash-lite"
+      fallback:
+        provider: "google"
+        model: "gemini-3.1-flash-lite"
+      temperature: 0.2
+      maxTokens: 800
+      systemInstruction: |
+        You are an expert automotive appraiser. I will provide you with raw Google search data scraped for a specific vehicle's price prediction. Write a clean, professional 'Market Valuation Report' in Markdown format. Include expected price ranges, factors affecting the price (like mileage or trim), and a brief summary. Do not use conversational filler, just output the Markdown.
+
+        IMPORTANT RULES:
+        - Remove any "Read more", "See more", "Learn more", or similar link artifacts from the source data. These are web scraping remnants and must NOT appear in your output.
+        - Do not include URLs or source attribution links.
+        - Use proper Markdown headings (##, ###), bullet points, and bold for emphasis.
+        - Format price ranges clearly (e.g., **$18,000 – $23,000**).

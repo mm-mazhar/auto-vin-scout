@@ -1,28 +1,24 @@
 // lib/services/risk-engine/orchestrator.ts
+//
+// Decomposed orchestrator — each public static method is designed to be called
+// from an individual Inngest step.run() so that each agent gets its own
+// Vercel invocation and timeout budget.
 
 import OpenAI from 'openai'
 import { GoogleGenAI } from '@google/genai'
 import prisma from '@/app/lib/db'
-import { getMasterAgentConfig } from '@/lib/ai-config'
-import type { RiskAgent, AgentInput, RiskVectorResult, RiskLabel } from './types'
+import { getMasterAgentConfig, getAgentConfig } from '@/lib/ai-config'
+import type { AgentInput, RiskVectorResult, RiskLabel } from './types'
 import { BaselineAgent } from './agents/0-baseline-agent'
 import { SafetyAgent } from './agents/1-safety-agent'
 import { EngineAgent } from './agents/2-engine-agent'
 import { CorrosionAgent } from './agents/4-corrosion-agent'
 import { FloodAgent } from './agents/5-flood-agent'
+import { TheftAgent } from './agents/6-theft-agent'
 import { WeatherService } from '@/lib/services/weather-service'
+import { SerpService } from '@/lib/services/serp-service'
 import { Prisma } from '@prisma/client'
-
-// Agent registry — add new agents here
-const STANDARD_AGENTS: RiskAgent[] = [
-  new BaselineAgent(),
-  new SafetyAgent(),
-  new EngineAgent(),
-  new CorrosionAgent(),
-]
-
-// FloodAgent needs weather data injected before execution
-const floodAgent = new FloodAgent()
+import type { MaxRainfallData } from '@/lib/services/weather-service'
 
 // Planned agents not yet implemented — used for UI transparency
 export const PENDING_AGENTS = [
@@ -30,120 +26,268 @@ export const PENDING_AGENTS = [
   { vectorName: 'Market Valuation Analysis', weight: 0.20, description: 'Fair market value comparison, depreciation curve' },
 ] as const
 
+/** Data dependencies that FloodAgent and TheftAgent need before execution. */
+export interface AgentDeps {
+  weatherData: MaxRainfallData
+  serpSnippets: string[]
+  latestCity: string | null
+  latestState: string | null
+}
+
 export class RiskEngineOrchestrator {
-  static async run(reportId: string): Promise<void> {
-    try {
-      // 1. Load all required data
-      const report = await prisma.report.findUnique({
-        where: { id: reportId },
-        include: {
-          vehicle: {
-            include: {
-              recalls: true,
-              listingHistory: { orderBy: { statusDate: 'asc' } },
-              safetyRating: true,
-            },
+  // ---------------------------------------------------------------------------
+  // Step: Load AgentInput from DB
+  // ---------------------------------------------------------------------------
+  static async loadAgentInput(reportId: string): Promise<AgentInput | null> {
+    const report = await prisma.report.findUnique({
+      where: { id: reportId },
+      include: {
+        vehicle: {
+          include: {
+            recalls: true,
+            listingHistory: { orderBy: { statusDate: 'asc' } },
+            safetyRating: true,
           },
         },
-      })
+      },
+    })
 
-      if (!report || !report.vehicle) {
-        console.error(`[Orchestrator] Report ${reportId} or vehicle not found.`)
-        return
-      }
-
-      const agentInput: AgentInput = {
-        reportId,
-        vehicle: report.vehicle,
-        recalls: report.vehicle.recalls,
-        listingHistory: report.vehicle.listingHistory,
-        safetyRating: report.vehicle.safetyRating ?? null,
-      }
-
-      // 2. Fetch weather data concurrently with agent preparation
-      const weatherData = await WeatherService.getMaxPrecipitation(agentInput.listingHistory)
-
-      // Inject weather data into FloodAgent
-      floodAgent.setWeatherData(weatherData)
-
-      // Combine all agents
-      const allAgents: RiskAgent[] = [...STANDARD_AGENTS, floodAgent]
-
-      // 3. Execute all agents in parallel
-      const results = await Promise.all(
-        allAgents.map((agent) => agent.execute(agentInput))
-      )
-
-      // 4. Persist RiskVectorResult records
-      await prisma.riskVectorResult.createMany({
-        data: results.map((r): Prisma.RiskVectorResultCreateManyInput => ({
-          reportId,
-          vectorIndex: r.vectorIndex,
-          vectorName: r.vectorName,
-          score: r.score,
-          label: r.label,
-          weight: r.weight,
-          narrative: r.narrative,
-          metadata: r.metadata
-            ? (r.metadata as Prisma.InputJsonValue)
-            : Prisma.JsonNull,
-        })),
-      })
-
-      // 5. Compute composite score
-      const compositeScore = Math.min(
-        100,
-        Math.round(
-          results.reduce((sum, r) => sum + r.score * r.weight, 0)
-        )
-      )
-      const compositeLabel: RiskLabel =
-        compositeScore <= 30 ? 'Low' : compositeScore <= 70 ? 'Medium' : 'High'
-
-      // 6. Generate executive summary + negotiation script via Master LLM
-      let executiveSummary: string
-      let negotiationScript: string
-      let masterLLMFailed = false
-
-      try {
-        const synthesis = await generateMasterSynthesis(results, compositeScore, compositeLabel)
-        executiveSummary = synthesis.executiveSummary
-        negotiationScript = synthesis.negotiationScript
-      } catch (error) {
-        console.warn('[Orchestrator] Master LLM failed, using rules-based fallback:', error)
-        executiveSummary = generateFallbackSummary(results, compositeScore, compositeLabel)
-        negotiationScript = generateFallbackNegotiationScript(results)
-        masterLLMFailed = true
-      }
-
-      // 7. Determine isAiFallback: true if any agent or master used fallback
-      const anyAgentUsedFallback = results.some((r) => {
-        const meta = r.metadata as Record<string, unknown> | undefined
-        return meta?.usedFallbackNarrative === true
-      })
-      const isAiFallback = masterLLMFailed || anyAgentUsedFallback
-
-      // 8. Update Report with final results
-      await prisma.report.update({
-        where: { id: reportId },
-        data: {
-          riskScore: compositeScore,
-          riskLabel: compositeLabel,
-          executiveSummary,
-          negotiationScript,
-          isAiFallback,
-          riskNarrative: executiveSummary, // backward compat
-          status: 'COMPLETED',
-        },
-      })
-    } catch (error) {
-      console.error(`[Orchestrator] Failed for report ${reportId}:`, error)
-      await prisma.report
-        .update({ where: { id: reportId }, data: { status: 'FAILED' } })
-        .catch((dbErr) =>
-          console.error(`[Orchestrator] Could not mark report as FAILED:`, dbErr)
-        )
+    if (!report || !report.vehicle) {
+      console.error(`[Orchestrator] Report ${reportId} or vehicle not found.`)
+      return null
     }
+
+    return {
+      reportId,
+      vehicle: report.vehicle,
+      recalls: report.vehicle.recalls,
+      listingHistory: report.vehicle.listingHistory,
+      safetyRating: report.vehicle.safetyRating ?? null,
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Step: Fetch external dependencies (weather + SERP) for Flood/Theft agents
+  // ---------------------------------------------------------------------------
+  static async fetchAgentDeps(agentInput: AgentInput): Promise<AgentDeps> {
+    const latestListing = [...agentInput.listingHistory]
+      .reverse()
+      .find((l) => l.city != null)
+    const latestCity = latestListing?.city ?? null
+    const latestState = latestListing?.state ?? null
+
+    const [weatherData, serpSnippets] = await Promise.all([
+      WeatherService.getMaxPrecipitation(agentInput.listingHistory),
+      latestCity && latestState
+        ? SerpService.fetchLocalTheftReports(latestCity, latestState, agentInput.vehicle.make, agentInput.vehicle.model)
+        : Promise.resolve([]),
+    ])
+
+    return { weatherData, serpSnippets, latestCity, latestState }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Individual agent executors — one per step.run()
+  // ---------------------------------------------------------------------------
+  static async runBaselineAgent(input: AgentInput): Promise<RiskVectorResult> {
+    return new BaselineAgent().execute(input)
+  }
+
+  static async runSafetyAgent(input: AgentInput): Promise<RiskVectorResult> {
+    return new SafetyAgent().execute(input)
+  }
+
+  static async runEngineAgent(input: AgentInput): Promise<RiskVectorResult> {
+    return new EngineAgent().execute(input)
+  }
+
+  static async runCorrosionAgent(input: AgentInput): Promise<RiskVectorResult> {
+    return new CorrosionAgent().execute(input)
+  }
+
+  static async runFloodAgent(input: AgentInput, deps: AgentDeps): Promise<RiskVectorResult> {
+    const agent = new FloodAgent()
+    agent.setWeatherData(deps.weatherData)
+    return agent.execute(input)
+  }
+
+  static async runTheftAgent(input: AgentInput, deps: AgentDeps): Promise<RiskVectorResult> {
+    const agent = new TheftAgent()
+    agent.setContext(deps.serpSnippets, deps.latestCity, deps.latestState)
+    return agent.execute(input)
+  }
+
+  // ---------------------------------------------------------------------------
+  // Step: Persist vector results to DB
+  // ---------------------------------------------------------------------------
+  static async persistResults(reportId: string, results: RiskVectorResult[]): Promise<void> {
+    await prisma.riskVectorResult.createMany({
+      data: results.map((r): Prisma.RiskVectorResultCreateManyInput => ({
+        reportId,
+        vectorIndex: r.vectorIndex,
+        vectorName: r.vectorName,
+        score: r.score,
+        label: r.label,
+        weight: r.weight,
+        narrative: r.narrative,
+        metadata: r.metadata
+          ? (r.metadata as Prisma.InputJsonValue)
+          : Prisma.JsonNull,
+      })),
+    })
+  }
+
+  // ---------------------------------------------------------------------------
+  // Step: Price Prediction / Valuation
+  // Fetches SERP data and formats it via LLM into a Markdown valuation report.
+  // ---------------------------------------------------------------------------
+  static async runValuation(
+    year: number,
+    make: string,
+    model: string
+  ): Promise<string | null> {
+    const rawSerpText = await SerpService.fetchPricePrediction(year, make, model)
+    if (!rawSerpText) return null
+
+    try {
+      const config = getAgentConfig('valuation')
+      const userPrompt = `Vehicle: ${year} ${make} ${model}\n\nRaw Google search data:\n${rawSerpText}`
+
+      // Try primary provider (OpenRouter / OpenAI-compatible)
+      const openRouterKey = process.env.OPENROUTER_API_KEY
+      if (openRouterKey && config.primary.baseUrl) {
+        try {
+          const client = new OpenAI({
+            apiKey: openRouterKey,
+            baseURL: config.primary.baseUrl,
+          })
+          const response = await client.chat.completions.create({
+            model: config.primary.model,
+            messages: [
+              { role: 'system', content: config.systemInstruction },
+              { role: 'user', content: userPrompt },
+            ],
+            temperature: config.temperature,
+            max_tokens: config.maxTokens,
+          })
+          const text = response.choices[0]?.message?.content?.trim()
+          if (text) return text
+        } catch (error) {
+          console.warn('[Orchestrator] Valuation primary LLM failed, trying fallback:', error)
+        }
+      }
+
+      // Try fallback provider (Google GenAI)
+      const googleKey = process.env.GOOGLE_API_KEY
+      if (googleKey) {
+        const ai = new GoogleGenAI({ apiKey: googleKey })
+        const response = await ai.models.generateContent({
+          model: config.fallback.model,
+          contents: userPrompt,
+          config: {
+            systemInstruction: config.systemInstruction,
+            temperature: config.temperature,
+            maxOutputTokens: config.maxTokens,
+          },
+        })
+        const text = response.text?.trim()
+        if (text) return text
+      }
+
+      console.warn('[Orchestrator] All valuation LLM providers failed, returning raw text.')
+      return rawSerpText
+    } catch (error) {
+      console.warn('[Orchestrator] Valuation LLM formatting failed:', error)
+      return rawSerpText
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Step: Master LLM synthesis
+  // ---------------------------------------------------------------------------
+  static async synthesize(
+    results: RiskVectorResult[]
+  ): Promise<{
+    compositeScore: number
+    compositeLabel: RiskLabel
+    executiveSummary: string
+    negotiationScript: string
+    isAiFallback: boolean
+  }> {
+    const compositeScore = Math.min(
+      100,
+      Math.round(results.reduce((sum, r) => sum + r.score * r.weight, 0))
+    )
+    const compositeLabel: RiskLabel =
+      compositeScore <= 30 ? 'Low' : compositeScore <= 70 ? 'Medium' : 'High'
+
+    let executiveSummary: string
+    let negotiationScript: string
+    let masterLLMFailed = false
+
+    try {
+      const synthesis = await generateMasterSynthesis(results, compositeScore, compositeLabel)
+      executiveSummary = synthesis.executiveSummary
+      negotiationScript = synthesis.negotiationScript
+    } catch (error) {
+      console.warn('[Orchestrator] Master LLM failed, using rules-based fallback:', error)
+      executiveSummary = generateFallbackSummary(results, compositeScore, compositeLabel)
+      negotiationScript = generateFallbackNegotiationScript(results)
+      masterLLMFailed = true
+    }
+
+    const anyAgentUsedFallback = results.some((r) => {
+      const meta = r.metadata as Record<string, unknown> | undefined
+      return meta?.usedFallbackNarrative === true
+    })
+
+    return {
+      compositeScore,
+      compositeLabel,
+      executiveSummary,
+      negotiationScript,
+      isAiFallback: masterLLMFailed || anyAgentUsedFallback,
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Step: Finalize report in DB
+  // ---------------------------------------------------------------------------
+  static async finalizeReport(
+    reportId: string,
+    data: {
+      compositeScore: number
+      compositeLabel: RiskLabel
+      executiveSummary: string
+      negotiationScript: string
+      isAiFallback: boolean
+      pricePrediction?: string | null
+    }
+  ): Promise<void> {
+    await prisma.report.update({
+      where: { id: reportId },
+      data: {
+        riskScore: data.compositeScore,
+        riskLabel: data.compositeLabel,
+        executiveSummary: data.executiveSummary,
+        negotiationScript: data.negotiationScript,
+        isAiFallback: data.isAiFallback,
+        riskNarrative: data.executiveSummary, // backward compat
+        pricePrediction: data.pricePrediction ?? undefined,
+        status: 'COMPLETED',
+      },
+    })
+  }
+
+  // ---------------------------------------------------------------------------
+  // Error handler: mark report as FAILED
+  // ---------------------------------------------------------------------------
+  static async markFailed(reportId: string): Promise<void> {
+    await prisma.report
+      .update({ where: { id: reportId }, data: { status: 'FAILED' } })
+      .catch((dbErr) =>
+        console.error(`[Orchestrator] Could not mark report as FAILED:`, dbErr)
+      )
   }
 }
 

@@ -559,6 +559,7 @@ export const reportWithVehicleSchema = z.object({
   environmentalData: z.any().nullable(),
   executiveSummary: z.string().nullable(),
   negotiationScript: z.string().nullable(),
+  pricePrediction: z.string().nullable().optional().default(null),
   createdAt: z.date(),
   updatedAt: z.date(),
   vehicle: vehicleDetailsSchema,
@@ -815,6 +816,7 @@ export const vinRouter = {
         },
         executiveSummary: report.executiveSummary ?? null,
         negotiationScript: report.negotiationScript ?? null,
+        pricePrediction: report.pricePrediction ?? null,
         vectorResults: report.vectorResults,
         riskLabel: (() => {
           if (!report.riskLabel) return null
