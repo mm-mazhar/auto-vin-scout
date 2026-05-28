@@ -212,8 +212,8 @@ RiskEngineOrchestrator.run(reportId)
   ├── CorrosionAgent      → Salt Belt / Sun Belt / Coastal exposure
   ├── FloodAgent          → FEMA + NOAA geospatial intersection (upcoming)
   ├── TheftSentimentAgent → SERP-based regional theft OSINT
+  ├── ForensicsAgent      → Multimodal visual salvage detection + auction URL forensics
   ├── ValuationAgent      → Real-time price prediction via Google SERP + LLM
-  ├── AuctionForensics    → Multimodal visual salvage detection (upcoming)
   ├── ReliabilityAgent    → Social media failure sentiment (upcoming)
   │
   └── Master LLM Synthesis
@@ -224,6 +224,27 @@ RiskEngineOrchestrator.run(reportId)
 Each agent produces a `RiskVectorResult` with a score (0–100), label, weight, narrative, and metadata. The orchestrator computes the weighted composite, then invokes a Master LLM (OpenRouter → Google GenAI fallback) to synthesize all narratives into a cohesive report.
 
 If the LLM fails, a rules-based fallback generates the summary from agent findings — the report always completes.
+
+### Visual & Auction Forensics Agent
+
+The Forensics Agent detects **title washing** and unreported total-loss events by searching Google for the exact VIN and analyzing what comes back — both textually and visually.
+
+**Flow:**
+
+1. **SERP Fetch** — `SerpService.fetchVinSearch(vin)` queries Bright Data for the exact VIN (excluding social media noise). Returns organic URLs, text snippets, and up to 2 image/thumbnail URLs from the results.
+
+2. **Heuristic Scoring** — A deterministic URL + text matrix runs first (no LLM cost):
+   - *Severe URLs* (score 100): If any organic link contains a known salvage auction domain (copart.com, iaai.com, bidfax.info, bid.cars, etc.)
+   - *Moderate Text* (score 55): If snippets contain keywords like "salvage", "rebuilt", "as-is", "parts only", "mechanic special"
+   - *Clean* (score 15): No matches
+
+3. **Image Fetching** — Up to 2 image URLs are fetched in parallel with a strict 3-second timeout each, converted to base64. Dead links are silently skipped.
+
+4. **Multimodal LLM Analysis** — The text prompt (URLs, snippets, heuristic score) plus any fetched images are sent to the LLM. Both the primary (OpenRouter/Gemini) and fallback (Google GenAI) providers receive images as inline data, enabling visual wreck detection (crushed panels, salvage yard backgrounds, auction watermarks).
+
+5. **Fallback** — If all LLMs fail, a deterministic narrative is returned based on the heuristic tier. The pipeline never crashes.
+
+**Caveat:** Image availability depends entirely on what Google returns in the SERP thumbnails for that VIN. Many results won't have images — in that case the agent operates text-only and still provides value from URL/snippet analysis.
 
 ### Inngest Pipeline
 

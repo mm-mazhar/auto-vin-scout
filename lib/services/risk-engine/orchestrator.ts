@@ -75,7 +75,7 @@ export class RiskEngineOrchestrator {
   static async fetchAgentDeps(agentInput: AgentInput): Promise<AgentDeps> {
     const latestListing = [...agentInput.listingHistory]
       .reverse()
-      .find((l) => l.city != null)
+      .find((l) => l.city != null && l.state != null)
     const latestCity = latestListing?.city ?? null
     const latestState = latestListing?.state ?? null
 

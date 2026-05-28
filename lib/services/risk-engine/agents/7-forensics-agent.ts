@@ -123,7 +123,7 @@ ${imageDataParts.length > 0 ? `${imageDataParts.length} image(s) attached for vi
 Provide a 2-3 sentence forensic assessment.
 `.trim()
 
-    // Try primary provider (OpenRouter / OpenAI-compatible) — text only, no multimodal
+    // Try primary provider (OpenRouter / OpenAI-compatible) — multimodal with images
     const openRouterKey = process.env.OPENROUTER_API_KEY
     if (openRouterKey && config.primary.baseUrl) {
       try {
@@ -131,11 +131,25 @@ Provide a 2-3 sentence forensic assessment.
           apiKey: openRouterKey,
           baseURL: config.primary.baseUrl,
         })
+
+        // Build multimodal content array for OpenAI-compatible API
+        const userContent: Array<
+          | { type: 'text'; text: string }
+          | { type: 'image_url'; image_url: { url: string } }
+        > = [{ type: 'text', text: userPrompt }]
+
+        for (const img of imageDataParts) {
+          userContent.push({
+            type: 'image_url',
+            image_url: { url: `data:${img.mimeType};base64,${img.base64}` },
+          })
+        }
+
         const response = await client.chat.completions.create({
           model: config.primary.model,
           messages: [
             { role: 'system', content: config.systemInstruction },
-            { role: 'user', content: userPrompt },
+            { role: 'user', content: userContent },
           ],
           temperature: config.temperature,
           max_tokens: config.maxTokens,
