@@ -72,12 +72,12 @@ Each report scores the vehicle across 8 independent risk dimensions. Mileage act
 |---|--------|-----------------|--------|
 | 0 | **Baseline Health & Market Anomalies** | Odometer rollbacks, fire-sale pricing, mileage velocity, open recalls | 0.25 |
 | 1 | **Safety Ratings & Crash Survivability** | NHTSA 5-star ratings, IIHS scores, ADAS features | 0.05 |
-| 2 | **Geospatial Flood Forensics** | FEMA disaster overlap, listing-timeline intersection, submersion probability | 0.15 |
+| 2 | **Geospatial Flood Forensics** | FEMA disaster overlap, listing-timeline intersection, submersion probability with Open Meteo | 0.15 |
 | 3 | **Powertrain Complexity** | Engine architecture vs. mileage lifecycle ("The Hump" detection) | 0.10 |
 | 4 | **Environmental Corrosion** | Salt Belt / Sun Belt / Coastal cumulative stress | 0.05 |
 | 5 | **Theft & Vandalism Sentiment** | Model vulnerability + real-time regional OSINT from Reddit/Nextdoor | 0.05 |
 | 6 | **Visual & Auction Forensics** | Salvage yard photos, Copart/IAAI watermarks, "Parts Only" listings | 0.20 |
-| 7 | **Reliability & Social Proof** | Recurring mechanical failures from enthusiast communities | 0.15 |
+| 7 | **Reliability & Social Proof** | Recurring mechanical failures from enthusiast communities, Mostly Reddit | 0.15 |
 
 **Composite Score** = Σ (Score × Weight), capped at 100.
 
@@ -107,7 +107,7 @@ The report landing tab shows the composite risk score, risk label badge, and an 
 - **Listing History Table** — Every marketplace appearance with seller type, location, days-on-market, and certification status.
 
 ### Price Prediction & Valuation
-AI-powered market valuation using real-time Google SERP data (AI Overviews, Featured Snippets, and organic results). The raw data is formatted by an LLM into a professional Markdown report with expected price ranges, factors affecting value, and a summary — rendered in a dedicated "Valuation" tab.
+AI-powered market valuation using real-time Bright Data SERP API (AI Overviews, Featured Snippets, and organic results). The raw data is formatted by an LLM into a professional Markdown report with expected price ranges, factors affecting value, and a summary — rendered in a dedicated "Valuation" tab.
 
 ### NHTSA Safety Tab
 5-star crash test ratings (frontal, side, rollover), ADAS feature availability, and complaint/investigation counts pulled from the NCAP database.
@@ -142,7 +142,7 @@ Credit-based system. Each full report costs 1 credit. Manage subscriptions, view
 
 ## Pricing (These are just random, but payment backed by `Stripe`)
 
-To run **probabilistic risk modeling** consumer must have credits and buy credits you can use test card
+To run **probabilistic risk modeling** consumer must have credits and buy credits you can use globally know test card. Everything from stripe is running in SandBox, so no charges will be applied
 
 ```
 Card: 4242 4242 4242 4242
@@ -190,10 +190,10 @@ e.g. Month/Year: 02/30, CCV: 123, Name on Card: John Doe
 | MarketCheck | Premium VIN decode + listing history | Paid |
 | FEMA Open Data | Disaster declarations for flood risk | Free |
 | Open-Meteo | Historical precipitation verification | Free |
-| Bright Data SERP API | Theft sentiment, regional crime OSINT, price prediction | Paid |
-| Bright Data Social Scrapers | Reddit/forum reliability sentiment | Paid |
-| Bright Data Managed Datasets | Auction/marketplace forensics | Paid |
-| Google Gemini (Multimodal) | Visual salvage yard / wreck detection | Paid |
+| Bright Data SERP API | Theft sentiment, regional crime OSINT, price prediction, auction/marketplace forensics | Paid |
+| Bright Data Social Scrapers ("Reddit- Posts" API ) | Reddit/forum reliability sentiment | Paid |
+| Bright Data SERP API | Auction/marketplace forensics | Paid |
+| Bright Data SERP API w/ Multimodal LLM | Visual salvage yard / wreck detection | Paid |
 
 ---
 
@@ -207,14 +207,14 @@ The risk scoring system uses a **multi-agent architecture** where each agent is 
 RiskEngineOrchestrator.run(reportId)
   │
   ├── BaselineAgent       → Odometer anomalies, price volatility, recall severity
-  ├── SafetyAgent         → NHTSA NCAP ratings, ADAS, complaints
-  ├── EngineAgent         → Powertrain complexity vs. mileage lifecycle
-  ├── CorrosionAgent      → Salt Belt / Sun Belt / Coastal exposure
-  ├── FloodAgent          → FEMA + NOAA geospatial intersection (upcoming)
-  ├── TheftSentimentAgent → SERP-based regional theft OSINT
-  ├── ForensicsAgent      → Multimodal visual salvage detection + auction URL forensics
-  ├── ValuationAgent      → Real-time price prediction via Google SERP + LLM
-  ├── ReliabilityAgent    → Social media failure sentiment (upcoming)
+  ├── SafetyAgent         → NHTSA NCAP ratings, ADAS features, complaints/investigations
+  ├── EngineAgent         → Powertrain complexity vs. mileage lifecycle ("The Hump" detection)
+  ├── CorrosionAgent      → Salt Belt / Sun Belt / Coastal cumulative stress
+  ├── FloodAgent          → FEMA disaster matching + Open-Meteo precipitation intersection
+  ├── TheftAgent          → SERP-based regional theft OSINT (Bright Data SERP API)
+  ├── ForensicsAgent      → Multimodal visual salvage detection + auction URL forensics (Bright Data SERP + LLM vision)
+  ├── ValuationAgent      → (orchestrator method, not a standalone agent) → Real-time price prediction via Bright Data SERP + LLM
+  ├── ReliabilityAgent    → Reddit failure sentiment (Bright Data, Reddit-Comments API)
   │
   └── Master LLM Synthesis
         ├── Executive Summary (plain-language risk explanation)
@@ -248,17 +248,27 @@ The Forensics Agent detects **title washing** and unreported total-loss events b
 
 ### Inngest Pipeline
 
-The analysis runs as a durable Inngest function with 5 sequential steps:
+The analysis runs as a durable Inngest function (analyze-report) with checkpointed steps. Each agent gets its own Vercel invocation and timeout budget.
+
+```
+verify-vehicle → fetch-recalls → upsert-recalls → fetch-market-history
+→ fetch-safety-ratings → load-agent-input → fetch-agent-deps
+→ [agents in parallel] → persist-results → [synthesis + price-prediction in parallel] → finalize-report
+```
 
 1. `verify-vehicle` — Confirms the vehicle record exists (retries with exponential backoff for transaction isolation)
 2. `fetch-recalls` — Pulls NHTSA recall data
 3. `upsert-recalls` — Persists recalls to DB (skipped if none found)
-4. `fetch-market-history` — Fetches MarketCheck listing history (graceful degradation)
+4. `fetch-market-history` — Fetches MarketCheck listing history (graceful degradation — logs warning and continues with empty history on failure)
 5. `fetch-safety-ratings` — Fetches NHTSA NCAP data
-6. `run-orchestrator` — Executes all risk agents and Master LLM
-7. `price-prediction` — Fetches SERP valuation data and formats via LLM
+6. `load-agent-input` — Loads full AgentInput from DB (vehicle + recalls + listings + safety ratings persisted in prior steps)
+7. `fetch-agent-deps` — Fetches external dependencies in parallel: Open-Meteo weather, SERP theft snippets, SERP VIN search
+8. **Agents (parallel)** — All 8 agents execute concurrently as separate steps: `agent-baseline`, `agent-safety`, `agent-engine`, `agent-corrosion`, `agent-flood`, `agent-theft`, `agent-forensics`, `agent-reliability`
+9. `persist-results` — Writes all RiskVectorResults to DB
+10. **Synthesis + Valuation (parallel)** — `master-synthesis` (weighted composite + Master LLM) and `price-prediction` (SERP + LLM formatting) run concurrently
+11. `finalize-report` — Updates the Report record with final score, label, narratives, and price prediction; sets status to `COMPLETED`
 
-Concurrency is limited to 1 per organization to prevent credit race conditions.
+Concurrency is limited to 1 per organization (`concurrency: { limit: 1, key: 'event.data.orgId' }`) to prevent credit race conditions. Retries are set to 0 — each agent handles primary → fallback LLM internally.
 
 ### Multi-Tenancy
 
@@ -456,15 +466,15 @@ Auto VIN Scout is different:
 |---|--------|---------------|
 | Data source | Insurance claims, DMV records | Marketplace behavior, federal APIs, OSINT, AI inference |
 | Odometer fraud | Only if reported to DMV | Detected via listing timeline forensics |
-| Flood damage | Only if insurance claim filed | Inferred from FEMA + NOAA + listing geography |
+| Flood damage | Only if insurance claim filed | Inferred from FEMA + Open-Meteo precipitation + listing geography |
 | Salvage/wreck | Only if title branded | Multimodal AI visual detection (auction photos, watermarks) |
 | Engine risk | Not assessed | Predicted from powertrain architecture + mileage |
-| Corrosion | Not assessed | Calculated from lifetime location trail |
-| Theft risk | Not assessed | Real-time OSINT from Reddit/Nextdoor sentiment |
-| Reliability | Not assessed | Extracted from enthusiast community failure patterns |
+| Corrosion | Not assessed | Calculated from lifetime location trail (using listings)|
+| Theft risk | Not assessed | Real-time OSINT from Reddit/Nextdoor sentiment (via Bright Data SERP) |
+| Reliability | Not assessed | Extracted from enthusiast community failure patterns (via Bright Data Datasets API — Reddit) |
 | Price prediction | Static book value | Real-time SERP-powered AI valuation with market context |
 | Output | Static PDF | Interactive report + AI negotiation script |
-| Cost | $40–$100/report | From $10/report (Basic tier) |
+| Cost (to be revised) | $40–$100/report | From $10/report (Basic tier) | 
 
 The system doesn't claim certainty — it reports **probability**. This is both more honest and more legally defensible than binary "clean/dirty" labels.
 
