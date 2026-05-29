@@ -151,7 +151,7 @@ export const analyzeReportFn = inngest.createFunction(
     // Steps 7-12: Individual agent executions (parallel)
     // Each agent = separate Vercel invocation = no timeout pressure.
     // -------------------------------------------------------------------------
-    const [baseline, safety, engine, corrosion, flood, theft, forensics] = await Promise.all([
+    const [baseline, safety, engine, corrosion, flood, theft, forensics, reliability] = await Promise.all([
       step.run('agent-baseline', () =>
         RiskEngineOrchestrator.runBaselineAgent(agentInput)
       ),
@@ -173,9 +173,13 @@ export const analyzeReportFn = inngest.createFunction(
       step.run('agent-forensics', () =>
         RiskEngineOrchestrator.runForensicsAgent(agentInput, agentDeps)
       ),
-    ]) as [RiskVectorResult, RiskVectorResult, RiskVectorResult, RiskVectorResult, RiskVectorResult, RiskVectorResult, RiskVectorResult]
+      step.run('agent-reliability', () =>
+        RiskEngineOrchestrator.runReliabilityAgent(agentInput)
+      ),
+    ]) as [RiskVectorResult, RiskVectorResult, RiskVectorResult, RiskVectorResult, RiskVectorResult, RiskVectorResult, RiskVectorResult, RiskVectorResult | null]
 
-    const results: RiskVectorResult[] = [baseline, safety, engine, corrosion, flood, theft, forensics]
+    const results: RiskVectorResult[] = [baseline, safety, engine, corrosion, flood, theft, forensics, reliability]
+      .filter((r): r is RiskVectorResult => r !== null)
 
     // -------------------------------------------------------------------------
     // Step 13: persist-results

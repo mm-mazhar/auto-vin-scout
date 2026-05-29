@@ -31,6 +31,7 @@ export class CorrosionAgent implements RiskAgent {
 
   async execute(input: AgentInput): Promise<RiskVectorResult> {
     const { listingHistory } = input
+    console.log(`[CorrosionAgent] 🔍 Starting: ${input.vehicle.year} ${input.vehicle.make} ${input.vehicle.model} | ${listingHistory.length} listings`)
 
     // Step 1: Classify states
     const classification = this.classifyStates(listingHistory)
@@ -42,14 +43,18 @@ export class CorrosionAgent implements RiskAgent {
       classification.validCount,
     )
 
+    console.log(`[CorrosionAgent] 🎯 Score: ${score} | Label: ${label}`)
+
     // Step 3: Generate narrative (LLM with deterministic fallback)
     let narrative: string
     let usedFallbackNarrative = false
     try {
       narrative = await this.generateNarrative(score, label, classification)
+      console.log('[CorrosionAgent] ✍️  LLM narrative generated successfully')
     } catch {
       narrative = this.generateFallbackNarrative(score, label, classification)
       usedFallbackNarrative = true
+      console.log('[CorrosionAgent] ⚠️  Using fallback narrative')
     }
 
     return {

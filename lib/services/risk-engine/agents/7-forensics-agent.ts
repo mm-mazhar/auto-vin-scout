@@ -45,19 +45,23 @@ export class ForensicsAgent implements RiskAgent {
   }
 
   async execute(input: AgentInput): Promise<RiskVectorResult> {
+    console.log(`[ForensicsAgent] 🔍 Starting: VIN ${input.vehicle.vin} | ${this.vinSearchData.organicLinks.length} links, ${this.vinSearchData.imageUrls.length} images`)
     const { organicLinks, snippets, imageUrls } = this.vinSearchData
 
     // Step 1: URL vs. Text Heuristic Matrix
     const { score, label } = this.computeScore(organicLinks, snippets)
+    console.log(`[ForensicsAgent] 🎯 Score: ${score} | Label: ${label}`)
 
     // Step 2: Generate narrative (LLM with deterministic fallback)
     let narrative: string
     let usedFallbackNarrative = false
     try {
       narrative = await this.generateNarrative(input, organicLinks, snippets, imageUrls, score, label)
+      console.log('[ForensicsAgent] ✍️  LLM narrative generated successfully')
     } catch {
       narrative = this.generateFallbackNarrative(label)
       usedFallbackNarrative = true
+      console.log('[ForensicsAgent] ⚠️  Using fallback narrative')
     }
 
     return {

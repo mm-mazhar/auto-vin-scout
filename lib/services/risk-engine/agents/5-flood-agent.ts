@@ -55,6 +55,7 @@ export class FloodAgent implements RiskAgent {
 
   async execute(input: AgentInput): Promise<RiskVectorResult> {
     const { listingHistory } = input
+    console.log(`[FloodAgent] 🔍 Starting: ${input.vehicle.year} ${input.vehicle.make} ${input.vehicle.model} | Rain: ${this.weatherData.maxPrecipitationInches.toFixed(1)}in`)
 
     // Derive latest mileage from listing history
     const latestMileage = this.getLatestMileage(listingHistory)
@@ -66,14 +67,18 @@ export class FloodAgent implements RiskAgent {
     const maxInches = this.weatherData.maxPrecipitationInches
     const { score, label } = this.computeScore(maxInches, femaDisasterMatch, latestMileage, listingHistory.length)
 
+    console.log(`[FloodAgent] 🎯 Score: ${score} | Label: ${label}`)
+
     // Step 3: Generate narrative (LLM with deterministic fallback)
     let narrative: string
     let usedFallbackNarrative = false
     try {
       narrative = await this.generateNarrative(score, label, maxInches, femaDisasterMatch, latestMileage)
+      console.log('[FloodAgent] ✍️  LLM narrative generated successfully')
     } catch {
       narrative = this.generateFallbackNarrative(label)
       usedFallbackNarrative = true
+      console.log('[FloodAgent] ⚠️  Using fallback narrative')
     }
 
     return {

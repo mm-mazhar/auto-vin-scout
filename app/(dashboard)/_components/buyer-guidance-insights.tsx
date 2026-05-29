@@ -3,6 +3,8 @@
 'use client'
 
 import type { VehicleListingHistory } from '@prisma/client'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Handshake, Fuel, TrendingDown, Clock, MapPin, Gauge } from 'lucide-react'
 
@@ -255,8 +257,10 @@ export function BuyerGuidanceInsights({ listings, vehicle, pricePrediction }: Bu
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="text-sm whitespace-pre-wrap leading-relaxed text-muted-foreground">
-              {pricePrediction}
+            <div className="prose prose-invert max-w-none prose-headings:text-foreground prose-p:text-muted-foreground prose-strong:text-foreground prose-li:text-muted-foreground prose-td:text-muted-foreground prose-th:text-foreground">
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                {pricePrediction}
+              </ReactMarkdown>
             </div>
           </CardContent>
         </Card>

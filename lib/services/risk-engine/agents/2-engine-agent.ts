@@ -219,19 +219,23 @@ export class EngineAgent implements RiskAgent {
   readonly weight = 0.10
 
   async execute(input: AgentInput): Promise<RiskVectorResult> {
+    console.log(`[EngineAgent] 🔍 Starting: ${input.vehicle.year} ${input.vehicle.make} ${input.vehicle.model}`)
     const engineData = extractEngineData(input.vehicle)
     const latestMileage = extractLatestMileage(input.listingHistory)
     const tier = classifyTier(engineData, latestMileage)
     const score = computeScore(tier, latestMileage)
     const label = assignLabel(score)
+    console.log(`[EngineAgent] 🎯 Score: ${score} | Label: ${label} | Tier: ${tier}`)
 
     let narrative: string
     let usedFallbackNarrative = false
     try {
       narrative = await this.generateNarrative(input, engineData, tier, score, label, latestMileage)
+      console.log('[EngineAgent] ✍️  LLM narrative generated successfully')
     } catch {
       narrative = FALLBACK_NARRATIVES[label]
       usedFallbackNarrative = true
+      console.log('[EngineAgent] ⚠️  Using fallback narrative')
     }
 
     const findings: string[] = []

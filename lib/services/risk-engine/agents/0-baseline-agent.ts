@@ -12,6 +12,7 @@ export class BaselineAgent implements RiskAgent {
 
   async execute(input: AgentInput): Promise<RiskVectorResult> {
     const { vehicle, recalls, listingHistory } = input
+    console.log(`[BaselineAgent] 🔍 Starting: ${vehicle.year} ${vehicle.make} ${vehicle.model} (VIN: ${vehicle.vin})`)
     let score = 0
     const findings: string[] = []
 
@@ -226,14 +227,18 @@ export class BaselineAgent implements RiskAgent {
     const label: RiskLabel =
       score <= 30 ? 'Low' : score <= 70 ? 'Medium' : 'High'
 
+    console.log(`[BaselineAgent] 🎯 Score: ${score} | Label: ${label}`)
+
     // --- Narrative (LLM with fallback) ---
     let narrative: string
     let usedFallbackNarrative = false
     try {
       narrative = await this.generateNarrative(input, score, label, findings)
+      console.log('[BaselineAgent] ✍️  LLM narrative generated successfully')
     } catch {
       narrative = this.generateFallbackNarrative(score, label, findings, input)
       usedFallbackNarrative = true
+      console.log('[BaselineAgent] ⚠️  Using fallback narrative')
     }
 
     return {

@@ -13,17 +13,21 @@ export class SafetyAgent implements RiskAgent {
 
   async execute(input: AgentInput): Promise<RiskVectorResult> {
     const { safetyRating } = input
+    console.log(`[SafetyAgent] 🔍 Starting: ${input.vehicle.year} ${input.vehicle.make} ${input.vehicle.model}`)
 
     const overallRating = safetyRating?.overallRating ?? null
     const { score, label } = this.computeScore(overallRating)
+    console.log(`[SafetyAgent] 🎯 Score: ${score} | Label: ${label}`)
 
     let narrative: string
     let usedFallbackNarrative = false
     try {
       narrative = await this.generateNarrative(input, score, label, safetyRating)
+      console.log('[SafetyAgent] ✍️  LLM narrative generated successfully')
     } catch {
       narrative = this.generateFallbackNarrative(score, label)
       usedFallbackNarrative = true
+      console.log('[SafetyAgent] ⚠️  Using fallback narrative')
     }
 
     return {

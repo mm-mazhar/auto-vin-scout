@@ -47,6 +47,7 @@ export class TheftAgent implements RiskAgent {
 
   async execute(input: AgentInput): Promise<RiskVectorResult> {
     const { vehicle } = input
+    console.log(`[TheftAgent] 🔍 Starting: ${vehicle.make} ${vehicle.model} | Location: ${this.latestCity ?? 'Unknown'}, ${this.latestState ?? 'Unknown'}`)
 
     // Step 1: High-theft model check
     const highTheftModels = loadHighTheftModels()
@@ -68,6 +69,8 @@ export class TheftAgent implements RiskAgent {
     // Step 3: Compute heuristic score
     const { score, label } = this.computeScore(isHighTheftModel, hasViralLocalTheft)
 
+    console.log(`[TheftAgent] 🎯 Score: ${score} | Label: ${label}`)
+
     // Step 4: Generate narrative (LLM with deterministic fallback)
     let narrative: string
     let usedFallbackNarrative = false
@@ -75,9 +78,11 @@ export class TheftAgent implements RiskAgent {
       narrative = await this.generateNarrative(
         score, label, isHighTheftModel, hasViralLocalTheft, keywordHitCount, vehicle.make, vehicle.model
       )
+      console.log('[TheftAgent] ✍️  LLM narrative generated successfully')
     } catch {
       narrative = this.generateFallbackNarrative(label)
       usedFallbackNarrative = true
+      console.log('[TheftAgent] ⚠️  Using fallback narrative')
     }
 
     return {

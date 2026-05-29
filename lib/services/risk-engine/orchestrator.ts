@@ -16,6 +16,7 @@ import { CorrosionAgent } from './agents/4-corrosion-agent'
 import { FloodAgent } from './agents/5-flood-agent'
 import { TheftAgent } from './agents/6-theft-agent'
 import { ForensicsAgent } from './agents/7-forensics-agent'
+import { ReliabilitySocialProofAgent } from './agents/8-reliability-socialproof-agent'
 import { WeatherService } from '@/lib/services/weather-service'
 import { SerpService } from '@/lib/services/serp-service'
 import type { VinSearchResult } from '@/lib/services/serp-service'
@@ -125,6 +126,21 @@ export class RiskEngineOrchestrator {
     const agent = new ForensicsAgent()
     agent.setContext(deps.vinSearchData)
     return agent.execute(input)
+  }
+
+  static async runReliabilityAgent(input: AgentInput): Promise<RiskVectorResult | null> {
+    try {
+      const config = getAgentConfig('reliability')
+      if ((config as any).disabled === true) {
+        return null
+      }
+
+      const agent = new ReliabilitySocialProofAgent()
+      return agent.execute(input)
+    } catch (error) {
+      console.warn('[Orchestrator] runReliabilityAgent unexpected error:', error)
+      return null
+    }
   }
 
   // ---------------------------------------------------------------------------

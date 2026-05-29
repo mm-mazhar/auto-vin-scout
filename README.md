@@ -470,6 +470,11 @@ The system doesn't claim certainty — it reports **probability**. This is both 
 
 ---
 
+## TO DO:
+  - Logging
+  - PDF Print
+  - API First Platform
+
 ## License
 
 Proprietary. All rights reserved.
