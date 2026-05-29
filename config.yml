@@ -173,7 +173,7 @@ ai:
         - Format price ranges clearly (e.g., **$18,000 – $23,000**).
 
     reliability:
-      disabled: false
+      disabled: true
       primary:
         provider: "openrouter"
         baseUrl: "https://openrouter.ai/api/v1"
