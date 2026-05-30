@@ -118,7 +118,7 @@ export default async function ReportsPage() {
     }
   }
 
-  const getRiskBadgeVariant = (label: string | null) => {
+  const getRiskBadgeVariant = (label: string | null): "default" | "secondary" | "destructive" | "outline" => {
     switch (label) {
       case 'Low':
         return 'default'
@@ -130,6 +130,20 @@ export default async function ReportsPage() {
         return 'destructive'
       default:
         return 'outline'
+    }
+  }
+
+  const getRiskBadgeClassName = (label: string | null) => {
+    switch (label) {
+      case 'Low':
+        return 'bg-emerald-600 text-white border-emerald-600 hover:bg-emerald-600'
+      case 'Moderate':
+        return 'bg-amber-600 text-white border-amber-600 hover:bg-amber-600'
+      case 'Elevated':
+      case 'High':
+        return 'bg-red-600 text-white border-red-600 hover:bg-red-600'
+      default:
+        return ''
     }
   }
 
@@ -209,7 +223,7 @@ export default async function ReportsPage() {
                       <div className="flex items-center gap-2">
                         <span className="text-sm font-medium">{report.riskScore}/100</span>
                         {report.riskLabel && (
-                          <Badge variant={getRiskBadgeVariant(report.riskLabel)} className="text-xs">
+                          <Badge variant="outline" className={`text-xs ${getRiskBadgeClassName(report.riskLabel)}`}>
                             {report.riskLabel}
                           </Badge>
                         )}

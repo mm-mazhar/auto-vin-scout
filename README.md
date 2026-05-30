@@ -64,6 +64,18 @@ The core insight: the most valuable vehicle data (DMV registrations, insurance c
 
 ---
 
+## VINs to Try
+
+```
+5NPE24AFXJH673456
+1N4AL3AP2FC260308
+2C4RDGCG4GR169421
+5YFBPRBE3LP067431  
+5J6RM4H52EL066598
+```
+
+---
+
 ## Risk Vectors
 
 Each report scores the vehicle across 8 independent risk dimensions. Mileage acts as the "Exposure Duration" multiplier across all factors.
@@ -483,6 +495,12 @@ The system doesn't claim certainty — it reports **probability**. This is both 
 ## TO DO:
   - Logging
   - PDF Print
+  - Super Admin Dashboard:
+    - Agents Monitoring and Evaluation
+    - Agents and other services costs
+    - Stripe's remaining integration
+  - Improvements to be made:
+    - Introduce Checker Agent to check the output of each agent. Or get feedback from other agents e.g. Flood Agent might miss, but if vehicle appears in via "Water/Flood" damage via "Visual & Auction Forensics" agent then we need to update the flood agent based on findings of other agent/s, or owners complains over reddit not backed by powertrain and engine complexity agent.
   - API First Platform
 
 ## License

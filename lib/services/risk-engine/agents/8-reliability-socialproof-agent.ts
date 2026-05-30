@@ -57,7 +57,10 @@ export class ReliabilitySocialProofAgent implements RiskAgent {
   async execute(input: AgentInput): Promise<RiskVectorResult> {
     try {
       // Phase 1: Discover Reddit posts and classify by keyword severity
-      const keyword = `${input.vehicle.year} ${input.vehicle.make} ${input.vehicle.model} problem OR failure`
+      // const keyword = `${input.vehicle.year} ${input.vehicle.make} ${input.vehicle.model} problem OR failure`
+      // const keyword = `${input.vehicle.year} ${input.vehicle.make} ${input.vehicle.model} reliability`
+      // const keyword = `${input.vehicle.year} ${input.vehicle.make} ${input.vehicle.model} engine failure`
+      const keyword = `${input.vehicle.make} ${input.vehicle.model} engine failure`
       console.log('[ReliabilityAgent] 🔍 Searching Reddit with keyword:', keyword)
 
       const posts = await BrightDataDatasetService.discoverRedditPosts(keyword)
@@ -75,7 +78,10 @@ export class ReliabilitySocialProofAgent implements RiskAgent {
    * Returns immediately — safe for Vercel's 60s timeout.
    */
   async startDiscovery(input: AgentInput): Promise<ReliabilityDiscoveryResult> {
-    const keyword = `${input.vehicle.year} ${input.vehicle.make} ${input.vehicle.model} problem OR failure`
+    // const keyword = `${input.vehicle.year} ${input.vehicle.make} ${input.vehicle.model} problem OR failure`
+    // const keyword = `${input.vehicle.year} ${input.vehicle.make} ${input.vehicle.model} reliability`
+    // const keyword = `${input.vehicle.year} ${input.vehicle.make} ${input.vehicle.model} engine failure`
+    const keyword = `${input.vehicle.make} ${input.vehicle.model} engine failure`
     console.log('[ReliabilityAgent] 🔍 Triggering Reddit discovery with keyword:', keyword)
 
     const result = await BrightDataDatasetService.triggerRedditPostsDiscovery(keyword)

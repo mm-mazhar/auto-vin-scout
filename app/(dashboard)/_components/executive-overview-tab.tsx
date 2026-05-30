@@ -84,6 +84,22 @@ export function ExecutiveOverviewTab({
               <p className="text-xs text-muted-foreground mt-3 max-w-[200px] text-center">
                 Based on {report.vectorResults?.length ?? 0} assessment vectors
               </p>
+
+              {/* Risk range legend */}
+              <div className="flex items-center gap-3 mt-3 text-[10px] text-muted-foreground">
+                <span className="flex items-center gap-1">
+                  <span className="inline-block w-2 h-2 rounded-full bg-green-500" />
+                  0–30 Low
+                </span>
+                <span className="flex items-center gap-1">
+                  <span className="inline-block w-2 h-2 rounded-full bg-yellow-400" />
+                  31–70 Medium
+                </span>
+                <span className="flex items-center gap-1">
+                  <span className="inline-block w-2 h-2 rounded-full bg-red-500" />
+                  71–100 High
+                </span>
+              </div>
             </div>
 
             {/* Right: Executive Summary */}

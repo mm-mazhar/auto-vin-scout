@@ -5,9 +5,10 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { AlertCircle, Car, Gauge, Info, MapPin, Wrench, FileText, TrendingUp, Shield, ShieldCheck, CheckSquare, Scale, Zap, Bell, MessageSquare, Copy, Droplets, Lock, Search, Users, Cog, CircleDot } from 'lucide-react'
+import { AlertCircle, Car, Gauge, Info, MapPin, Wrench, FileText, TrendingUp, Shield, ShieldCheck, CheckSquare, Scale, Zap, Bell, MessageSquare, Copy, Droplets, Lock, Search, Users, Cog, CircleDot, RefreshCw } from 'lucide-react'
 import type { ReportWithVehicle, VehicleDetails } from '@/lib/orpc/routers/vin'
 import { PreviewReport } from './preview-report'
 import { RecallsSection } from './recalls-section'
@@ -188,7 +189,7 @@ function AnalysisProgress() {
     <div className="p-6 space-y-6">
       <div className="text-center space-y-1">
         <p className="text-sm font-medium">Analyzing vehicle risk factors...</p>
-        <p className="text-xs text-muted-foreground">This may take up to 2-3 minutes, Try refreshing browser, it is taking too long...</p>
+        <p className="text-xs text-muted-foreground">This may take up to a minute</p>
       </div>
 
       {/* Indeterminate progress bar — no fake percentage */}
@@ -234,6 +235,19 @@ function AnalysisProgress() {
       <p className="text-xs text-center text-muted-foreground">
         <span className="text-foreground font-medium">{ANALYSIS_STEPS[activeStep].label}</span>
       </p>
+
+      {/* Refresh button for when results are ready but UI hasn't updated */}
+      <div className="text-center pt-2">
+        <Button
+          variant="default"
+          size="sm"
+          onClick={() => window.location.reload()}
+          className="gap-1.5"
+        >
+          <RefreshCw className="h-3.5 w-3.5" />
+          Taking too long? Refresh page
+        </Button>
+      </div>
     </div>
   )
 }
