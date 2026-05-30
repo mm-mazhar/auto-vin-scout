@@ -183,7 +183,7 @@ describe('ReliabilitySocialProofAgent — Durable Flow', () => {
 
       await agent.startDiscovery(buildAgentInput({ make: 'Toyota', model: 'Camry' }))
 
-      expect(mockTriggerRedditPostsDiscovery).toHaveBeenCalledWith('Toyota Camry engine failure')
+      expect(mockTriggerRedditPostsDiscovery).toHaveBeenCalledWith('"Toyota Camry" engine failure')
     })
 
     it('does not include year in keyword', async () => {
@@ -193,7 +193,7 @@ describe('ReliabilitySocialProofAgent — Durable Flow', () => {
 
       const keyword = mockTriggerRedditPostsDiscovery.mock.calls[0][0]
       expect(keyword).not.toContain('2020')
-      expect(keyword).toBe('Ford F-150 engine failure')
+      expect(keyword).toBe('"Ford F-150" engine failure')
     })
   })
 

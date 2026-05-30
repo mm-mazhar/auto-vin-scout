@@ -138,6 +138,8 @@ export class ReliabilitySocialProofAgent implements RiskAgent {
 
   /**
    * Shared analysis logic: score posts by keyword severity, generate LLM narrative.
+   * Two-pass system: TypeScript heuristic is the "fast filter", LLM is the "senior reviewer"
+   * that can override the score if posts are cross-contaminated or irrelevant.
    */
   private async analyzeAndNarrate(input: AgentInput, posts: RedditPost[]): Promise<RiskVectorResult> {
     // Filter out posts where both title and description are empty
@@ -145,9 +147,9 @@ export class ReliabilitySocialProofAgent implements RiskAgent {
       (post) => post.title.trim() !== '' || post.description.trim() !== ''
     )
 
-    // Keyword heuristic scoring
+    // Keyword heuristic scoring (Pass 1: fast filter)
     const { score, label, matchedKeywords } = this.computeScore(validPosts)
-    console.log('[ReliabilityAgent] 🎯 Score:', score, '| Label:', label, '| Keywords:', matchedKeywords)
+    console.log('[ReliabilityAgent] 🎯 Heuristic Score:', score, '| Label:', label, '| Keywords:', matchedKeywords)
 
     // Format post content for LLM
     const formattedPosts = validPosts
@@ -155,12 +157,27 @@ export class ReliabilitySocialProofAgent implements RiskAgent {
       .map((p, i) => `Post ${i + 1}: ${p.title}\nDescription: ${p.description}`)
       .join('\n\n')
 
-    // Generate LLM narrative
+    // Pass 2: LLM as "Senior Reviewer" — can override score if posts are irrelevant
     let narrative: string
+    let finalScore = score
+    let finalLabel: RiskLabel = label
     let usedFallbackNarrative = false
+
     try {
-      narrative = await this.generateNarrative(input, formattedPosts, matchedKeywords, score, label)
-      console.log('[ReliabilityAgent] ✍️  LLM narrative generated successfully')
+      const llmResult = await this.generateNarrative(input, formattedPosts, matchedKeywords, score, label)
+      narrative = llmResult.narrative
+      finalScore = llmResult.adjustedScore
+
+      // Recalculate label based on LLM's overridden score
+      if (finalScore >= 71) {
+        finalLabel = 'High'
+      } else if (finalScore >= 31) {
+        finalLabel = 'Medium'
+      } else {
+        finalLabel = 'Low'
+      }
+
+      console.log('[ReliabilityAgent] ✍️  LLM override — adjustedScore:', finalScore, '| finalLabel:', finalLabel)
     } catch {
       narrative = FALLBACK_NARRATIVES[label]
       usedFallbackNarrative = true
@@ -170,11 +187,12 @@ export class ReliabilitySocialProofAgent implements RiskAgent {
     return {
       vectorIndex: this.vectorIndex,
       vectorName: this.vectorName,
-      score,
-      label,
+      score: finalScore,
+      label: finalLabel,
       weight: this.weight,
       narrative,
       metadata: {
+        heuristicOriginalScore: score,
         usedFallbackNarrative,
         matchedKeywords,
         postCount: validPosts.length,
@@ -244,13 +262,31 @@ export class ReliabilitySocialProofAgent implements RiskAgent {
     return { score, label, matchedKeywords: [...new Set(matchedKeywords)], filteredPosts }
   }
 
+  /**
+   * Strips markdown code fences and parses JSON from LLM response.
+   */
+  private parseLlmJson(rawText: string): { adjustedScore: number; narrative: string } {
+    const cleanedText = rawText.replace(/```json/g, '').replace(/```/g, '').trim()
+    const parsed = JSON.parse(cleanedText)
+
+    // Validate shape
+    if (typeof parsed.adjustedScore !== 'number' || typeof parsed.narrative !== 'string') {
+      throw new Error('Invalid LLM JSON shape: missing adjustedScore or narrative')
+    }
+
+    // Clamp score to valid range
+    const adjustedScore = Math.max(0, Math.min(100, Math.round(parsed.adjustedScore)))
+
+    return { adjustedScore, narrative: parsed.narrative.trim() }
+  }
+
   private async generateNarrative(
     input: AgentInput,
     formattedPosts: string,
     matchedKeywords: string[],
     score: number,
     label: RiskLabel
-  ): Promise<string> {
+  ): Promise<{ adjustedScore: number; narrative: string }> {
     const config = getAgentConfig('reliability')
 
     const userPrompt = `
@@ -260,8 +296,6 @@ Matched Keywords: ${matchedKeywords.length > 0 ? matchedKeywords.join(', ') : 'N
 
 Recent Reddit Discussions:
 ${formattedPosts || 'No relevant discussions found.'}
-
-Provide a concise 2-3 sentence reliability assessment based on the owner discussions above.
 `.trim()
 
     // Try primary provider (OpenRouter / OpenAI-compatible)
@@ -283,7 +317,7 @@ Provide a concise 2-3 sentence reliability assessment based on the owner discuss
           max_tokens: config.maxTokens,
         })
         const text = response.choices[0]?.message?.content?.trim()
-        if (text) return text
+        if (text) return this.parseLlmJson(text)
       } catch (error) {
         console.warn('[ReliabilitySocialProofAgent] Primary LLM failed, trying fallback:', error)
       }
@@ -305,7 +339,7 @@ Provide a concise 2-3 sentence reliability assessment based on the owner discuss
           },
         })
         const text = response.text?.trim()
-        if (text) return text
+        if (text) return this.parseLlmJson(text)
       } catch (error) {
         console.warn('[ReliabilitySocialProofAgent] Fallback LLM failed:', error)
       }

@@ -184,4 +184,15 @@ ai:
       temperature: 0.1
       maxTokens: 500
       systemInstruction: |
-        You are an expert automotive mechanic. I will provide you with raw Reddit comments discussing a specific vehicle's reliability. Your job is to summarize the specific mechanical failure points mentioned by owners. Filter out generic complaining and focus on repeated, specific part failures. If catastrophic failures (e.g., 'transmission', 'head gasket') are heavily discussed, warn the user heavily. Keep the narrative concise (2-3 sentences).
+        You are an expert automotive mechanic. I will provide you with raw Reddit posts discussing a specific vehicle's reliability, alongside a "Heuristic Risk Score". 
+        YOUR JOB:
+        1. Summarize the specific mechanical failure points mentioned by owners. 
+        2. Check for cross-contamination. If the posts mention catastrophic failures (like "blown engine") but are talking about a DIFFERENT vehicle, you MUST ignore them.
+        3. Determine the true risk score. If the heuristic score is High but the posts are irrelevant, lower the score to 15. If the posts truly confirm major failures for THIS vehicle, keep it at 85.
+        
+        OUTPUT REQUIREMENT:
+        You must output ONLY valid JSON in this exact format, with no markdown formatting or extra text:
+        {
+          "adjustedScore": 15,
+          "narrative": "Your 2-3 sentence summary goes here."
+        }
