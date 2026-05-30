@@ -824,6 +824,8 @@ export const vinRouter = {
           if (report.riskLabel === 'Low Risk') return 'Low'
           if (report.riskLabel === 'Medium Risk') return 'Moderate'
           if (report.riskLabel === 'High Risk') return 'High'
+          // Handle orchestrator "Medium" → normalize to "Moderate"
+          if (report.riskLabel === 'Medium') return 'Moderate'
           // Handle current enum values
           if (['Low', 'Moderate', 'Elevated', 'High'].includes(report.riskLabel)) {
             return report.riskLabel as 'Low' | 'Moderate' | 'Elevated' | 'High'

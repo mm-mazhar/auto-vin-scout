@@ -81,14 +81,18 @@ export function ReportPage({ report: initialReport, projectId }: ReportPageProps
         return 'oklch(0.696 0.17 162.48)' // chart-2: Green
       case 'Moderate':
       case 'Medium':
-        // return 'oklch(0.828 0.189 84.429)' // chart-4: Yellow/Orange
         return 'oklch(0.6 0.189 55)' // Darker amber — better contrast with white text
       case 'Elevated':
-        return 'oklch(0.577 0.245 27.325)' // destructive: Red
       case 'High':
         return 'oklch(0.577 0.245 27.325)' // destructive: Red
       default:
-        return 'oklch(72.887% 0.21192 147.841)' // primary: Default
+        // Fallback: derive color from score if label is missing/unrecognized
+        if (riskScore !== null) {
+          if (riskScore <= 30) return 'oklch(0.696 0.17 162.48)' // Green
+          if (riskScore <= 70) return 'oklch(0.6 0.189 55)' // Amber
+          return 'oklch(0.577 0.245 27.325)' // Red
+        }
+        return 'oklch(0.552 0.016 285.938)' // muted-foreground: neutral gray
     }
   }
 
@@ -193,7 +197,7 @@ function AnalysisProgress() {
       </div>
 
       {/* Step indicators */}
-      <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
+      <div className="flex justify-between gap-1">
         {ANALYSIS_STEPS.map((step, i) => {
           const StepIcon = step.icon
           const isActive = i === activeStep
