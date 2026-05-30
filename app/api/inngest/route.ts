@@ -15,9 +15,9 @@ import { serve } from 'inngest/next'
 import { inngest } from '@/lib/inngest/client'
 import { analyzeReportFn } from '@/lib/inngest/functions/analyze-report'
 
-// Allow Inngest step execution up to 60s on Vercel Pro.
-// The SDK's checkpointing maxRuntime (45s) will return before this limit.
-export const maxDuration = 60
+// Allow Inngest step execution up to 120s on Vercel Pro.
+// Individual steps should complete well under this via AbortController timeouts.
+export const maxDuration = 120
 
 export const { GET, POST, PUT } = serve({
   client: inngest,

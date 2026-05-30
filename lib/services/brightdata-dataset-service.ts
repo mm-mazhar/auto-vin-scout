@@ -100,6 +100,10 @@ export class BrightDataDatasetService {
     try {
       const url = `${BRIGHTDATA_DATASETS_BASE_URL}?dataset_id=${REDDIT_POSTS_DATASET_ID}&type=discover_new&discover_by=keyword&format=json`
 
+      // Abort after 50s to stay well within Vercel's function timeout
+      const controller = new AbortController()
+      const timeout = setTimeout(() => controller.abort(), 50_000)
+
       const response = await fetch(url, {
         method: 'POST',
         headers: {
@@ -109,7 +113,10 @@ export class BrightDataDatasetService {
         body: JSON.stringify({
           input: [{ keyword: keyword.trim(), date: 'Past year', num_of_posts: 10 }],
         }),
+        signal: controller.signal,
       })
+
+      clearTimeout(timeout)
 
       if (!response.ok) {
         console.warn(`[BrightDataDatasetService] Reddit posts API returned ${response.status}: ${response.statusText}`)
@@ -132,7 +139,11 @@ export class BrightDataDatasetService {
 
       return { status: 'ready', posts: this.mapPosts(data) }
     } catch (error) {
-      console.warn('[BrightDataDatasetService] Failed to trigger Reddit posts discovery:', error)
+      if (error instanceof Error && error.name === 'AbortError') {
+        console.warn('[BrightDataDatasetService] Reddit posts discovery timed out after 50s')
+      } else {
+        console.warn('[BrightDataDatasetService] Failed to trigger Reddit posts discovery:', error)
+      }
       return { status: 'empty' }
     }
   }
