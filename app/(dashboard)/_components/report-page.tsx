@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { AlertCircle, Car, Gauge, Info, MapPin, Wrench, FileText, TrendingUp, Shield, ShieldCheck, CheckSquare, Scale, Zap, Bell, MessageSquare, Copy } from 'lucide-react'
+import { AlertCircle, Car, Gauge, Info, MapPin, Wrench, FileText, TrendingUp, Shield, ShieldCheck, CheckSquare, Scale, Zap, Bell, MessageSquare, Copy, Droplets, Lock, Search, Users, Cog, CircleDot } from 'lucide-react'
 import type { ReportWithVehicle, VehicleDetails } from '@/lib/orpc/routers/vin'
 import { PreviewReport } from './preview-report'
 import { RecallsSection } from './recalls-section'
@@ -159,10 +159,15 @@ export function ReportPage({ report: initialReport, projectId }: ReportPageProps
 
 // Animated progress component shown while report is being analyzed
 const ANALYSIS_STEPS = [
-  { label: 'Vehicle Specs', icon: Car },
-  { label: 'NHTSA Recalls', icon: Bell },
-  { label: 'Market Data', icon: TrendingUp },
-  { label: 'Risk Assessment', icon: Shield },
+  { label: 'Baseline', icon: CircleDot },
+  { label: 'Safety', icon: ShieldCheck },
+  { label: 'Engine', icon: Cog },
+  { label: 'Corrosion', icon: Wrench },
+  { label: 'Flood', icon: Droplets },
+  { label: 'Theft', icon: Lock },
+  { label: 'Forensics', icon: Search },
+  { label: 'Reliability', icon: Users },
+  { label: 'Risk Synthesis', icon: Shield },
 ]
 
 function AnalysisProgress() {
@@ -188,7 +193,7 @@ function AnalysisProgress() {
       </div>
 
       {/* Step indicators */}
-      <div className="grid grid-cols-4 gap-2">
+      <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
         {ANALYSIS_STEPS.map((step, i) => {
           const StepIcon = step.icon
           const isActive = i === activeStep
@@ -201,11 +206,11 @@ function AnalysisProgress() {
               }`}
             >
               <StepIcon
-                className={`h-6 w-6 transition-colors duration-300 ${
+                className={`h-5 w-5 transition-colors duration-300 ${
                   isActive ? 'text-primary' : isPast ? 'text-primary/60' : 'text-muted-foreground'
                 }`}
               />
-              <span className="text-xs text-muted-foreground text-center">{step.label}</span>
+              <span className="text-[10px] text-muted-foreground text-center leading-tight">{step.label}</span>
               {isActive && (
                 <div className="flex gap-0.5">
                   {[0, 1, 2].map((dot) => (
