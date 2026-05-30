@@ -188,7 +188,7 @@ function AnalysisProgress() {
     <div className="p-6 space-y-6">
       <div className="text-center space-y-1">
         <p className="text-sm font-medium">Analyzing vehicle risk factors...</p>
-        <p className="text-xs text-muted-foreground">This may take up to a minute</p>
+        <p className="text-xs text-muted-foreground">This may take up to 2-3 minutes, Try refreshing browser, it is taking too long...</p>
       </div>
 
       {/* Indeterminate progress bar — no fake percentage */}
