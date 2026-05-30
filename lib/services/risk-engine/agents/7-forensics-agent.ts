@@ -13,9 +13,7 @@ const SEVERE_URL_KEYWORDS = [
   'salvagebid.com',
   'copart.com',
   'iaai.com',
-  'bid.cars',
-  'vininspect.com',
-  'autoref.eu',
+  'bid.cars',  
 ]
 
 const MODERATE_TEXT_KEYWORDS = [
