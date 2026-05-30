@@ -22,6 +22,7 @@ import { NhtsaNcapService } from '@/lib/services/nhtsa-ncap-service'
 import { RiskEngineOrchestrator } from '@/lib/services/risk-engine/orchestrator'
 import type { AgentInput, RiskVectorResult } from '@/lib/services/risk-engine/types'
 import type { AgentDeps } from '@/lib/services/risk-engine/orchestrator'
+import type { ReliabilityDiscoveryResult } from '@/lib/services/risk-engine/agents/8-reliability-socialproof-agent'
 
 export const analyzeReportFn = inngest.createFunction(
   {
@@ -151,7 +152,7 @@ export const analyzeReportFn = inngest.createFunction(
     // Steps 7-12: Individual agent executions (parallel)
     // Each agent = separate Vercel invocation = no timeout pressure.
     // -------------------------------------------------------------------------
-    const [baseline, safety, engine, corrosion, flood, theft, forensics, reliability] = await Promise.all([
+    const [baseline, safety, engine, corrosion, flood, theft, forensics, reliabilityDiscovery] = await Promise.all([
       step.run('agent-baseline', () =>
         RiskEngineOrchestrator.runBaselineAgent(agentInput)
       ),
@@ -173,10 +174,32 @@ export const analyzeReportFn = inngest.createFunction(
       step.run('agent-forensics', () =>
         RiskEngineOrchestrator.runForensicsAgent(agentInput, agentDeps)
       ),
-      step.run('agent-reliability', () =>
-        RiskEngineOrchestrator.runReliabilityAgent(agentInput)
+      // Reliability Step A: trigger Bright Data discovery (returns immediately)
+      step.run('reliability-discover', () =>
+        RiskEngineOrchestrator.startReliabilityDiscovery(agentInput)
       ),
-    ]) as [RiskVectorResult, RiskVectorResult, RiskVectorResult, RiskVectorResult, RiskVectorResult, RiskVectorResult, RiskVectorResult, RiskVectorResult | null]
+    ]) as [RiskVectorResult, RiskVectorResult, RiskVectorResult, RiskVectorResult, RiskVectorResult, RiskVectorResult, RiskVectorResult, ReliabilityDiscoveryResult]
+
+    // -------------------------------------------------------------------------
+    // Step: Reliability durable wait + completion
+    // If Bright Data returned a snapshot_id, sleep to let it process, then fetch.
+    // -------------------------------------------------------------------------
+    let reliability: RiskVectorResult | null = null
+
+    if (reliabilityDiscovery.status === 'pending') {
+      // Sleep 30s to give Bright Data time to process the snapshot
+      await step.sleep('reliability-wait', '30s')
+
+      reliability = await step.run('reliability-analyze', () =>
+        RiskEngineOrchestrator.completeReliabilityAgent(agentInput, reliabilityDiscovery)
+      )
+    } else if (reliabilityDiscovery.status === 'ready' || reliabilityDiscovery.status === 'empty') {
+      // Posts came back synchronously or empty — analyze immediately
+      reliability = await step.run('reliability-analyze', () =>
+        RiskEngineOrchestrator.completeReliabilityAgent(agentInput, reliabilityDiscovery)
+      )
+    }
+    // status === 'disabled' → reliability stays null
 
     const results: RiskVectorResult[] = [baseline, safety, engine, corrosion, flood, theft, forensics, reliability]
       .filter((r): r is RiskVectorResult => r !== null)

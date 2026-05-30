@@ -38,11 +38,22 @@ const FALLBACK_NARRATIVES: Record<RiskLabel, string> = {
   High: 'High probability of major mechanical failure. Social media sentiment indicates a severe pattern of catastrophic issues (e.g., transmission or engine defects) for this specific model.',
 }
 
+/** Serializable result from the discovery step — stored by Inngest between steps. */
+export type ReliabilityDiscoveryResult =
+  | { status: 'disabled' }
+  | { status: 'ready'; posts: RedditPost[] }
+  | { status: 'pending'; snapshotId: string }
+  | { status: 'empty' }
+
 export class ReliabilitySocialProofAgent implements RiskAgent {
   readonly vectorIndex = 8
   readonly vectorName = 'Reliability & Social Proof'
   readonly weight = 0.15
 
+  /**
+   * Original monolithic execute — kept for backward compatibility.
+   * Uses the blocking pollSnapshot internally (not safe for Vercel serverless).
+   */
   async execute(input: AgentInput): Promise<RiskVectorResult> {
     try {
       // Phase 1: Discover Reddit posts and classify by keyword severity
@@ -52,61 +63,130 @@ export class ReliabilitySocialProofAgent implements RiskAgent {
       const posts = await BrightDataDatasetService.discoverRedditPosts(keyword)
       console.log('[ReliabilityAgent] 📬 Posts returned from Bright Data:', posts.length)
 
-      // Filter out posts where both title and description are empty
-      const validPosts = posts.filter(
-        (post) => post.title.trim() !== '' || post.description.trim() !== ''
-      )
-
-      // Keyword heuristic scoring
-      const { score, label, matchedKeywords, filteredPosts } = this.computeScore(validPosts)
-      console.log('[ReliabilityAgent] 🎯 Score:', score, '| Label:', label, '| Keywords:', matchedKeywords)
-
-      // Phase 2: Format post content for LLM (no comment scraping needed)
-      const formattedPosts = validPosts
-        .slice(0, 10)
-        .map((p, i) => `Post ${i + 1}: ${p.title}\nDescription: ${p.description}`)
-        .join('\n\n')
-
-      // Phase 3: Generate LLM narrative
-      let narrative: string
-      let usedFallbackNarrative = false
-      try {
-        narrative = await this.generateNarrative(input, formattedPosts, matchedKeywords, score, label)
-        console.log('[ReliabilityAgent] ✍️  LLM narrative generated successfully')
-      } catch {
-        narrative = FALLBACK_NARRATIVES[label]
-        usedFallbackNarrative = true
-        console.log('[ReliabilityAgent] ⚠️  Using fallback narrative (LLM failed)')
-      }
-
-      return {
-        vectorIndex: this.vectorIndex,
-        vectorName: this.vectorName,
-        score,
-        label,
-        weight: this.weight,
-        narrative,
-        metadata: {
-          usedFallbackNarrative,
-          matchedKeywords,
-          postCount: validPosts.length,
-        },
-      }
+      return this.analyzeAndNarrate(input, posts)
     } catch {
       // Never throw — return LOW fallback result on any unexpected error
-      return {
-        vectorIndex: this.vectorIndex,
-        vectorName: this.vectorName,
-        score: 15,
-        label: 'Low',
-        weight: this.weight,
-        narrative: FALLBACK_NARRATIVES.Low,
-        metadata: {
-          usedFallbackNarrative: true,
-          matchedKeywords: [],
-          postCount: 0,
-        },
+      return this.fallbackResult()
+    }
+  }
+
+  /**
+   * Step A (durable): Trigger Bright Data discovery without waiting for snapshot polling.
+   * Returns immediately — safe for Vercel's 60s timeout.
+   */
+  async startDiscovery(input: AgentInput): Promise<ReliabilityDiscoveryResult> {
+    const keyword = `${input.vehicle.year} ${input.vehicle.make} ${input.vehicle.model} problem OR failure`
+    console.log('[ReliabilityAgent] 🔍 Triggering Reddit discovery with keyword:', keyword)
+
+    const result = await BrightDataDatasetService.triggerRedditPostsDiscovery(keyword)
+
+    if (result.status === 'ready') {
+      console.log('[ReliabilityAgent] 📬 Posts returned synchronously:', result.posts.length)
+      return { status: 'ready', posts: result.posts }
+    }
+
+    if (result.status === 'pending') {
+      console.log('[ReliabilityAgent] ⏳ Snapshot deferred:', result.snapshotId)
+      return { status: 'pending', snapshotId: result.snapshotId }
+    }
+
+    return { status: 'empty' }
+  }
+
+  /**
+   * Step B (durable): Given the discovery result, fetch posts if needed and run analysis.
+   * If discovery returned a snapshot_id, fetches it (should be ready after Inngest sleep).
+   * Safe for Vercel's 60s timeout.
+   */
+  async completeAnalysis(
+    input: AgentInput,
+    discoveryResult: ReliabilityDiscoveryResult
+  ): Promise<RiskVectorResult> {
+    try {
+      let posts: RedditPost[]
+
+      switch (discoveryResult.status) {
+        case 'disabled':
+          return this.fallbackResult()
+        case 'ready':
+          posts = discoveryResult.posts
+          break
+        case 'pending':
+          console.log('[ReliabilityAgent] 📥 Fetching snapshot:', discoveryResult.snapshotId)
+          posts = await BrightDataDatasetService.fetchSnapshot(discoveryResult.snapshotId)
+          console.log('[ReliabilityAgent] 📬 Posts from snapshot:', posts.length)
+          break
+        case 'empty':
+        default:
+          posts = []
+          break
       }
+
+      return this.analyzeAndNarrate(input, posts)
+    } catch {
+      return this.fallbackResult()
+    }
+  }
+
+  /**
+   * Shared analysis logic: score posts by keyword severity, generate LLM narrative.
+   */
+  private async analyzeAndNarrate(input: AgentInput, posts: RedditPost[]): Promise<RiskVectorResult> {
+    // Filter out posts where both title and description are empty
+    const validPosts = posts.filter(
+      (post) => post.title.trim() !== '' || post.description.trim() !== ''
+    )
+
+    // Keyword heuristic scoring
+    const { score, label, matchedKeywords } = this.computeScore(validPosts)
+    console.log('[ReliabilityAgent] 🎯 Score:', score, '| Label:', label, '| Keywords:', matchedKeywords)
+
+    // Format post content for LLM
+    const formattedPosts = validPosts
+      .slice(0, 10)
+      .map((p, i) => `Post ${i + 1}: ${p.title}\nDescription: ${p.description}`)
+      .join('\n\n')
+
+    // Generate LLM narrative
+    let narrative: string
+    let usedFallbackNarrative = false
+    try {
+      narrative = await this.generateNarrative(input, formattedPosts, matchedKeywords, score, label)
+      console.log('[ReliabilityAgent] ✍️  LLM narrative generated successfully')
+    } catch {
+      narrative = FALLBACK_NARRATIVES[label]
+      usedFallbackNarrative = true
+      console.log('[ReliabilityAgent] ⚠️  Using fallback narrative (LLM failed)')
+    }
+
+    return {
+      vectorIndex: this.vectorIndex,
+      vectorName: this.vectorName,
+      score,
+      label,
+      weight: this.weight,
+      narrative,
+      metadata: {
+        usedFallbackNarrative,
+        matchedKeywords,
+        postCount: validPosts.length,
+      },
+    }
+  }
+
+  private fallbackResult(): RiskVectorResult {
+    return {
+      vectorIndex: this.vectorIndex,
+      vectorName: this.vectorName,
+      score: 15,
+      label: 'Low',
+      weight: this.weight,
+      narrative: FALLBACK_NARRATIVES.Low,
+      metadata: {
+        usedFallbackNarrative: true,
+        matchedKeywords: [],
+        postCount: 0,
+      },
     }
   }
 

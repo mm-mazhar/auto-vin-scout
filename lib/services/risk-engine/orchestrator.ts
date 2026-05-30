@@ -16,7 +16,7 @@ import { CorrosionAgent } from './agents/4-corrosion-agent'
 import { FloodAgent } from './agents/5-flood-agent'
 import { TheftAgent } from './agents/6-theft-agent'
 import { ForensicsAgent } from './agents/7-forensics-agent'
-import { ReliabilitySocialProofAgent } from './agents/8-reliability-socialproof-agent'
+import { ReliabilitySocialProofAgent, type ReliabilityDiscoveryResult } from './agents/8-reliability-socialproof-agent'
 import { WeatherService } from '@/lib/services/weather-service'
 import { SerpService } from '@/lib/services/serp-service'
 import type { VinSearchResult } from '@/lib/services/serp-service'
@@ -139,6 +139,52 @@ export class RiskEngineOrchestrator {
       return agent.execute(input)
     } catch (error) {
       console.warn('[Orchestrator] runReliabilityAgent unexpected error:', error)
+      return null
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Durable reliability agent — split into discovery → sleep → analyze
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Step A: Trigger Bright Data Reddit discovery. Returns immediately with either
+   * posts (if synchronous) or a snapshot_id (if async/deferred).
+   * Designed to complete well within Vercel's 60s timeout.
+   */
+  static async startReliabilityDiscovery(input: AgentInput): Promise<ReliabilityDiscoveryResult> {
+    try {
+      const config = getAgentConfig('reliability')
+      if ((config as any).disabled === true) {
+        return { status: 'disabled' }
+      }
+
+      const agent = new ReliabilitySocialProofAgent()
+      return agent.startDiscovery(input)
+    } catch (error) {
+      console.warn('[Orchestrator] startReliabilityDiscovery unexpected error:', error)
+      return { status: 'disabled' }
+    }
+  }
+
+  /**
+   * Step B: Given the discovery result (which may include a snapshot_id that's
+   * now ready after an Inngest sleep), fetch posts and run scoring + LLM narrative.
+   * Designed to complete well within Vercel's 60s timeout.
+   */
+  static async completeReliabilityAgent(
+    input: AgentInput,
+    discoveryResult: ReliabilityDiscoveryResult
+  ): Promise<RiskVectorResult | null> {
+    try {
+      if (discoveryResult.status === 'disabled') {
+        return null
+      }
+
+      const agent = new ReliabilitySocialProofAgent()
+      return agent.completeAnalysis(input, discoveryResult)
+    } catch (error) {
+      console.warn('[Orchestrator] completeReliabilityAgent unexpected error:', error)
       return null
     }
   }
