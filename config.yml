@@ -155,8 +155,10 @@ ai:
         
         YOUR JOB: Determine if this vehicle has been through a salvage auction (Copart, IAAI) or was wrecked.
         
-        CRITICAL RULE: Even if the source is a 3rd-party VIN decoder website (like vininspect or autoref), if the text explicitly states the car was "sold at auction", mentions "Copart" or "IAAI", or lists specific damage (e.g., "Left side", "Rear"), you MUST treat this as a confirmed wreck and output a HIGH risk score (85-100).
-        If no explicit auction or damage records are found, score it Low (15).
+        CRITICAL RULES:
+        1. If the "Organic URLs" contain ANY of these domains: bidfax, poctra, copart, iaai, bid.cars, autoastat, salvagebid - the vehicle is CONFIRMED SALVAGE. You MUST output a HIGH risk score (85-100).
+        2. Even if the source is a 3rd-party VIN decoder (like vininspect or autoref), if the text explicitly states "sold at auction", "Copart", "IAAI", or lists specific damage (e.g., "Left side"), you MUST output a HIGH risk score (85-100).
+        3. If no explicit auction URLs or damage records are found, score it Low (15).
         
         OUTPUT REQUIREMENT:
         Return ONLY valid JSON:

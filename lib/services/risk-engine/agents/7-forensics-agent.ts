@@ -115,16 +115,31 @@ export class ForensicsAgent implements RiskAgent {
   /**
    * Strips markdown code fences and parses JSON from LLM response.
    */
+  //   private parseLlmJson(rawText: string): { adjustedScore: number; narrative: string } {
+  //   const cleanedText = rawText.replace(/```json/g, '').replace(/```/g, '').trim()
+  //   const parsed = JSON.parse(cleanedText)
+
+  //   if (typeof parsed.adjustedScore !== 'number' || typeof parsed.narrative !== 'string') {
+  //     throw new Error('Invalid LLM JSON shape: missing adjustedScore or narrative')
+  //   }
+
+  //   const adjustedScore = Math.max(0, Math.min(100, Math.round(parsed.adjustedScore)))
+  //   return { adjustedScore, narrative: parsed.narrative.trim() }
+  // }
+
   private parseLlmJson(rawText: string): { adjustedScore: number; narrative: string } {
     const cleanedText = rawText.replace(/```json/g, '').replace(/```/g, '').trim()
     const parsed = JSON.parse(cleanedText)
 
-    if (typeof parsed.adjustedScore !== 'number' || typeof parsed.narrative !== 'string') {
-      throw new Error('Invalid LLM JSON shape: missing adjustedScore or narrative')
+    // Convert to a number safely, just in case the LLM returned a string like "85"
+    const scoreValue = Number(parsed.adjustedScore)
+
+    if (isNaN(scoreValue) || !parsed.narrative) {
+      throw new Error('Invalid LLM JSON shape: missing valid adjustedScore or narrative')
     }
 
-    const adjustedScore = Math.max(0, Math.min(100, Math.round(parsed.adjustedScore)))
-    return { adjustedScore, narrative: parsed.narrative.trim() }
+    const adjustedScore = Math.max(0, Math.min(100, Math.round(scoreValue)))
+    return { adjustedScore, narrative: String(parsed.narrative).trim() }
   }
 
   private async generateNarrative(
