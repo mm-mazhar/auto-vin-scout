@@ -19,6 +19,7 @@ export interface RedditComment {
 }
 
 const BRIGHTDATA_DATASETS_BASE_URL = 'https://api.brightdata.com/datasets/v3/scrape'
+const BRIGHTDATA_TRIGGER_BASE_URL = 'https://api.brightdata.com/datasets/v3/trigger'
 const BRIGHTDATA_SNAPSHOT_BASE_URL = 'https://api.brightdata.com/datasets/v3/snapshot'
 const REDDIT_POSTS_DATASET_ID = 'gd_lvz8ah06191smkebj4'
 const REDDIT_COMMENTS_DATASET_ID = 'gd_lvzdpsdlw09j6t702'
@@ -98,11 +99,13 @@ export class BrightDataDatasetService {
     }
 
     try {
-      const url = `${BRIGHTDATA_DATASETS_BASE_URL}?dataset_id=${REDDIT_POSTS_DATASET_ID}&type=discover_new&discover_by=keyword&format=json`
+      // Use /trigger (async) endpoint — returns snapshot_id immediately instead of
+      // blocking until scrape completes (which can take 60s+ on /scrape).
+      const url = `${BRIGHTDATA_TRIGGER_BASE_URL}?dataset_id=${REDDIT_POSTS_DATASET_ID}&type=discover_new&discover_by=keyword&format=json`
 
-      // Abort after 50s to stay well within Vercel's function timeout
+      // Abort after 90s — /trigger may take longer than expected for Reddit datasets
       const controller = new AbortController()
-      const timeout = setTimeout(() => controller.abort(), 50_000)
+      const timeout = setTimeout(() => controller.abort(), 90_000)
 
       const response = await fetch(url, {
         method: 'POST',
@@ -119,28 +122,29 @@ export class BrightDataDatasetService {
       clearTimeout(timeout)
 
       if (!response.ok) {
-        console.warn(`[BrightDataDatasetService] Reddit posts API returned ${response.status}: ${response.statusText}`)
+        console.warn(`[BrightDataDatasetService] Reddit posts trigger API returned ${response.status}: ${response.statusText}`)
         return { status: 'empty' }
       }
 
       const data: unknown = await response.json()
 
-      // Async response — Bright Data returns { snapshot_id: "..." } when it can't complete synchronously
+      // /trigger always returns { snapshot_id: "..." }
       if (data && typeof data === 'object' && !Array.isArray(data) && 'snapshot_id' in data) {
         const snapshotId = String((data as Record<string, unknown>).snapshot_id)
-        console.log(`[BrightDataDatasetService] Got snapshot_id for posts: ${snapshotId} (deferred)`)
+        console.log(`[BrightDataDatasetService] Trigger returned snapshot_id: ${snapshotId}`)
         return { status: 'pending', snapshotId }
       }
 
-      if (!Array.isArray(data)) {
-        console.warn('[BrightDataDatasetService] Reddit posts response is not an array:', typeof data)
-        return { status: 'empty' }
+      // Unexpected: if it somehow returned data directly
+      if (Array.isArray(data)) {
+        return { status: 'ready', posts: this.mapPosts(data) }
       }
 
-      return { status: 'ready', posts: this.mapPosts(data) }
+      console.warn('[BrightDataDatasetService] Unexpected trigger response:', typeof data)
+      return { status: 'empty' }
     } catch (error) {
       if (error instanceof Error && error.name === 'AbortError') {
-        console.warn('[BrightDataDatasetService] Reddit posts discovery timed out after 50s')
+        console.warn('[BrightDataDatasetService] Reddit posts trigger timed out after 90s')
       } else {
         console.warn('[BrightDataDatasetService] Failed to trigger Reddit posts discovery:', error)
       }
@@ -160,8 +164,9 @@ export class BrightDataDatasetService {
       return []
     }
 
-    // Short retry loop — snapshot should already be ready after Inngest sleep
-    const maxAttempts = 6 // 6 * 5s = 30s max (well within Vercel timeout)
+    // Short retry loop — snapshot should already be ready after Inngest sleep (60s).
+    // If still processing, retry up to 45s more (well within Vercel's 120s timeout).
+    const maxAttempts = 9 // 9 * 5s = 45s max
     const pollInterval = 5_000
 
     for (let attempt = 0; attempt < maxAttempts; attempt++) {

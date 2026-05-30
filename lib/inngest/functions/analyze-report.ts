@@ -187,8 +187,8 @@ export const analyzeReportFn = inngest.createFunction(
     let reliability: RiskVectorResult | null = null
 
     if (reliabilityDiscovery.status === 'pending') {
-      // Sleep 30s to give Bright Data time to process the snapshot
-      await step.sleep('reliability-wait', '30s')
+      // Sleep 60s to give Bright Data time to scrape Reddit posts
+      await step.sleep('reliability-wait', '60s')
 
       reliability = await step.run('reliability-analyze', () =>
         RiskEngineOrchestrator.completeReliabilityAgent(agentInput, reliabilityDiscovery)

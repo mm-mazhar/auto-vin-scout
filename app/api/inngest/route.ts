@@ -15,9 +15,9 @@ import { serve } from 'inngest/next'
 import { inngest } from '@/lib/inngest/client'
 import { analyzeReportFn } from '@/lib/inngest/functions/analyze-report'
 
-// Allow Inngest step execution up to 120s on Vercel Pro.
-// Individual steps should complete well under this via AbortController timeouts.
-export const maxDuration = 120
+// Allow Inngest step execution up to 150s on Vercel Pro.
+// The reliability-discover step may take up to 90s for Bright Data's /trigger response.
+export const maxDuration = 150
 
 export const { GET, POST, PUT } = serve({
   client: inngest,
