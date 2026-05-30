@@ -97,7 +97,7 @@ export function TopBar({
   })
 
   return (
-    <header className='flex h-16 shrink-0 items-center justify-between px-4 md:px-8 border-b'>
+    <header data-topbar="" className='flex h-16 shrink-0 items-center justify-between px-4 md:px-8 border-b'>
       <div className='flex items-center gap-2'>
         <SidebarTrigger className='-ml-1' />
         <Separator

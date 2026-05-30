@@ -333,3 +333,253 @@
     transform: translateX(400%);
   }
 }
+
+/* ===== Print Styles for Report PDF Export ===== */
+@media print {
+  /* Nuclear reset: force white background on EVERYTHING (except SVGs/charts) */
+  *:not(svg):not(svg *), *::before, *::after {
+    background-color: white !important;
+    color: black !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+    animation: none !important;
+    transition: none !important;
+  }
+
+  /* Charts: preserve SVG rendering */
+  svg, svg * {
+    color: inherit !important;
+    background-color: transparent !important;
+  }
+
+  /* Recharts specific: ensure lines/bars/dots are visible */
+  .recharts-line-curve,
+  .recharts-bar-rectangle,
+  .recharts-dot,
+  .recharts-area-area {
+    stroke: currentColor;
+  }
+
+  .recharts-cartesian-grid line {
+    stroke: #e5e7eb !important;
+  }
+
+  .recharts-text,
+  .recharts-cartesian-axis-tick-value {
+    fill: #374151 !important;
+    color: #374151 !important;
+  }
+
+  html, body {
+    background: white !important;
+    color: black !important;
+    font-size: 12px !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Hide sidebar, topbar, and non-report UI */
+  [data-sidebar],
+  [data-topbar],
+  nav,
+  header,
+  .no-print {
+    display: none !important;
+  }
+
+  /* Make main content full width, kill min-height */
+  main {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow: visible !important;
+  }
+
+  main > div {
+    overflow: visible !important;
+    padding: 0.5cm !important;
+  }
+
+  /* Kill the full-height dark wrapper that causes blank first page */
+  .flex.min-h-screen,
+  div[class*="min-h-screen"] {
+    display: block !important;
+    min-height: 0 !important;
+    height: auto !important;
+    background: white !important;
+  }
+
+  /* Ensure the SidebarProvider wrapper doesn't add space */
+  [data-slot="sidebar-provider"],
+  [style*="--sidebar-width"] {
+    display: block !important;
+    min-height: 0 !important;
+    height: auto !important;
+    background: white !important;
+  }
+
+  /* Cards: white background with light border */
+  [data-slot="card"] {
+    background: white !important;
+    border: 1px solid #d1d5db !important;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  /* Tab system: hide tab navigation, show ALL tab content */
+  [data-slot="tabs-list"],
+  [role="tablist"] {
+    display: none !important;
+  }
+
+  /* Force ALL tab panels visible — override Tailwind's hidden utility */
+  [data-slot="tabs-content"] {
+    display: block !important;
+    opacity: 1 !important;
+    position: static !important;
+    visibility: visible !important;
+    height: auto !important;
+    overflow: visible !important;
+    pointer-events: auto !important;
+  }
+
+  [data-slot="tabs-content"][data-state="inactive"] {
+    display: block !important;
+    visibility: visible !important;
+    height: auto !important;
+  }
+
+  /* Add section headers before each tab content for clarity */
+  [data-slot="tabs-content"][data-print-title]::before {
+    content: attr(data-print-title);
+    display: block;
+    font-size: 18px;
+    font-weight: 700;
+    margin: 24px 0 12px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #059669;
+    color: black !important;
+  }
+
+  [data-slot="tabs-content"]:first-of-type::before {
+    margin-top: 0;
+  }
+
+  /* Restore specific colors that the nuclear reset wiped */
+  .text-muted-foreground {
+    color: #6b7280 !important;
+  }
+
+  .text-primary {
+    color: #059669 !important;
+  }
+
+  .text-destructive,
+  .text-red-700 {
+    color: #dc2626 !important;
+  }
+
+  /* Primary badge should keep its green */
+  .bg-primary {
+    background-color: #059669 !important;
+    color: white !important;
+  }
+
+  .bg-primary * {
+    color: white !important;
+  }
+
+  /* Muted/subtle backgrounds */
+  .bg-muted,
+  .bg-muted\/30,
+  .bg-muted\/20 {
+    background-color: #f9fafb !important;
+  }
+
+  .bg-destructive\/10 {
+    background-color: #fef2f2 !important;
+  }
+
+  /* Border colors */
+  .border,
+  .border-b,
+  .border-t,
+  .border-l-4 {
+    border-color: #e5e7eb !important;
+  }
+
+  .border-l-primary {
+    border-left-color: #059669 !important;
+  }
+
+  /* Page setup */
+  @page {
+    margin: 1.5cm;
+    size: A4;
+  }
+
+  /* Avoid breaking inside important sections */
+  .space-y-6 > * {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .grid {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  /* Fix grid layouts that are too tight at A4 width */
+  .grid.grid-cols-1.sm\:grid-cols-3 {
+    grid-template-columns: 1fr !important;
+    gap: 8px !important;
+  }
+
+  .grid.grid-cols-1.sm\:grid-cols-3 [data-slot="card"] {
+    break-inside: avoid;
+  }
+
+  /* 2-column grids are fine, but ensure they don't overflow */
+  .grid.grid-cols-1.lg\:grid-cols-2 {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+
+  /* Flex items in cards: wrap instead of overflow */
+  [data-slot="card-content"] {
+    flex-wrap: wrap !important;
+  }
+
+  /* Colored icon backgrounds — keep subtle tint in print */
+  .bg-blue-100, .dark\:bg-blue-950\/40 {
+    background-color: #eff6ff !important;
+  }
+
+  .bg-purple-100, .dark\:bg-purple-950\/40 {
+    background-color: #f5f3ff !important;
+  }
+
+  .bg-green-100, .dark\:bg-green-950\/40 {
+    background-color: #f0fdf4 !important;
+  }
+
+  /* Icon colors for print */
+  .text-blue-600, .dark\:text-blue-400 {
+    color: #2563eb !important;
+  }
+
+  .text-purple-600, .dark\:text-purple-400 {
+    color: #7c3aed !important;
+  }
+
+  .text-green-600, .dark\:text-green-400 {
+    color: #059669 !important;
+  }
+
+  /* Ensure font-mono text is readable */
+  .font-mono {
+    font-family: 'Courier New', Courier, monospace !important;
+    font-size: 11px !important;
+  }
+}

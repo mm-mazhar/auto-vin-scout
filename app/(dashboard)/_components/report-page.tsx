@@ -16,7 +16,7 @@ import { MarketBehaviorTab } from './market-behavior-tab'
 import { NhtsaSafetyTab } from './nhtsa-safety-tab'
 import { BuyerGuidanceInsights } from './buyer-guidance-insights'
 import { PowertrainBadge } from './powertrain-badge'
-
+import { ExportPdfButton } from './export-pdf-button'
 // Type for preview reports (from analyze output)
 type PreviewReportType = {
   reportId: string | null
@@ -80,6 +80,7 @@ export function ReportPage({ report: initialReport, projectId }: ReportPageProps
       case 'Low':
         return 'oklch(0.696 0.17 162.48)' // chart-2: Green
       case 'Moderate':
+      case 'Medium':
         // return 'oklch(0.828 0.189 84.429)' // chart-4: Yellow/Orange
         return 'oklch(0.6 0.189 55)' // Darker amber — better contrast with white text
       case 'Elevated':
@@ -124,6 +125,11 @@ export function ReportPage({ report: initialReport, projectId }: ReportPageProps
               month: 'long', 
               day: 'numeric' 
             })}</p>
+            {showTabs && status === 'COMPLETED' && (
+              <div className="mt-2">
+                <ExportPdfButton vehicleLabel={`${vehicle.year} ${vehicle.make} ${vehicle.model}`} />
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -280,7 +286,7 @@ function FullReportWithTabs({
       </TabsList>
 
       {/* Executive Overview Tab */}
-      <TabsContent value="executive" className="space-y-6">
+      <TabsContent value="executive" data-print-title="Executive Overview" className="space-y-6 data-[state=inactive]:hidden" forceMount>
         {/* Vehicle Identity Section */}
         <Card>
           <CardHeader>
@@ -625,12 +631,12 @@ function FullReportWithTabs({
       </TabsContent>
 
       {/* Market & Behavior Tab */}
-      <TabsContent value="market" className="space-y-6">
+      <TabsContent value="market" data-print-title="Market & Behavior" className="space-y-6 data-[state=inactive]:hidden" forceMount>
         <MarketBehaviorTab listings={report.vehicle.listingHistory ?? []} />
       </TabsContent>
 
       {/* Safety & Environment Tab */}
-      <TabsContent value="safety" className="space-y-6">
+      <TabsContent value="safety" data-print-title="NHTSA Recalls" className="space-y-6 data-[state=inactive]:hidden" forceMount>
         <RecallsSection
           recalls={vehicle.recalls ?? []}
           vehicleLabel={`${vehicle.year} ${vehicle.make} ${vehicle.model}`}
@@ -638,12 +644,12 @@ function FullReportWithTabs({
       </TabsContent>
 
       {/* NHTSA Crash Test Ratings Tab */}
-      <TabsContent value="crash-tests" className="space-y-6">
+      <TabsContent value="crash-tests" data-print-title="NHTSA Safety Ratings" className="space-y-6 data-[state=inactive]:hidden" forceMount>
         <NhtsaSafetyTab safetyRating={vehicle.safetyRating ?? null} />
       </TabsContent>
 
       {/* Buyer Guidance Tab — AI Negotiation Script */}
-      <TabsContent value="guidance" className="space-y-6">
+      <TabsContent value="guidance" data-print-title="Buyer Guidance" className="space-y-6 data-[state=inactive]:hidden" forceMount>
         {/* Data-driven insights */}
         {vehicle.listingHistory && vehicle.listingHistory.length > 0 && (
           <BuyerGuidanceInsights
@@ -718,7 +724,7 @@ function FullReportWithTabs({
       </TabsContent>
 
       {/* Legal Disclaimer Tab */}
-      <TabsContent value="legal" className="space-y-6">
+      <TabsContent value="legal" data-print-title="Legal Disclaimer" className="space-y-6 data-[state=inactive]:hidden" forceMount>
         <Card>
           <CardHeader>
             <div className="flex items-center gap-2">
