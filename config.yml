@@ -83,7 +83,7 @@ ai:
         - Geographic movement (multi-state listing or >500 mile spread = possible auction flipping/title washing)
         - Listing gaps (disappearance >180 days then reappearance = possible title wash or repair flip)
 
-        Write few sentence narrative summarizing your findings.
+        Write few sentence narrative summarizing your findings. ALWAYS mention vehicle's age if it is more than 10 years old
         Be factual. Reference specific numbers. Do not speculate beyond the data.
     engine:
       primary:
