@@ -13,7 +13,7 @@ const SEVERE_URL_KEYWORDS = [
   'salvagebid.com',
   'copart.com',
   'iaai.com',
-  'bid.cars',  
+  'bid.cars',
 ]
 
 const MODERATE_TEXT_KEYWORDS = [
@@ -46,16 +46,31 @@ export class ForensicsAgent implements RiskAgent {
     console.log(`[ForensicsAgent] 🔍 Starting: VIN ${input.vehicle.vin} | ${this.vinSearchData.organicLinks.length} links, ${this.vinSearchData.imageUrls.length} images`)
     const { organicLinks, snippets, imageUrls } = this.vinSearchData
 
-    // Step 1: URL vs. Text Heuristic Matrix
+    // Pass 1: URL vs. Text Heuristic Matrix (fast filter)
     const { score, label } = this.computeScore(organicLinks, snippets)
-    console.log(`[ForensicsAgent] 🎯 Score: ${score} | Label: ${label}`)
+    console.log(`[ForensicsAgent] 🎯 Heuristic Score: ${score} | Label: ${label}`)
 
-    // Step 2: Generate narrative (LLM with deterministic fallback)
+    // Pass 2: LLM as "Senior Reviewer" — can override score based on context
     let narrative: string
+    let finalScore = score
+    let finalLabel: RiskLabel = label
     let usedFallbackNarrative = false
+
     try {
-      narrative = await this.generateNarrative(input, organicLinks, snippets, imageUrls, score, label)
-      console.log('[ForensicsAgent] ✍️  LLM narrative generated successfully')
+      const llmResult = await this.generateNarrative(input, organicLinks, snippets, imageUrls, score, label)
+      narrative = llmResult.narrative
+      finalScore = llmResult.adjustedScore
+
+      // Recalculate label based on LLM's overridden score
+      if (finalScore >= 71) {
+        finalLabel = 'High'
+      } else if (finalScore >= 31) {
+        finalLabel = 'Medium'
+      } else {
+        finalLabel = 'Low'
+      }
+
+      console.log(`[ForensicsAgent] ✍️  LLM override — adjustedScore: ${finalScore} | finalLabel: ${finalLabel}`)
     } catch {
       narrative = this.generateFallbackNarrative(label)
       usedFallbackNarrative = true
@@ -65,11 +80,12 @@ export class ForensicsAgent implements RiskAgent {
     return {
       vectorIndex: this.vectorIndex,
       vectorName: this.vectorName,
-      score,
-      label,
+      score: finalScore,
+      label: finalLabel,
       weight: this.weight,
       narrative,
       metadata: {
+        heuristicOriginalScore: score,
         organicLinkCount: organicLinks.length,
         snippetCount: snippets.length,
         imageUrlCount: imageUrls.length,
@@ -96,6 +112,21 @@ export class ForensicsAgent implements RiskAgent {
     return { score: 15, label: 'Low' }
   }
 
+  /**
+   * Strips markdown code fences and parses JSON from LLM response.
+   */
+  private parseLlmJson(rawText: string): { adjustedScore: number; narrative: string } {
+    const cleanedText = rawText.replace(/```json/g, '').replace(/```/g, '').trim()
+    const parsed = JSON.parse(cleanedText)
+
+    if (typeof parsed.adjustedScore !== 'number' || typeof parsed.narrative !== 'string') {
+      throw new Error('Invalid LLM JSON shape: missing adjustedScore or narrative')
+    }
+
+    const adjustedScore = Math.max(0, Math.min(100, Math.round(parsed.adjustedScore)))
+    return { adjustedScore, narrative: parsed.narrative.trim() }
+  }
+
   private async generateNarrative(
     input: AgentInput,
     organicLinks: string[],
@@ -103,7 +134,7 @@ export class ForensicsAgent implements RiskAgent {
     imageUrls: string[],
     score: number,
     label: RiskLabel
-  ): Promise<string> {
+  ): Promise<{ adjustedScore: number; narrative: string }> {
     const config = getAgentConfig('forensics')
 
     // Fetch images as base64 (max 2, 3s timeout per image)
@@ -121,8 +152,6 @@ Snippets:
 ${snippets.length > 0 ? snippets.slice(0, 5).map((s, i) => `${i + 1}. ${s}`).join('\n') : 'None'}
 
 ${imageDataParts.length > 0 ? `${imageDataParts.length} image(s) attached for visual analysis.` : 'No images available for visual analysis.'}
-
-Provide a 2-3 sentence forensic assessment.
 `.trim()
 
     // Try primary provider (OpenRouter / OpenAI-compatible) — multimodal with images
@@ -157,7 +186,7 @@ Provide a 2-3 sentence forensic assessment.
           max_tokens: config.maxTokens,
         })
         const text = response.choices[0]?.message?.content?.trim()
-        if (text) return text
+        if (text) return this.parseLlmJson(text)
       } catch (error) {
         console.warn('[ForensicsAgent] Primary LLM failed, trying fallback:', error)
       }
@@ -192,7 +221,7 @@ Provide a 2-3 sentence forensic assessment.
         },
       })
       const text = response.text?.trim()
-      if (text) return text
+      if (text) return this.parseLlmJson(text)
     }
 
     throw new Error('[ForensicsAgent] All LLM providers failed')

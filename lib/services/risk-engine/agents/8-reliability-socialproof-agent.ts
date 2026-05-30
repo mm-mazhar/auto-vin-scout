@@ -62,7 +62,7 @@ export class ReliabilitySocialProofAgent implements RiskAgent {
       // const keyword = `"${input.vehicle.year} ${input.vehicle.make} ${input.vehicle.model}" engine failure`
       // const keyword = `"${input.vehicle.make} ${input.vehicle.model}" (failure OR broken OR defect)`
       // const keyword = `"${input.vehicle.make} ${input.vehicle.model}" engine failure`
-      const keyword = `${input.vehicle.make} ${input.vehicle.model} engine`
+      const keyword = `${input.vehicle.make} ${input.vehicle.model} (transmission OR engine OR CVT OR failure)`
       console.log('[ReliabilityAgent] 🔍 Searching Reddit with keyword:', keyword)
 
       const posts = await BrightDataDatasetService.discoverRedditPosts(keyword)
@@ -85,7 +85,7 @@ export class ReliabilitySocialProofAgent implements RiskAgent {
     // const keyword = `"${input.vehicle.year} ${input.vehicle.make} ${input.vehicle.model}" engine failure`
     // const keyword = `"${input.vehicle.make} ${input.vehicle.model}" (failure OR broken OR defect)`
     // const keyword = `"${input.vehicle.make} ${input.vehicle.model}" engine failure`
-    const keyword = `${input.vehicle.make} ${input.vehicle.model} engine`
+    const keyword = `${input.vehicle.make} ${input.vehicle.model} (transmission OR engine OR CVT OR failure)`
     console.log('[ReliabilityAgent] 🔍 Triggering Reddit discovery with keyword:', keyword)
 
     const result = await BrightDataDatasetService.triggerRedditPostsDiscovery(keyword)

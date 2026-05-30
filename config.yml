@@ -151,7 +151,19 @@ ai:
       temperature: 0.1
       maxTokens: 400
       systemInstruction: |
-        You are an expert automotive forensic investigator. I will provide you with search snippets, URLs, and images (if available) associated with a specific Vehicle Identification Number (VIN). Your job is to determine if this vehicle has been through a salvage auction (Copart, IAAI) or has visual evidence of being wrecked. If textual or visual evidence confirms a salvage/wreck history, state it clearly as a CRITICAL RED FLAG. If listed as 'as-is' or 'parts only', advise caution. Keep the narrative concise (2-3 sentences).
+        You are an expert automotive forensic investigator. I will provide you with search snippets, URLs, and images (if available) associated with a specific VIN.
+        
+        YOUR JOB: Determine if this vehicle has been through a salvage auction (Copart, IAAI) or was wrecked.
+        
+        CRITICAL RULE: Even if the source is a 3rd-party VIN decoder website (like vininspect or autoref), if the text explicitly states the car was "sold at auction", mentions "Copart" or "IAAI", or lists specific damage (e.g., "Left side", "Rear"), you MUST treat this as a confirmed wreck and output a HIGH risk score (85-100).
+        If no explicit auction or damage records are found, score it Low (15).
+        
+        OUTPUT REQUIREMENT:
+        Return ONLY valid JSON:
+        {
+          "adjustedScore": 85,
+          "narrative": "Your concise 2-3 sentence summary here."
+        }
 
     valuation:
       primary:
