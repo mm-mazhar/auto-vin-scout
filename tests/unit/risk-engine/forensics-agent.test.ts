@@ -283,7 +283,7 @@ describe('ForensicsAgent', () => {
   describe('LLM narrative generation', () => {
     it('uses primary LLM (OpenRouter) when available', async () => {
       mockCreate.mockResolvedValue({
-        choices: [{ message: { content: 'LLM forensic analysis narrative.' } }],
+        choices: [{ message: { content: '{"adjustedScore": 95, "narrative": "LLM forensic analysis narrative."}' } }],
       })
 
       const input = makeAgentInput()
@@ -300,7 +300,7 @@ describe('ForensicsAgent', () => {
     it('falls back to Google GenAI when primary fails', async () => {
       mockCreate.mockRejectedValue(new Error('Primary failed'))
       mockGenerateContent.mockResolvedValue({
-        text: 'Google GenAI forensic narrative.',
+        text: '{"adjustedScore": 15, "narrative": "Google GenAI forensic narrative."}',
       })
       process.env.GOOGLE_API_KEY = 'test-google-key'
 
