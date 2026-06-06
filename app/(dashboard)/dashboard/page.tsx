@@ -4,7 +4,6 @@ import { KpiCards } from '@/components/dashboard/KpiCards'
 import { RecentReportsTable } from '@/components/dashboard/RecentReportsTable'
 import { ReportsAreaChart } from '@/components/dashboard/ReportsAreaChart'
 import { ReportsByProjectDonut } from '@/components/dashboard/ReportsByProjectDonut'
-import { DemoCreditsBanner } from '@/components/dashboard/DemoCreditsBanner'
 import { Card, CardContent } from '@/components/ui/card'
 import { getActiveProjectId } from '@/lib/project-helper'
 import { getRPCCaller, getRPCCallerForOrg } from '@/lib/orpc/rsc-client'
@@ -18,7 +17,7 @@ import type {
   ProjectReportCount,
   RecentReport,
 } from '@/lib/orpc/routers/dashboard'
-import { DEMO_CREDITS_AMOUNT, DEMO_CREDITS_ENABLED, PLAN_IDS, type OrganizationRole } from '@/lib/constants'
+import type { OrganizationRole } from '@/lib/constants'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -102,15 +101,6 @@ export default async function DashboardPage() {
 
   return (
     <div className='flex flex-1 flex-col gap-6 p-4 pt-0'>
-      {/* Demo credits welcome banner — only shown to new users when feature flag is on */}
-      {DEMO_CREDITS_ENABLED &&
-        stats &&
-        (stats as DashboardStats).planId === PLAN_IDS.basic &&
-        (stats as DashboardStats).totalReports === 0 &&
-        (stats as DashboardStats).creditsRemaining === DEMO_CREDITS_AMOUNT && (
-          <DemoCreditsBanner credits={DEMO_CREDITS_AMOUNT} />
-        )}
-
       {/* Row 1 — KPI Cards */}
       {(statsError || !stats) ? (
         <SectionError label='KPI stats' />

@@ -108,11 +108,6 @@ export const PLAN_IDS = {
 
 export const CREDITS_FREE: number = 0
 export const CREDITS_BASIC: number = 3
-
-// ✅ Demo Credits — grants free reports to new users on signup (no card required)
-// Flip DEMO_CREDITS_ENABLED to false before going to production to disable this.
-export const DEMO_CREDITS_ENABLED: boolean = true
-export const DEMO_CREDITS_AMOUNT: number = 3
 export const CREDITS_PRO: number = 10
 export const CREDITS_DEALERCORE: number = 100
 export const CREDITS_DEALERPLUS: number = 200

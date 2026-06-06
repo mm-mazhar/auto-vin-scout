@@ -1,7 +1,7 @@
 // lib/services/organization-service.ts
 
 import prisma from '../../app/lib/db'
-import { CREDITS_FREE, DEMO_CREDITS_AMOUNT, DEMO_CREDITS_ENABLED, LIMITS, OrganizationRole, ROLES } from '../constants'
+import { CREDITS_FREE, LIMITS, OrganizationRole, ROLES } from '../constants'
 
 export class OrganizationService {
   static async createOrganization(userId: string, name: string, slug: string) {
@@ -38,9 +38,7 @@ export class OrganizationService {
 
     if (existingPrimaryOrgCount === 0) {
       isPrimary = true
-      // Grant demo credits on signup when the feature flag is enabled.
-      // Set DEMO_CREDITS_ENABLED = false in constants.ts to revert to zero credits for production.
-      initialCredits = DEMO_CREDITS_ENABLED ? DEMO_CREDITS_AMOUNT : CREDITS_FREE
+      initialCredits = CREDITS_FREE
     }
 
     // 3. Create Org and Membership
