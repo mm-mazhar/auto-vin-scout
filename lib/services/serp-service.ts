@@ -195,6 +195,77 @@ export class SerpService {
   }
 
   /**
+   * Fetches Reddit reliability discussions via Bright Data SERP API.
+   * Targets site:reddit.com with automotive failure keywords.
+   * Returns an array of combined title+description strings from organic results.
+   * On failure or missing API key, returns { snippets: [] } so the pipeline never crashes.
+   */
+  static async fetchRedditReliability(
+    year: number,
+    make: string,
+    model: string
+  ): Promise<{ snippets: string[] }> {
+    const apiKey = process.env.BRIGHTDATA_SERP_API_KEY
+    if (!apiKey) {
+      console.warn('[SerpService] BRIGHTDATA_SERP_API_KEY not set, skipping Reddit reliability fetch.')
+      return { snippets: [] }
+    }
+
+    try {
+      // Exact phrase binding: wraps year+make+model in quotes so Google filters out
+      // posts about other model years (e.g., the viral 2012 Sonata engine recall
+      // won't contaminate a search for a 2018 Sonata).
+      // Fallback phrase "year model" catches posts that omit the make.
+      const query = `site:reddit.com "${year} ${make} ${model}" OR "${year} ${model}" (transmission OR engine OR CVT OR failure OR problem)`
+      const zone = process.env.BRIGHTDATA_SERP_ZONE || 'serp_api1'
+
+      const response = await fetch('https://api.brightdata.com/request', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify({
+          zone,
+          url: `https://www.google.com/search?q=${encodeURIComponent(query)}&num=20`,
+          format: 'json',
+          data_format: 'parsed_light',
+        }),
+        signal: AbortSignal.timeout(10_000),
+      })
+
+      if (!response.ok) {
+        console.warn(`[SerpService] Reddit reliability API returned ${response.status}: ${response.statusText}`)
+        return { snippets: [] }
+      }
+
+      const rawBody = await response.json()
+
+      // Handle case where response may be wrapped in a stringified `body` property
+      let parsed: SerpResponse
+      if (typeof rawBody === 'string') {
+        parsed = JSON.parse(rawBody) as SerpResponse
+      } else if (typeof rawBody?.body === 'string') {
+        parsed = JSON.parse(rawBody.body) as SerpResponse
+      } else {
+        parsed = rawBody as SerpResponse
+      }
+
+      const organic = parsed.organic ?? []
+
+      const snippets = organic.map((result) => {
+        const parts = [result.title, result.description].filter(Boolean)
+        return parts.join(' — ')
+      })
+
+      return { snippets }
+    } catch (error) {
+      console.warn('[SerpService] Failed to fetch Reddit reliability snippets:', error)
+      return { snippets: [] }
+    }
+  }
+
+  /**
    * Fetches VIN-specific search results from Bright Data SERP API.
    * Returns organic links, snippets, and image URLs for forensic analysis.
    * On failure or missing API key, returns empty arrays so the pipeline never crashes.

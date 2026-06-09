@@ -6,6 +6,46 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { TriangleAlert } from 'lucide-react'
 import type { ReportWithVehicle } from '@/lib/orpc/routers/vin'
 
+// ---------------------------------------------------------------------------
+// ExecutiveSummaryBody
+// Splits the LLM-generated paragraph into scannable sentences. The first
+// sentence is surfaced as a lead callout; the rest flow as individual lines.
+// ---------------------------------------------------------------------------
+
+function ExecutiveSummaryBody({ text }: { text: string }) {
+  // Split on sentence boundaries — period/exclamation/question followed by a
+  // space or end-of-string. Filter out empty strings from the split.
+  const sentences = text
+    .split(/(?<=[.!?])\s+/)
+    .map((s) => s.trim())
+    .filter(Boolean)
+
+  if (sentences.length === 0) return null
+
+  const [lead, ...rest] = sentences
+
+  return (
+    <div className="space-y-3">
+      {/* Lead sentence — visually prominent */}
+      <p className="text-sm font-medium text-foreground leading-relaxed border-l-2 border-primary/50 pl-3">
+        {lead}
+      </p>
+
+      {/* Remaining sentences as a tight list */}
+      {rest.length > 0 && (
+        <ul className="space-y-2">
+          {rest.map((sentence, i) => (
+            <li key={i} className="flex items-start gap-2 text-sm text-muted-foreground leading-relaxed">
+              <span className="mt-2 h-1 w-1 rounded-full bg-muted-foreground/40 shrink-0" />
+              {sentence}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  )
+}
+
 
 interface ExecutiveOverviewTabProps {
   report: ReportWithVehicle
@@ -118,9 +158,7 @@ export function ExecutiveOverviewTab({
               )}
 
               {summaryText ? (
-                <p className="text-sm leading-relaxed text-muted-foreground">
-                  {summaryText}
-                </p>
+                <ExecutiveSummaryBody text={summaryText} />
               ) : (
                 <p className="text-sm text-muted-foreground italic">
                   No summary available.

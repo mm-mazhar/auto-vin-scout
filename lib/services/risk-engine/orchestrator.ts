@@ -16,6 +16,7 @@ import { CorrosionAgent } from './agents/4-corrosion-agent'
 import { FloodAgent } from './agents/5-flood-agent'
 import { TheftAgent } from './agents/6-theft-agent'
 import { ForensicsAgent } from './agents/7-forensics-agent'
+import { ReliabilitySerpAgent } from './agents/8-reliability-serp-agent'
 import { ReliabilitySocialProofAgent, type ReliabilityDiscoveryResult } from './agents/8-reliability-socialproof-agent'
 import { WeatherService } from '@/lib/services/weather-service'
 import { SerpService } from '@/lib/services/serp-service'
@@ -39,6 +40,27 @@ export interface AgentDeps {
 }
 
 export class RiskEngineOrchestrator {
+  // ---------------------------------------------------------------------------
+  // Config helper: read reliability mode without duplicating config logic
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Returns the configured reliability mode ('serp' | 'dataset') and whether
+   * the agent is disabled. Called by the Inngest function to branch the
+   * durable flow before scheduling any reliability steps.
+   */
+  static getReliabilityMode(): { mode: 'serp' | 'dataset'; disabled: boolean } {
+    try {
+      const config = getAgentConfig('reliability')
+      const disabled = (config as any).disabled === true
+      const mode: 'serp' | 'dataset' = (config as any).mode === 'dataset' ? 'dataset' : 'serp'
+      return { mode, disabled }
+    } catch {
+      // If config is missing, default to dataset (backward-compatible)
+      return { mode: 'dataset', disabled: false }
+    }
+  }
+
   // ---------------------------------------------------------------------------
   // Step: Load AgentInput from DB
   // ---------------------------------------------------------------------------
@@ -135,8 +157,24 @@ export class RiskEngineOrchestrator {
         return null
       }
 
-      const agent = new ReliabilitySocialProofAgent()
-      return agent.execute(input)
+      const mode = (config as any).mode ?? 'dataset'
+
+      if (mode === 'serp') {
+        console.log('[Orchestrator] runReliabilityAgent: using SERP mode')
+        const { SerpService } = await import('@/lib/services/serp-service')
+        const { snippets } = await SerpService.fetchRedditReliability(
+          input.vehicle.year,
+          input.vehicle.make,
+          input.vehicle.model
+        )
+        const agent = new ReliabilitySerpAgent()
+        agent.setContext(snippets)
+        return agent.execute(input)
+      }
+
+      // Default: dataset mode (original Bright Data Datasets API)
+      console.log('[Orchestrator] runReliabilityAgent: using dataset mode')
+      return new ReliabilitySocialProofAgent().execute(input)
     } catch (error) {
       console.warn('[Orchestrator] runReliabilityAgent unexpected error:', error)
       return null
@@ -151,11 +189,22 @@ export class RiskEngineOrchestrator {
    * Step A: Trigger Bright Data Reddit discovery. Returns immediately with either
    * posts (if synchronous) or a snapshot_id (if async/deferred).
    * Designed to complete well within Vercel's 60s timeout.
+   *
+   * When mode === 'serp', fetches Reddit snippets synchronously via the SERP API
+   * and returns { status: 'disabled' } so the Inngest flow skips Step B entirely.
+   * The result is already computed and stored by runReliabilityAgent.
    */
   static async startReliabilityDiscovery(input: AgentInput): Promise<ReliabilityDiscoveryResult> {
     try {
       const config = getAgentConfig('reliability')
       if ((config as any).disabled === true) {
+        return { status: 'disabled' }
+      }
+
+      const mode = (config as any).mode ?? 'dataset'
+      if (mode === 'serp') {
+        // SERP mode is fully synchronous — execution happens in runReliabilityAgent.
+        // Return disabled so the Inngest durable flow does not attempt Step B.
         return { status: 'disabled' }
       }
 

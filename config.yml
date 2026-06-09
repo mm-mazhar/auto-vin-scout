@@ -97,7 +97,8 @@ ai:
       maxTokens: 400
       systemInstruction: |
         Analyze the vehicle's engine code, drivetrain architecture, and brand. Explain how the complexity impacts future maintenance liabilities. Focus specifically on the vehicle's current mileage and if it is approaching or inside 'The Hump' (80k-120k miles) where expensive services like timing chains, water pumps, or battery cooling systems typically fail.
-        Write a concise 2-3 sentence narrative for a used-car buyer.
+        CRITICAL: At the end of your narrative, always add a brief disclaimer stating: "Note: Always cross-reference with the Reliability & Social Proof section for documented manufacturing defects or widespread owner complaints."
+        Keep the narrative concise (2-3 sentences max).
         Be factual. Reference specific numbers. Do not speculate beyond the data.
 
     corrosion:
@@ -149,7 +150,7 @@ ai:
         model: "google/gemini-2.5-flash-lite"
       fallback:
         provider: "google"
-        model: "gemini-1.5-flash"
+        model: "gemini-3.1-flash-lite"
       temperature: 0.1
       maxTokens: 400
       systemInstruction: |
@@ -189,6 +190,7 @@ ai:
         - Format price ranges clearly (e.g., **$18,000 – $23,000**).
 
     reliability:
+      mode: "serp" # Toggle between "serp" (Bright Data SERP) and "dataset" (Bright Data Datasets API)
       disabled: false
       primary:
         provider: "openrouter"
@@ -196,19 +198,19 @@ ai:
         model: "google/gemini-2.5-flash-lite"
       fallback:
         provider: "google"
-        model: "gemini-1.5-flash"
+        model: "gemini-3.1-flash-lite"
       temperature: 0.1
-      maxTokens: 500
+      maxTokens: 400
       systemInstruction: |
-        You are an expert automotive mechanic. I will provide you with raw Reddit posts discussing a specific vehicle's reliability, alongside a "Heuristic Risk Score". 
+        You are an expert automotive mechanic. I will provide you with Google search snippets of Reddit threads discussing a specific vehicle's reliability, alongside a "Heuristic Risk Score".
         YOUR JOB:
-        1. Summarize the specific mechanical failure points mentioned by owners. 
-        2. Check for cross-contamination. If the posts mention catastrophic failures (like "blown engine") but are talking about a DIFFERENT vehicle, you MUST ignore them.
-        3. Determine the true risk score. If the heuristic score is High but the posts are irrelevant, lower the score to 15. If the posts truly confirm major failures for THIS vehicle, keep it at 85.
-        
+        1. Summarize the specific mechanical failure points mentioned by owners. Filter out generic complaining.
+        2. STRICT YEAR CHECK: You must ONLY consider complaints that apply to the exact Target Vehicle Year. If the snippets discuss catastrophic failures for DIFFERENT years (e.g., previous or newer generations) and not the specific target year, you MUST ignore them. Do not generalize.
+        3. Determine the true risk score. If the heuristic score is High but the snippets only apply to other years or unrelated topics, override the score to 15. If the snippets truly confirm major failures for THIS exact vehicle year, keep it at 85.
+
         OUTPUT REQUIREMENT:
-        You must output ONLY valid JSON in this exact format, with no markdown formatting or extra text:
+        You must output ONLY valid JSON in this exact format:
         {
-          "adjustedScore": 15,
-          "narrative": "Your 2-3 sentence summary goes here."
+          "adjustedScore": 85,
+          "narrative": "Your concise 2-3 sentence summary here."
         }

@@ -149,91 +149,173 @@ export const analyzeReportFn = inngest.createFunction(
     ) as AgentDeps
 
     // -------------------------------------------------------------------------
-    // Steps 7-12: Individual agent executions (parallel)
+    // Steps 7-13: Individual agent executions (parallel)
     // Each agent = separate Vercel invocation = no timeout pressure.
+    //
+    // Reliability branching:
+    //   serp mode     → agent-reliability runs inline, no durable wait needed
+    //   dataset mode  → reliability-discover triggers Bright Data; may sleep 60s
+    //   disabled      → reliability step is skipped entirely
     // -------------------------------------------------------------------------
-    const [baseline, safety, engine, corrosion, flood, theft, forensics, reliabilityDiscovery] = await Promise.all([
-      step.run('agent-baseline', () =>
-        RiskEngineOrchestrator.runBaselineAgent(agentInput)
-      ),
-      step.run('agent-safety', () =>
-        RiskEngineOrchestrator.runSafetyAgent(agentInput)
-      ),
-      step.run('agent-engine', () =>
-        RiskEngineOrchestrator.runEngineAgent(agentInput)
-      ),
-      step.run('agent-corrosion', () =>
-        RiskEngineOrchestrator.runCorrosionAgent(agentInput)
-      ),
-      step.run('agent-flood', () =>
-        RiskEngineOrchestrator.runFloodAgent(agentInput, agentDeps)
-      ),
-      step.run('agent-theft', () =>
-        RiskEngineOrchestrator.runTheftAgent(agentInput, agentDeps)
-      ),
-      step.run('agent-forensics', () =>
-        RiskEngineOrchestrator.runForensicsAgent(agentInput, agentDeps)
-      ),
-      // Reliability Step A: trigger Bright Data discovery (returns immediately)
-      step.run('reliability-discover', () =>
-        RiskEngineOrchestrator.startReliabilityDiscovery(agentInput)
-      ),
-    ]) as [RiskVectorResult, RiskVectorResult, RiskVectorResult, RiskVectorResult, RiskVectorResult, RiskVectorResult, RiskVectorResult, ReliabilityDiscoveryResult]
+    const { mode: reliabilityMode, disabled: reliabilityDisabled } =
+      RiskEngineOrchestrator.getReliabilityMode()
 
-    // -------------------------------------------------------------------------
-    // Step: Reliability durable wait + completion
-    // If Bright Data returned a snapshot_id, sleep to let it process, then fetch.
-    // -------------------------------------------------------------------------
     let reliability: RiskVectorResult | null = null
 
-    if (reliabilityDiscovery.status === 'pending') {
-      // Sleep 60s to give Bright Data time to scrape Reddit posts
-      await step.sleep('reliability-wait', '60s')
+    if (reliabilityMode === 'serp' && !reliabilityDisabled) {
+      // ── SERP path ──────────────────────────────────────────────────────────
+      // Fetch Reddit snippets + run heuristic + LLM in a single synchronous
+      // step. No snapshot polling, no sleep, no reliability-discover overhead.
+      const [baseline, safety, engine, corrosion, flood, theft, forensics, serpReliability] =
+        await Promise.all([
+          step.run('agent-baseline', () =>
+            RiskEngineOrchestrator.runBaselineAgent(agentInput)
+          ),
+          step.run('agent-safety', () =>
+            RiskEngineOrchestrator.runSafetyAgent(agentInput)
+          ),
+          step.run('agent-engine', () =>
+            RiskEngineOrchestrator.runEngineAgent(agentInput)
+          ),
+          step.run('agent-corrosion', () =>
+            RiskEngineOrchestrator.runCorrosionAgent(agentInput)
+          ),
+          step.run('agent-flood', () =>
+            RiskEngineOrchestrator.runFloodAgent(agentInput, agentDeps)
+          ),
+          step.run('agent-theft', () =>
+            RiskEngineOrchestrator.runTheftAgent(agentInput, agentDeps)
+          ),
+          step.run('agent-forensics', () =>
+            RiskEngineOrchestrator.runForensicsAgent(agentInput, agentDeps)
+          ),
+          step.run('agent-reliability', () =>
+            RiskEngineOrchestrator.runReliabilityAgent(agentInput)
+          ),
+        ]) as [
+          RiskVectorResult,
+          RiskVectorResult,
+          RiskVectorResult,
+          RiskVectorResult,
+          RiskVectorResult,
+          RiskVectorResult,
+          RiskVectorResult,
+          RiskVectorResult | null,
+        ]
 
-      reliability = await step.run('reliability-analyze', () =>
-        RiskEngineOrchestrator.completeReliabilityAgent(agentInput, reliabilityDiscovery)
+      reliability = serpReliability
+
+      const results: RiskVectorResult[] = [
+        baseline, safety, engine, corrosion, flood, theft, forensics, reliability,
+      ].filter((r): r is RiskVectorResult => r !== null)
+
+      await step.run('persist-results', () =>
+        RiskEngineOrchestrator.persistResults(reportId, results)
       )
-    } else if (reliabilityDiscovery.status === 'ready' || reliabilityDiscovery.status === 'empty') {
-      // Posts came back synchronously or empty — analyze immediately
-      reliability = await step.run('reliability-analyze', () =>
-        RiskEngineOrchestrator.completeReliabilityAgent(agentInput, reliabilityDiscovery)
+
+      const [synthesis, pricePrediction] = await Promise.all([
+        step.run('master-synthesis', () =>
+          RiskEngineOrchestrator.synthesize(results)
+        ),
+        step.run('price-prediction', () =>
+          RiskEngineOrchestrator.runValuation(vehicleYear, vehicleMake, vehicleModel)
+        ),
+      ])
+
+      await step.run('finalize-report', () =>
+        RiskEngineOrchestrator.finalizeReport(reportId, {
+          ...synthesis,
+          pricePrediction,
+        })
+      )
+    } else {
+      // ── Dataset path (or disabled) ─────────────────────────────────────────
+      // Original durable two-step flow: discover → optional sleep → analyze.
+      const [baseline, safety, engine, corrosion, flood, theft, forensics, reliabilityDiscovery] =
+        await Promise.all([
+          step.run('agent-baseline', () =>
+            RiskEngineOrchestrator.runBaselineAgent(agentInput)
+          ),
+          step.run('agent-safety', () =>
+            RiskEngineOrchestrator.runSafetyAgent(agentInput)
+          ),
+          step.run('agent-engine', () =>
+            RiskEngineOrchestrator.runEngineAgent(agentInput)
+          ),
+          step.run('agent-corrosion', () =>
+            RiskEngineOrchestrator.runCorrosionAgent(agentInput)
+          ),
+          step.run('agent-flood', () =>
+            RiskEngineOrchestrator.runFloodAgent(agentInput, agentDeps)
+          ),
+          step.run('agent-theft', () =>
+            RiskEngineOrchestrator.runTheftAgent(agentInput, agentDeps)
+          ),
+          step.run('agent-forensics', () =>
+            RiskEngineOrchestrator.runForensicsAgent(agentInput, agentDeps)
+          ),
+          // Reliability Step A: trigger Bright Data discovery (returns immediately)
+          step.run('reliability-discover', () =>
+            RiskEngineOrchestrator.startReliabilityDiscovery(agentInput)
+          ),
+        ]) as [
+          RiskVectorResult,
+          RiskVectorResult,
+          RiskVectorResult,
+          RiskVectorResult,
+          RiskVectorResult,
+          RiskVectorResult,
+          RiskVectorResult,
+          ReliabilityDiscoveryResult,
+        ]
+
+      if (reliabilityDiscovery.status === 'pending') {
+        // Sleep 60s to give Bright Data time to scrape Reddit posts
+        await step.sleep('reliability-wait', '60s')
+
+        reliability = await step.run('reliability-analyze', () =>
+          RiskEngineOrchestrator.completeReliabilityAgent(agentInput, reliabilityDiscovery)
+        )
+      } else if (reliabilityDiscovery.status === 'ready' || reliabilityDiscovery.status === 'empty') {
+        // Posts came back synchronously or empty — analyze immediately
+        reliability = await step.run('reliability-analyze', () =>
+          RiskEngineOrchestrator.completeReliabilityAgent(agentInput, reliabilityDiscovery)
+        )
+      }
+      // status === 'disabled' → reliability stays null
+
+      const results: RiskVectorResult[] = [
+        baseline, safety, engine, corrosion, flood, theft, forensics, reliability,
+      ].filter((r): r is RiskVectorResult => r !== null)
+
+      // -----------------------------------------------------------------------
+      // Step 13: persist-results
+      // -----------------------------------------------------------------------
+      await step.run('persist-results', () =>
+        RiskEngineOrchestrator.persistResults(reportId, results)
+      )
+
+      // -----------------------------------------------------------------------
+      // Steps 14-15: master-synthesis + price-prediction (parallel)
+      // -----------------------------------------------------------------------
+      const [synthesis, pricePrediction] = await Promise.all([
+        step.run('master-synthesis', () =>
+          RiskEngineOrchestrator.synthesize(results)
+        ),
+        step.run('price-prediction', () =>
+          RiskEngineOrchestrator.runValuation(vehicleYear, vehicleMake, vehicleModel)
+        ),
+      ])
+
+      // -----------------------------------------------------------------------
+      // Step 16: finalize-report
+      // -----------------------------------------------------------------------
+      await step.run('finalize-report', () =>
+        RiskEngineOrchestrator.finalizeReport(reportId, {
+          ...synthesis,
+          pricePrediction,
+        })
       )
     }
-    // status === 'disabled' → reliability stays null
-
-    const results: RiskVectorResult[] = [baseline, safety, engine, corrosion, flood, theft, forensics, reliability]
-      .filter((r): r is RiskVectorResult => r !== null)
-
-    // -------------------------------------------------------------------------
-    // Step 13: persist-results
-    // -------------------------------------------------------------------------
-    await step.run('persist-results', () =>
-      RiskEngineOrchestrator.persistResults(reportId, results)
-    )
-
-    // -------------------------------------------------------------------------
-    // Steps 14-15: master-synthesis + price-prediction (parallel)
-    // These are independent — synthesis needs agent results, valuation needs
-    // only vehicle year/make/model. Running them concurrently saves ~2-5s.
-    // -------------------------------------------------------------------------
-    const [synthesis, pricePrediction] = await Promise.all([
-      step.run('master-synthesis', () =>
-        RiskEngineOrchestrator.synthesize(results)
-      ),
-      step.run('price-prediction', () =>
-        RiskEngineOrchestrator.runValuation(vehicleYear, vehicleMake, vehicleModel)
-      ),
-    ])
-
-    // -------------------------------------------------------------------------
-    // Step 16: finalize-report
-    // Updates the Report record with final score, label, and narratives.
-    // -------------------------------------------------------------------------
-    await step.run('finalize-report', () =>
-      RiskEngineOrchestrator.finalizeReport(reportId, {
-        ...synthesis,
-        pricePrediction,
-      })
-    )
   }
 )

@@ -5,8 +5,80 @@
 import type { VehicleListingHistory } from '@prisma/client'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
+import type { Components } from 'react-markdown'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Handshake, Fuel, TrendingDown, Clock, MapPin, Gauge } from 'lucide-react'
+
+// --- Valuation Markdown Renderer ---
+// Highlights dollar amounts and mileage figures inline, adds proper spacing.
+
+function highlightNumbers(text: string): React.ReactNode[] {
+  // Match $X,XXX / $XX,XXX / $XXX,XXX and XXX,XXX miles / XXX mi
+  const pattern = /(\$[\d,]+(?:\.\d{2})?(?:\s*[-–]\s*\$[\d,]+(?:\.\d{2})?)?|\b\d{1,3}(?:,\d{3})+\s*(?:miles?|mi)\b)/g
+  const parts = text.split(pattern)
+  return parts.map((part, i) => {
+    if (i % 2 === 1) {
+      const isDollar = part.startsWith('$')
+      return (
+        <span
+          key={i}
+          className={`font-semibold ${isDollar ? 'text-emerald-400' : 'text-sky-400'}`}
+        >
+          {part}
+        </span>
+      )
+    }
+    return part
+  })
+}
+
+const valuationComponents: Components = {
+  // H2 — section title with border
+  h2: ({ children }) => (
+    <h2 className="text-base font-semibold text-foreground mt-6 mb-2 pb-1 border-b border-border/40 first:mt-0">
+      {children}
+    </h2>
+  ),
+  // H3 — subsection
+  h3: ({ children }) => (
+    <h3 className="text-sm font-semibold text-foreground/90 mt-4 mb-1.5">
+      {children}
+    </h3>
+  ),
+  // Paragraph with number highlighting
+  p: ({ children }) => (
+    <p className="text-sm text-muted-foreground leading-relaxed mb-3">
+      {typeof children === 'string'
+        ? highlightNumbers(children)
+        : children}
+    </p>
+  ),
+  // Unordered list
+  ul: ({ children }) => (
+    <ul className="space-y-1.5 mb-3 ml-1">
+      {children}
+    </ul>
+  ),
+  // List item with number highlighting
+  li: ({ children }) => (
+    <li className="flex items-start gap-2 text-sm text-muted-foreground">
+      <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-primary/60 shrink-0" />
+      <span className="leading-relaxed">
+        {typeof children === 'string' ? highlightNumbers(children) : children}
+      </span>
+    </li>
+  ),
+  // Bold — price ranges are often bolded by the LLM
+  strong: ({ children }) => {
+    const text = typeof children === 'string' ? children : ''
+    const hasDollar = text.includes('$')
+    return (
+      <strong className={`font-semibold ${hasDollar ? 'text-emerald-400' : 'text-foreground'}`}>
+        {children}
+      </strong>
+    )
+  },
+}
 
 interface BuyerGuidanceInsightsProps {
   listings: VehicleListingHistory[]
@@ -257,11 +329,12 @@ export function BuyerGuidanceInsights({ listings, vehicle, pricePrediction }: Bu
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="prose prose-invert max-w-none prose-headings:text-foreground prose-p:text-muted-foreground prose-strong:text-foreground prose-li:text-muted-foreground prose-td:text-muted-foreground prose-th:text-foreground">
-              <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                {pricePrediction}
-              </ReactMarkdown>
-            </div>
+            <ReactMarkdown
+              remarkPlugins={[remarkGfm]}
+              components={valuationComponents}
+            >
+              {pricePrediction}
+            </ReactMarkdown>
           </CardContent>
         </Card>
       )}
