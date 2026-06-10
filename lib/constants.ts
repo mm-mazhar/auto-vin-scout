@@ -17,8 +17,8 @@ export const DEFAULT_THEME_MODE = `dark` as string
 export const EMAIL_BUTTON_BG = `#22c55e` as string
 export const EMAIL_BUTTON_TEXT = `#ffffff` as string
 export const EMAIL_LOGO_URL = process.env.NODE_ENV === 'development'
-  ? `https://zasonncpchlminlwpqwn.supabase.co/storage/v1/object/public/assets/autovinscout-logo-dark-01.png`
-  : `https://mssrrxccmrsyuuehpebs.supabase.co/storage/v1/object/public/assets/autovinscout-logo-dark-01.png`
+  ? `https://qjyielclapaimupufxcr.supabase.co/storage/v1/object/public/assets/autovinscout-logo-dark-01.png`
+  : `https://iuthcvepcccuhyfioiqf.supabase.co/storage/v1/object/public/assets/autovinscout-logo-dark-01.png`
 
 // ✅ LOCALE
 export const LOCALE = `en_US`
@@ -45,7 +45,7 @@ export function formatPrice(
 }
 
 // ✅ SOCIALS AND SEO
-export const NEXT_PUBLIC_SITE_NAME = `Auto VIN Scout` as string
+export const NEXT_PUBLIC_SITE_NAME = `AutoVINScout` as string
 export const APP_SLOGAN = `⚡ AI Risk Intelligence for smarter used-car buying.` as string
 export const APP_DESCRIPTION = `Probabilistic Risk Modeling` as string
 // export const APP_DESCRIPTION = `Probabilistic Risk Modeling. Check a VIN before you trust the listing.` as string
@@ -139,7 +139,7 @@ export const PRICING_PLANS: PricingPlan[] = [
   },
   {
     id: PLAN_IDS.basic,
-    title: 'Basic Report',
+    title: 'Basic',
     price: '29.99',
     priceSuffix: ' one-time',
     description: `Deep dive into few vehicles. Credits: ${CREDITS_BASIC}`,
@@ -149,7 +149,7 @@ export const PRICING_PLANS: PricingPlan[] = [
   },
   {
     id: PLAN_IDS.pro,
-    title: 'Pro Plan',
+    title: 'Pro',
     price: '59.99',
     priceSuffix: '/mo',
     description: `For power buyers/flippers. Credits: ${CREDITS_PRO}`,
@@ -164,7 +164,7 @@ export const PRICING_PLANS: PricingPlan[] = [
   },
   {
     id: PLAN_IDS.dealercore,
-    title: 'Dealer Core',
+    title: 'Core',
     price: '199.99',
     priceSuffix: '/mo',
     description: `For small used car lots. Credits: ${CREDITS_DEALERCORE}`,
@@ -178,13 +178,13 @@ export const PRICING_PLANS: PricingPlan[] = [
   },
   {
     id: PLAN_IDS.dealerplus,
-    title: 'Dealer Plus',
+    title: 'Core Plus',
     price: '499.99',
     priceSuffix: '/mo',
     description: `For franchise dealers. Credits: ${CREDITS_DEALERPLUS}`,
     credits: CREDITS_DEALERPLUS,
     features: [
-      'Everything in Dealer Core',
+      'Everything in Core',
       'Priority Title Checks',
       'Full Predictive Engine',
       'Depreciation Forecasts',

@@ -19,8 +19,9 @@ ALTER TABLE public."Report" ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public."Report" FORCE ROW LEVEL SECURITY;
 ALTER TABLE public."Recall" ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public."Recall" FORCE ROW LEVEL SECURITY;
-ALTER TABLE public."JobQueue" ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public."JobQueue" FORCE ROW LEVEL SECURITY;
+ALTER TABLE public."RiskVectorResult" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public."VehicleListingHistory" FORCE ROW LEVEL SECURITY;
+ALTER TABLE public."VehicleSafetyRating" FORCE ROW LEVEL SECURITY;
 
 --  ───────────────────────────────────────────────────────────────
 -- ─── 2. SERVICE ROLE BYPASS ───
@@ -42,7 +43,10 @@ SELECT public.define_service_role_policy('OrganizationInvite');
 SELECT public.define_service_role_policy('Vehicle');
 SELECT public.define_service_role_policy('Report');
 SELECT public.define_service_role_policy('Recall');
-SELECT public.define_service_role_policy('JobQueue');
+SELECT public.define_service_role_policy('RiskVectorResult');
+SELECT public.define_service_role_policy('VehicleListingHistory');
+SELECT public.define_service_role_policy('VehicleSafetyRating');
+
 
 --  ───────────────────────────────────────────────────────────────
 -- ─── 3. USER TABLE ───
@@ -114,11 +118,85 @@ CREATE POLICY "Recall: select by linked vehicle report"
 ON public."Recall" FOR SELECT TO authenticated
 USING (EXISTS (SELECT 1 FROM public."Report" r WHERE r."vehicleId" = public."Recall"."vehicleId" AND r."organizationId" IN (SELECT m."organizationId" FROM public."OrganizationMember" m WHERE m."userId" = (SELECT auth.uid()::text))));
 
--- JOB QUEUE
-DROP POLICY IF EXISTS "JobQueue: select by org membership" ON public."JobQueue";
-CREATE POLICY "JobQueue: select by org membership"
-ON public."JobQueue" FOR SELECT TO authenticated
-USING ("orgId" IN (SELECT m."organizationId" FROM public."OrganizationMember" m WHERE m."userId" = (SELECT auth.uid()::text)));
+-- -- JOB QUEUE
+-- DROP POLICY IF EXISTS "JobQueue: select by org membership" ON public."JobQueue";
+-- CREATE POLICY "JobQueue: select by org membership"
+-- ON public."JobQueue" FOR SELECT TO authenticated
+-- USING ("orgId" IN (SELECT m."organizationId" FROM public."OrganizationMember" m WHERE m."userId" = (SELECT auth.uid()::text)));
+
+-- ───────────────────────────────────────────────────────────────
+-- ─── RiskVectorResult & VehicleListingHistory RLS ───
+-- ───────────────────────────────────────────────────────────────
+
+-- Enable RLS
+ALTER TABLE public."RiskVectorResult" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public."RiskVectorResult" FORCE ROW LEVEL SECURITY;
+
+ALTER TABLE public."VehicleListingHistory" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public."VehicleListingHistory" FORCE ROW LEVEL SECURITY;
+
+-- Service role bypass
+SELECT public.define_service_role_policy('RiskVectorResult');
+SELECT public.define_service_role_policy('VehicleListingHistory');
+
+-- RISK VECTOR RESULTS (scoped via Report → organizationId)
+DROP POLICY IF EXISTS "RiskVectorResult: select by linked report org" ON public."RiskVectorResult";
+CREATE POLICY "RiskVectorResult: select by linked report org"
+ON public."RiskVectorResult" FOR SELECT TO authenticated
+USING (
+  EXISTS (
+    SELECT 1 FROM public."Report" r
+    WHERE r.id = public."RiskVectorResult"."reportId"
+      AND r."organizationId" IN (
+        SELECT m."organizationId"
+        FROM public."OrganizationMember" m
+        WHERE m."userId" = (SELECT auth.uid()::text)
+      )
+  )
+);
+
+-- VEHICLE LISTING HISTORY (scoped via Vehicle → Report → organizationId)
+DROP POLICY IF EXISTS "VehicleListingHistory: select by linked vehicle report" ON public."VehicleListingHistory";
+CREATE POLICY "VehicleListingHistory: select by linked vehicle report"
+ON public."VehicleListingHistory" FOR SELECT TO authenticated
+USING (
+  EXISTS (
+    SELECT 1 FROM public."Report" r
+    WHERE r."vehicleId" = public."VehicleListingHistory"."vehicleId"
+      AND r."organizationId" IN (
+        SELECT m."organizationId"
+        FROM public."OrganizationMember" m
+        WHERE m."userId" = (SELECT auth.uid()::text)
+      )
+  )
+);
+
+--  ───────────────────────────────────────────────────────────────
+-- ─── VehicleSafetyRating RLS ───
+--  ───────────────────────────────────────────────────────────────
+
+ALTER TABLE public."VehicleSafetyRating" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public."VehicleSafetyRating" FORCE ROW LEVEL SECURITY;
+
+-- Service role bypass
+SELECT public.define_service_role_policy('VehicleSafetyRating');
+
+-- Authenticated: select by linked vehicle → report → org membership
+DROP POLICY IF EXISTS "VehicleSafetyRating: select by linked vehicle report" ON public."VehicleSafetyRating";
+CREATE POLICY "VehicleSafetyRating: select by linked vehicle report"
+ON public."VehicleSafetyRating" FOR SELECT TO authenticated
+USING (
+  EXISTS (
+    SELECT 1 FROM public."Report" r
+    WHERE r."vehicleId" = public."VehicleSafetyRating"."vehicleId"
+    AND r."organizationId" IN (
+      SELECT m."organizationId"
+      FROM public."OrganizationMember" m
+      WHERE m."userId" = (SELECT auth.uid()::text)
+    )
+  )
+);
+
 
 --  ───────────────────────────────────────────────────────────────
 -- ─── 6. PRISMA MIGRATIONS PROTECTION ───
@@ -136,6 +214,7 @@ REVOKE ALL ON TABLE public."_prisma_migrations" FROM authenticated;
 GRANT ALL ON TABLE public."_prisma_migrations" TO postgres;
 GRANT ALL ON TABLE public."_prisma_migrations" TO service_role;
 
+-- ------------------------------------------------------
 -- RLS ENDS
 -- ------------------------------------------------------
 

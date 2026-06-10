@@ -422,6 +422,28 @@ https://your-production-domain.com/dashboard
 
 #### 4.5 Email Templates
 
+**Step 1: Get an "App Password" from Google**
+
+You cannot use your standard Gmail login password for this[4]. Google requires you to generate a specific password for external apps:
+1. Go to your `Google Account management page`.
+2. Go to the `Security tab`.
+3. Ensure `2-Step Verification` is turned `ON` (this is required to create App Passwords).
+4. Search for **"App passwords"** in the settings search bar.
+5. Generate a new App Password (name it "Supabase" or something similar). Google will give you a 16-character password. Copy it.
+
+**Step 2: Fill out the Supabase Settings**
+
+Go back to the Supabase screen you are on and enter the following details:
+
+1. Sender email address: `your.email@gmail.com` (your actual Gmail address)
+2. Sender name: `Your App Name` (e.g., `AutoVinScout`)
+3. Host: `smtp.gmail.com`
+4. Port number: `465`
+5. Username: `your.email@gmail.com` (your actual Gmail address)
+6. Password: The `16-character App Password you generated` in Step 1.
+   
+Click Save at the bottom of the page.
+
 **Upload the logo file first to supabase**
 
 1. Go to Supabase Dashboard > Storage.
