@@ -149,7 +149,7 @@ describe('Billing, Credits & Subscriptions', () => {
       const finalOrg = await testDb.organization.findUnique({
         where: { id: org.id },
       })
-      expect(finalOrg?.credits).toBe(CREDITS_FREE + plan.credits)
+      expect(finalOrg?.credits).toBe(CREDITS_SIGNUP_BONUS + plan.credits)
     })
 
     it('should create Core Plus subscription with correct credits', async () => {
