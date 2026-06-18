@@ -37,11 +37,11 @@ export const adminRouter = {
 
       // Get pricing plans
       const proPlan = PRICING_PLANS.find(p => p.id === PLAN_IDS.pro)
-      const dealerCorePlan = PRICING_PLANS.find(p => p.id === PLAN_IDS.dealercore)
-      const dealerPlusPlan = PRICING_PLANS.find(p => p.id === PLAN_IDS.dealerplus)
+      const corePlan = PRICING_PLANS.find(p => p.id === PLAN_IDS.core)
+      const coreplusPlan = PRICING_PLANS.find(p => p.id === PLAN_IDS.coreplus)
 
       // Fetch counts in parallel
-      const [totalUsers, totalOrgs, proSubCount, dealerCoreSubCount, dealerPlusSubCount] = await Promise.all([
+      const [totalUsers, totalOrgs, proSubCount, coreSubCount, coreplusSubCount] = await Promise.all([
         db.user.count(),
         db.organization.count({ where: { deletedAt: null } }),
         proPlan 
@@ -49,23 +49,23 @@ export const adminRouter = {
               where: { status: 'active', planId: proPlan.stripePriceId } 
             })
           : Promise.resolve(0),
-        dealerCorePlan
+        corePlan
           ? db.subscription.count({ 
-              where: { status: 'active', planId: dealerCorePlan.stripePriceId }
+              where: { status: 'active', planId: corePlan.stripePriceId }
             })
           : Promise.resolve(0),
-        dealerPlusPlan
+        coreplusPlan
           ? db.subscription.count({
-              where: { status: 'active', planId: dealerPlusPlan.stripePriceId }
+              where: { status: 'active', planId: coreplusPlan.stripePriceId }
             })
           : Promise.resolve(0),
       ])
 
       // Calculate revenue
       const proRevenue = proSubCount * Number(proPlan?.price || 0)
-      const dealerCoreRevenue = dealerCoreSubCount * Number(dealerCorePlan?.price || 0)
-      const dealerPlusRevenue = dealerPlusSubCount * Number(dealerPlusPlan?.price || 0)
-      const totalRevenue = proRevenue + dealerCoreRevenue + dealerPlusRevenue
+      const coreRevenue = coreSubCount * Number(corePlan?.price || 0)
+      const coreplusRevenue = coreplusSubCount * Number(coreplusPlan?.price || 0)
+      const totalRevenue = proRevenue + coreRevenue + coreplusRevenue
 
       // Growth percentage (last 30 days)
       const thirtyDaysAgo = new Date()
@@ -81,11 +81,11 @@ export const adminRouter = {
         totalUsers,
         totalOrgs,
         activeProCount: proSubCount,
-        activeDealerCoreCount: dealerCoreSubCount,
-        activeDealerPlusCount: dealerPlusSubCount,
+        activecoreCount: coreSubCount,
+        activecoreplusCount: coreplusSubCount,
         proRevenue,
-        dealerCoreRevenue,
-        dealerPlusRevenue,
+        coreRevenue,
+        coreplusRevenue,
         totalRevenue,
         growthPercentage,
         health: { database: dbStatus, latency },
@@ -542,10 +542,10 @@ export const adminRouter = {
       }
 
       const proPlan = PRICING_PLANS.find(p => p.id === PLAN_IDS.pro)
-      const dealerCorePlan = PRICING_PLANS.find(p => p.id === PLAN_IDS.dealercore)
-      const dealerPlusPlan = PRICING_PLANS.find(p => p.id === PLAN_IDS.dealerplus)
+      const corePlan = PRICING_PLANS.find(p => p.id === PLAN_IDS.core)
+      const coreplusPlan = PRICING_PLANS.find(p => p.id === PLAN_IDS.coreplus)
 
-      const [subRevenueRowsPro, subRevenueRowsDealerCore, subRevenueRowsDealerPlus, userGrowthRows] = await Promise.all([
+      const [subRevenueRowsPro, subRevenueRowscore, subRevenueRowscoreplus, userGrowthRows] = await Promise.all([
         proPlan
           ? db.$queryRaw<{ month: Date; count: bigint }[]>`
               SELECT date_trunc('month', "createdAt") AS month, COUNT(*)::bigint AS count
@@ -557,24 +557,24 @@ export const adminRouter = {
               ORDER BY month
             `
           : Promise.resolve([] as { month: Date; count: bigint }[]),
-        dealerCorePlan
+        corePlan
           ? db.$queryRaw<{ month: Date; count: bigint }[]>`
               SELECT date_trunc('month', "createdAt") AS month, COUNT(*)::bigint AS count
               FROM "Subscription"
               WHERE "status" = 'active'
                 AND "createdAt" >= ${twelveMonthsAgo}
-                AND "planId" = ${dealerCorePlan.stripePriceId}
+                AND "planId" = ${corePlan.stripePriceId}
               GROUP BY month
               ORDER BY month
             `
           : Promise.resolve([] as { month: Date; count: bigint }[]),
-        dealerPlusPlan
+        coreplusPlan
           ? db.$queryRaw<{ month: Date; count: bigint }[]>`
               SELECT date_trunc('month', "createdAt") AS month, COUNT(*)::bigint AS count
               FROM "Subscription"
               WHERE "status" = 'active'
                 AND "createdAt" >= ${twelveMonthsAgo}
-                AND "planId" = ${dealerPlusPlan.stripePriceId}
+                AND "planId" = ${coreplusPlan.stripePriceId}
               GROUP BY month
               ORDER BY month
             `
@@ -599,25 +599,25 @@ export const adminRouter = {
         }
       })
 
-      subRevenueRowsDealerCore.forEach(row => {
+      subRevenueRowscore.forEach(row => {
         const d = new Date(row.month)
         const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
         const index = monthIndexMap[key]
         if (index === undefined) return
         const count = Number(row.count)
-        if (dealerCorePlan) {
-          revenueData[index].value += count * Number(dealerCorePlan.price)
+        if (corePlan) {
+          revenueData[index].value += count * Number(corePlan.price)
         }
       })
 
-      subRevenueRowsDealerPlus.forEach(row => {
+      subRevenueRowscoreplus.forEach(row => {
         const d = new Date(row.month)
         const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
         const index = monthIndexMap[key]
         if (index === undefined) return
         const count = Number(row.count)
-        if (dealerPlusPlan) {
-          revenueData[index].value += count * Number(dealerPlusPlan.price)
+        if (coreplusPlan) {
+          revenueData[index].value += count * Number(coreplusPlan.price)
         }
       })
 

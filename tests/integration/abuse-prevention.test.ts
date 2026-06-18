@@ -1,6 +1,6 @@
 // tests/integration/abuse-prevention.test.ts
 
-import { CREDITS_FREE, LIMITS, ROLES } from '@/lib/constants'
+import { CREDITS_FREE, CREDITS_SIGNUP_BONUS, LIMITS, ROLES } from '@/lib/constants'
 import { InvitationService } from '@/lib/services/invitation-service'
 import { OrganizationService } from '@/lib/services/organization-service'
 import { afterEach, describe, expect, it } from 'vitest'
@@ -71,7 +71,7 @@ describe('Abuse Prevention & Guardrails', () => {
     itIf(MULTI_ORG_ENABLED)('should prevent infinite credits by only giving credits to primary organization', async () => {
       const { primaryOrg } = await setupUserWithPrimaryOrg()
 
-      expect(primaryOrg.credits).toBe(CREDITS_FREE)
+      expect(primaryOrg.credits).toBe(CREDITS_SIGNUP_BONUS)
       expect(primaryOrg.isPrimary).toBe(true)
 
       // Create secondary organization

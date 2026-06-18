@@ -100,9 +100,9 @@ export default async function HeroSection() {
   })()
 
   const proCredits =
-    PRICING_PLANS.find((p) => p.id === PLAN_IDS.dealerplus)?.credits ?? 0
+    PRICING_PLANS.find((p) => p.id === PLAN_IDS.coreplus)?.credits ?? 0
   const proExhausted =
-    subStatus === 'active' && currentPlanId === PLAN_IDS.dealerplus
+    subStatus === 'active' && currentPlanId === PLAN_IDS.coreplus
       ? creditsUsed >= proCredits
       : false
 

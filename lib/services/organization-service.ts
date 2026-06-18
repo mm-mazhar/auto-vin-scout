@@ -1,7 +1,7 @@
 // lib/services/organization-service.ts
 
 import prisma from '../../app/lib/db'
-import { CREDITS_FREE, LIMITS, OrganizationRole, ROLES } from '../constants'
+import { CREDITS_FREE, CREDITS_SIGNUP_BONUS, LIMITS, OrganizationRole, ROLES } from '../constants'
 
 export class OrganizationService {
   static async createOrganization(userId: string, name: string, slug: string) {
@@ -38,7 +38,7 @@ export class OrganizationService {
 
     if (existingPrimaryOrgCount === 0) {
       isPrimary = true
-      initialCredits = CREDITS_FREE
+      initialCredits = CREDITS_SIGNUP_BONUS
     }
 
     // 3. Create Org and Membership

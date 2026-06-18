@@ -19,8 +19,8 @@ const planIdSchema = z.enum([
   PLAN_IDS.free,
   PLAN_IDS.basic,
   PLAN_IDS.pro,
-  PLAN_IDS.dealercore,
-  PLAN_IDS.dealerplus,
+  PLAN_IDS.core,
+  PLAN_IDS.coreplus,
 ] as const)
 
 export const billingRouter = {

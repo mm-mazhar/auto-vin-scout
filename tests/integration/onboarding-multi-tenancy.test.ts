@@ -2,7 +2,7 @@
 
 import { describe, it, expect, afterEach } from 'vitest'
 import { OrganizationService } from '@/lib/services/organization-service'
-import { ROLES, LIMITS, CREDITS_FREE } from '@/lib/constants'
+import { ROLES, LIMITS, CREDITS_FREE, CREDITS_SIGNUP_BONUS } from '@/lib/constants'
 import { TestUtils, DatabaseHelpers, testDb } from './setup'
 import { itIf, MULTI_ORG_ENABLED } from '../helpers/guards'
 
@@ -32,7 +32,7 @@ describe('Onboarding & Multi-Tenancy Structure', () => {
       expect(organization).toBeDefined()
       expect(organization.name).toBe('Personal')
       expect(organization.isPrimary).toBe(true)
-      expect(organization.credits).toBe(CREDITS_FREE)
+      expect(organization.credits).toBe(CREDITS_SIGNUP_BONUS)
 
       // Verify (DB): User is the owner of the organization
       const membership = organization.members[0]
@@ -57,7 +57,7 @@ describe('Onboarding & Multi-Tenancy Structure', () => {
       )
 
       expect(firstOrg.isPrimary).toBe(true)
-      expect(firstOrg.credits).toBe(CREDITS_FREE)
+      expect(firstOrg.credits).toBe(CREDITS_SIGNUP_BONUS)
 
       // Create second organization (should not be primary)
       const secondOrg = await OrganizationService.createOrganization(

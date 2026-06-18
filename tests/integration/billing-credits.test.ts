@@ -1,6 +1,6 @@
 // tests/integration/billing-credits.test.ts
 
-import { CREDITS_FREE, PLAN_IDS, PRICING_PLANS, SUBSCRIPTION_RENEWAL_CREDIT_THRESHOLD } from '@/lib/constants'
+import { CREDITS_FREE, CREDITS_SIGNUP_BONUS, PLAN_IDS, PRICING_PLANS, SUBSCRIPTION_RENEWAL_CREDIT_THRESHOLD } from '@/lib/constants'
 import { OrganizationService } from '@/lib/services/organization-service'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { TestUtils, testDb } from './setup'
@@ -138,7 +138,7 @@ describe('Billing, Credits & Subscriptions', () => {
       const updatedOrg = await testDb.organization.findUnique({
         where: { id: org.id },
       })
-      expect(updatedOrg?.credits).toBe(CREDITS_FREE)
+      expect(updatedOrg?.credits).toBe(CREDITS_SIGNUP_BONUS)
 
       // Simulate webhook adding credits
       await testDb.organization.update({
@@ -152,8 +152,8 @@ describe('Billing, Credits & Subscriptions', () => {
       expect(finalOrg?.credits).toBe(CREDITS_FREE + plan.credits)
     })
 
-    it('should create Dealer Plus subscription with correct credits', async () => {
-      const { org, subscription, plan } = await setupOrganizationWithSubscription(PLAN_IDS.dealerplus)
+    it('should create Core Plus subscription with correct credits', async () => {
+      const { org, subscription, plan } = await setupOrganizationWithSubscription(PLAN_IDS.coreplus)
 
       expect(subscription.planId).toBe(plan.stripePriceId)
       expect(plan.credits).toBe(200)
@@ -167,7 +167,7 @@ describe('Billing, Credits & Subscriptions', () => {
       const finalOrg = await testDb.organization.findUnique({
         where: { id: org.id },
       })
-      expect(finalOrg?.credits).toBe(CREDITS_FREE + 200)
+      expect(finalOrg?.credits).toBe(CREDITS_SIGNUP_BONUS + 200)
     })
 
     it('should increment credits for one-time Basic Report purchases', async () => {
@@ -195,7 +195,7 @@ describe('Billing, Credits & Subscriptions', () => {
       const updatedOrg = await testDb.organization.findUnique({
         where: { id: organizationId },
       })
-      expect(updatedOrg?.credits).toBe(CREDITS_FREE + basicPlan.credits * 2)
+      expect(updatedOrg?.credits).toBe(CREDITS_SIGNUP_BONUS + basicPlan.credits * 2)
     })
 
     it('should allow subscription renewal when credits are low', async () => {
@@ -221,13 +221,13 @@ describe('Billing, Credits & Subscriptions', () => {
     it('should upgrade from Pro to Pro Plus', async () => {
       const { org } = await setupOrganizationWithSubscription(PLAN_IDS.pro)
 
-      const dealerPlusPlan = PRICING_PLANS.find(p => p.id === PLAN_IDS.dealerplus)!
+      const coreplusPlan = PRICING_PLANS.find(p => p.id === PLAN_IDS.coreplus)!
 
       // Simulate upgrade by updating subscription
       await testDb.subscription.update({
         where: { organizationId: org.id },
         data: {
-          planId: dealerPlusPlan.stripePriceId,
+          planId: coreplusPlan.stripePriceId,
         },
       })
 
@@ -235,7 +235,7 @@ describe('Billing, Credits & Subscriptions', () => {
         where: { organizationId: org.id },
       })
 
-      expect(updatedSubscription?.planId).toBe(dealerPlusPlan.stripePriceId)
+      expect(updatedSubscription?.planId).toBe(coreplusPlan.stripePriceId)
     })
   })
 
@@ -264,17 +264,17 @@ describe('Billing, Credits & Subscriptions', () => {
       const { org: org1 } = await setupOrganizationWithSubscription(PLAN_IDS.pro)
       const org2 = await setupSecondOrganization()
 
-      // Create Dealer Plus subscription for second org
-      const dealerPlusPlan = PRICING_PLANS.find(p => p.id === PLAN_IDS.dealerplus)
-      if (!dealerPlusPlan?.stripePriceId) {
-        throw new Error('Dealer Plus plan not found or has no Stripe price ID')
+      // Create Core Plus subscription for second org
+      const coreplusPlan = PRICING_PLANS.find(p => p.id === PLAN_IDS.coreplus)
+      if (!coreplusPlan?.stripePriceId) {
+        throw new Error('Core Plus plan not found or has no Stripe price ID')
       }
       
       await testDb.subscription.create({
         data: {
           organizationId: org2.id,
           stripeSubscriptionId: `sub_test_2_${Date.now()}`,
-          planId: dealerPlusPlan.stripePriceId,
+          planId: coreplusPlan.stripePriceId,
           status: 'active',
           interval: 'month',
           currentPeriodStart: Math.floor(Date.now() / 1000),
@@ -293,7 +293,7 @@ describe('Billing, Credits & Subscriptions', () => {
       })
 
       expect(org1WithSub?.subscription?.planId).toBe(PRICING_PLANS.find(p => p.id === PLAN_IDS.pro)?.stripePriceId)
-      expect(org2WithSub?.subscription?.planId).toBe(dealerPlusPlan.stripePriceId)
+      expect(org2WithSub?.subscription?.planId).toBe(coreplusPlan.stripePriceId)
     })
   })
 
@@ -472,7 +472,7 @@ describe('Billing, Credits & Subscriptions', () => {
     it('should increment credits correctly', async () => {
       const { org } = await setupOrganizationWithSubscription(PLAN_IDS.pro)
 
-      const initialCredits = CREDITS_FREE
+      const initialCredits = CREDITS_SIGNUP_BONUS
       const creditsToAdd = 10
 
       await testDb.organization.update({

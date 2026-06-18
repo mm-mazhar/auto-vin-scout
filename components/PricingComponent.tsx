@@ -36,12 +36,19 @@ export default function PricingComponent({
   void proExhausted
   const isBillingFreeState =
     mode === 'billing' && (currentPlanId === null || currentPlanId === PLAN_IDS.free)
-  const visiblePlans = PRICING_PLANS.filter((p) => p.id !== PLAN_IDS.free)
+  const visiblePlans = PRICING_PLANS.filter((p) => p.id !== PLAN_IDS.free && !p.hidden)
+
+  const colCount = visiblePlans.length
+  const lgCols =
+    colCount === 1 ? 'lg:grid-cols-1' :
+    colCount === 2 ? 'lg:grid-cols-2' :
+    colCount === 3 ? 'lg:grid-cols-3' :
+    'lg:grid-cols-4'
 
   const gridColsClass =
     mode === 'marketing'
-      ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2 justify-items-center justify-center'
-      : 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2 justify-items-stretch'
+      ? `grid grid-cols-1 md:grid-cols-2 ${lgCols} gap-2 justify-items-center justify-center`
+      : `grid grid-cols-1 md:grid-cols-2 ${lgCols} gap-2 justify-items-stretch`
 
   const headerPaddingClass =
     mode === 'billing' ? 'p-2' : isBillingFreeState ? 'p-6' : 'p-4'
@@ -158,8 +165,8 @@ export default function PricingComponent({
               <CardTitle className={mode === 'billing' ? 'text-base' : ''}>{plan.title}</CardTitle>
               {(() => {
                 const showPro =
-                  plan.id === PLAN_IDS.dealerplus &&
-                  currentPlanId === PLAN_IDS.dealerplus &&
+                  plan.id === PLAN_IDS.coreplus &&
+                  currentPlanId === PLAN_IDS.coreplus &&
                   (mode === 'marketing' || mode === 'billing')
                 if (showPro) {
                   return (

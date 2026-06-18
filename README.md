@@ -167,8 +167,8 @@ e.g. Month/Year: 02/30, CCV: 123, Name on Card: John Doe
 | **Free** | $0 | 0 | Account creation, search history |
 | **Basic Report** | $29.99 one-time | 3 | Individual buyers doing a few checks |
 | **Pro** | $59.99/mo | 10 | Power buyers and flippers |
-| **Dealer Core** | $199.99/mo | 100 | Small used-car lots |
-| **Dealer Plus** | $499.99/mo | 200 | Franchise dealers, full predictive engine |
+| **Core** | $199.99/mo | 100 | Small used-car lots |
+| **Core Plus** | $499.99/mo | 200 | Franchise dealers, full predictive engine |
 
 ---
 

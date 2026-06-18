@@ -122,10 +122,10 @@ export function TopBar({
           (() => {
             const id = usageInfo.currentPlanId
             const base =
-              id === PLAN_IDS.dealerplus
-                ? 'Dealer Plus'
-                : id === PLAN_IDS.dealercore
-                  ? 'Dealer Core'
+              id === PLAN_IDS.coreplus
+                ? 'Core Plus'
+                : id === PLAN_IDS.core
+                  ? 'Core'
                   : id === PLAN_IDS.pro
                     ? 'Pro Plan'
                     : id === PLAN_IDS.basic

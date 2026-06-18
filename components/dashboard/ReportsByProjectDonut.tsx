@@ -45,7 +45,7 @@ export function ReportsByProjectDonut({ data, orgId, userRole }: ReportsByProjec
       <Card className='col-span-2'>
         <CardHeader>
           <CardTitle className='text-sm font-medium'>Reports by Project</CardTitle>
-          <p className='text-xs text-muted-foreground'>Most useful on Dealer Core, Dealer Plus, or Pro plans</p>
+          <p className='text-xs text-muted-foreground'>Most useful on Core or Pro plans</p>
         </CardHeader>
         <CardContent className='flex flex-col items-center justify-center h-48 gap-3'>
           <PieChartIcon className='h-8 w-8 text-muted-foreground' />
@@ -72,7 +72,7 @@ export function ReportsByProjectDonut({ data, orgId, userRole }: ReportsByProjec
     <Card className='col-span-2'>
       <CardHeader>
         <CardTitle className='text-sm font-medium'>Reports by Project</CardTitle>
-        <p className='text-xs text-muted-foreground'>Project feature most useful on Dealer Core, Dealer Plus Plans</p>
+        <p className='text-xs text-muted-foreground'>Useful for different sets of lots/inventories</p>
       </CardHeader>
       <CardContent>
         <ChartContainer config={chartConfig} className='h-48 w-full'>

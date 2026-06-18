@@ -14,11 +14,11 @@ type AdminStats = {
   totalUsers: number;
   totalOrgs: number;
   activeProCount: number;
-  activeDealerCoreCount: number;
-  activeDealerPlusCount: number;
+  activecoreCount: number;
+  activecoreplusCount: number;
   proRevenue: number;
-  dealerCoreRevenue: number;
-  dealerPlusRevenue: number;
+  coreRevenue: number;
+  coreplusRevenue: number;
   totalRevenue: number;
   growthPercentage: string;
 };
@@ -52,10 +52,10 @@ export function DashboardActions({ data }: { data: AdminDashboardData }) {
     csvContent += `SUMMARY METRICS\n`;
     csvContent += `Metric,Value\n`;
     csvContent += `Total MRR,${stats.totalRevenue}\n`;
-    csvContent += `Dealer Plus (MRR),${stats.dealerPlusRevenue}\n`;
-    csvContent += `Dealer Core (MRR),${stats.dealerCoreRevenue}\n`;
+    csvContent += `Core Plus (MRR),${stats.coreplusRevenue}\n`;
+    csvContent += `Core (MRR),${stats.coreRevenue}\n`;
     csvContent += `Pro (MRR),${stats.proRevenue}\n`;
-    csvContent += `Active Subscriptions,${stats.activeProCount + stats.activeDealerCoreCount + stats.activeDealerPlusCount}\n`;
+    csvContent += `Active Subscriptions,${stats.activeProCount + stats.activecoreCount + stats.activecoreplusCount}\n`;
     csvContent += `Total Users,${stats.totalUsers}\n`;
     csvContent += `Active Orgs,${stats.totalOrgs}\n\n`;
 

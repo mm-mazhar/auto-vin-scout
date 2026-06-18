@@ -84,11 +84,12 @@ export default async function BillingPage() {
 
   const basicPlan = PRICING_PLANS.find((p) => p.id === PLAN_IDS.basic)
   const proPlan = PRICING_PLANS.find((p) => p.id === PLAN_IDS.pro)
-  const dealerCorePlan = PRICING_PLANS.find((p) => p.id === PLAN_IDS.dealercore)
-  const dealerPlusPlan = PRICING_PLANS.find((p) => p.id === PLAN_IDS.dealerplus)
+  const corePlan = PRICING_PLANS.find((p) => p.id === PLAN_IDS.core)
+  const coreplusPlan = PRICING_PLANS.find((p) => p.id === PLAN_IDS.coreplus && !p.hidden)
 
   const showRenewal = isSubActive && (data.org.credits < SUBSCRIPTION_RENEWAL_CREDIT_THRESHOLD)
-  const upgradeTargetPlan = resolvedCurrent === PLAN_IDS.pro ? dealerCorePlan : resolvedCurrent === PLAN_IDS.dealercore ? dealerPlusPlan : null
+  // Core Plus is hidden — upgrade chain ends at Core
+  const upgradeTargetPlan = resolvedCurrent === PLAN_IDS.pro ? corePlan : null
   const showUpgrade = isSubActive && !!upgradeTargetPlan
   const hasBasicCredits = !isSubActive && data.org.credits > 0
   const showNonSubscriptionUpgradeCards = !isSubActive
@@ -192,7 +193,7 @@ export default async function BillingPage() {
                 <div className='border-t mx-2'></div>
                 <CardContent className='px-2 pb-2'>
                   <ul className='text-xs space-y-1'>
-                    {basicPlan.features.slice(0, 4).map((f, i) => (
+                    {basicPlan.features.map((f, i) => (
                       <li key={i} className='flex items-center gap-2'>
                         <span>•</span>
                         <span>{f}</span>
@@ -217,7 +218,7 @@ export default async function BillingPage() {
                 <div className='border-t mx-2'></div>
                 <CardContent className='px-2 pb-2'>
                   <ul className='text-xs space-y-1'>
-                    {proPlan.features.slice(0, 4).map((f, i) => (
+                    {proPlan.features.map((f, i) => (
                       <li key={i} className='flex items-center gap-2'>
                         <span>•</span>
                         <span>{f}</span>
@@ -228,21 +229,21 @@ export default async function BillingPage() {
               </Card>
             ) : null}
 
-            {dealerCorePlan ? (
+            {corePlan ? (
               <Card className='rounded-lg border'>
                 <CardHeader className='p-2'>
                   <div className='flex items-center justify-between'>
                     <div>
-                      <CardTitle className='text-sm'>Upgrade to {dealerCorePlan.title}</CardTitle>
-                      <CardDescription className='text-xs'>{dealerCorePlan.description}</CardDescription>
+                      <CardTitle className='text-sm'>Upgrade to {corePlan.title}</CardTitle>
+                      <CardDescription className='text-xs'>{corePlan.description}</CardDescription>
                     </div>
-                    <UpgradeSubscriptionButton planId={PLAN_IDS.dealercore} hasActiveSubscription={isSubActive} />
+                    <UpgradeSubscriptionButton planId={PLAN_IDS.core} hasActiveSubscription={isSubActive} />
                   </div>
                 </CardHeader>
                 <div className='border-t mx-2'></div>
                 <CardContent className='px-2 pb-2'>
                   <ul className='text-xs space-y-1'>
-                    {dealerCorePlan.features.slice(0, 4).map((f, i) => (
+                    {corePlan.features.map((f, i) => (
                       <li key={i} className='flex items-center gap-2'>
                         <span>•</span>
                         <span>{f}</span>
@@ -253,21 +254,21 @@ export default async function BillingPage() {
               </Card>
             ) : null}
 
-            {dealerPlusPlan ? (
+            {coreplusPlan ? (
               <Card className='rounded-lg border'>
                 <CardHeader className='p-2'>
                   <div className='flex items-center justify-between'>
                     <div>
-                      <CardTitle className='text-sm'>Upgrade to {dealerPlusPlan.title}</CardTitle>
-                      <CardDescription className='text-xs'>{dealerPlusPlan.description}</CardDescription>
+                      <CardTitle className='text-sm'>Upgrade to {coreplusPlan.title}</CardTitle>
+                      <CardDescription className='text-xs'>{coreplusPlan.description}</CardDescription>
                     </div>
-                    <UpgradeSubscriptionButton planId={PLAN_IDS.dealerplus} hasActiveSubscription={isSubActive} />
+                    <UpgradeSubscriptionButton planId={PLAN_IDS.coreplus} hasActiveSubscription={isSubActive} />
                   </div>
                 </CardHeader>
                 <div className='border-t mx-2'></div>
                 <CardContent className='px-2 pb-2'>
                   <ul className='text-xs space-y-1'>
-                    {dealerPlusPlan.features.slice(0, 4).map((f, i) => (
+                    {coreplusPlan.features.map((f, i) => (
                       <li key={i} className='flex items-center gap-2'>
                         <span>•</span>
                         <span>{f}</span>
@@ -336,13 +337,13 @@ export default async function BillingPage() {
                       <CardTitle className='text-sm'>Upgrade to {upgradeTargetPlan?.title}</CardTitle>
                       <CardDescription className='text-xs'>{upgradeTargetPlan?.description}</CardDescription>
                     </div>
-                    <UpgradeSubscriptionButton planId={upgradeTargetPlan?.id ?? PLAN_IDS.dealerplus} hasActiveSubscription={isSubActive} />
+                    <UpgradeSubscriptionButton planId={upgradeTargetPlan?.id ?? PLAN_IDS.coreplus} hasActiveSubscription={isSubActive} />
                   </div>
                 </CardHeader>
                 <div className='border-t mx-2'></div>
                 <CardContent className='px-2 pb-2'>
                   <ul className='text-xs space-y-1'>
-                    {upgradeTargetPlan?.features.slice(0, 4).map((f, i) => (
+                    {upgradeTargetPlan?.features.map((f, i) => (
                       <li key={i} className='flex items-center gap-2'>
                         <span>•</span>
                         <span>{f}</span>

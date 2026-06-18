@@ -155,29 +155,27 @@ export function NavUser({
                   {currentPlanId === PLAN_IDS.basic
                     ? (
                       <>
-                        <span className="text-primary font-semibold">Basic Report,</span>Upgrade to <span className="text-primary font-semibold">Pro Plan</span>
+                        <span className="text-primary font-semibold">Basic Report,</span>{' '}Upgrade to <span className="text-primary font-semibold">Pro Plan</span>
                       </>
                     )
                     : currentPlanId === PLAN_IDS.pro
                     ? (
                       <>
-                        <span className="text-primary font-semibold">Pro Plan,</span>Upgrade to <span className="text-primary font-semibold">Dealer Core</span>
+                        <span className="text-primary font-semibold">Pro Plan,</span>{' '}Upgrade to <span className="text-primary font-semibold">Core</span>
                       </>
                     )
-                    : currentPlanId === PLAN_IDS.dealercore
+                    : currentPlanId === PLAN_IDS.core
                     ? (
-                      <>
-                        <span className="text-primary font-semibold">Dealer Core,</span>Upgrade to <span className="text-primary font-semibold">Dealer Plus</span>
-                      </>
+                      <span className="text-primary font-semibold">Core</span>
                     )
-                    : currentPlanId === PLAN_IDS.dealerplus
+                    : currentPlanId === PLAN_IDS.coreplus
                     ? (
-                      <span className="text-primary font-semibold">Dealer Plus</span>
+                      <span className="text-primary font-semibold">Core Plus</span>
                     )
                     : (
-                      <>
+                      <span>
                         Free, Upgrade to <span className="text-primary font-semibold">Pro Plan</span>
-                      </>
+                      </span>
                     )}
                 </Link>
               </DropdownMenuItem>

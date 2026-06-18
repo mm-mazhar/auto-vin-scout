@@ -87,8 +87,8 @@ const planIdArb = fc.constantFrom(
   PLAN_IDS.free,
   PLAN_IDS.basic,
   PLAN_IDS.pro,
-  PLAN_IDS.dealercore,
-  PLAN_IDS.dealerplus
+  PLAN_IDS.core,
+  PLAN_IDS.coreplus
 )
 
 const roleArb = fc.constantFrom(ROLES.OWNER, ROLES.ADMIN, ROLES.MEMBER)
@@ -149,7 +149,7 @@ describe('Property 2: Free-plan UpgradeNudge invariant', () => {
   })
 
   it('does not show credits nudge for non-free plans even with 0 credits', async () => {
-    const paidPlans = [PLAN_IDS.basic, PLAN_IDS.pro, PLAN_IDS.dealercore, PLAN_IDS.dealerplus]
+    const paidPlans = [PLAN_IDS.basic, PLAN_IDS.pro, PLAN_IDS.core, PLAN_IDS.coreplus]
     for (const plan of paidPlans) {
       expect(shouldShowCreditsNudge(plan, 0)).toBe(false)
     }
@@ -224,7 +224,7 @@ describe('Property 4: Credits card format matches plan type', () => {
   })
 
   it('paid subscription plans show "X / Y" usage format', async () => {
-    const paidPlans = [PLAN_IDS.pro, PLAN_IDS.dealercore, PLAN_IDS.dealerplus]
+    const paidPlans = [PLAN_IDS.pro, PLAN_IDS.core, PLAN_IDS.coreplus]
     await fc.assert(
       fc.asyncProperty(
         fc.constantFrom(...paidPlans),

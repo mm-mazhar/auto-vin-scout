@@ -99,7 +99,7 @@ export function UpgradePromptCard({ className }: UpgradePromptCardProps) {
   const popularPlans = [
     PRICING_PLANS.find(p => p.id === PLAN_IDS.basic)!,
     PRICING_PLANS.find(p => p.id === PLAN_IDS.pro)!,
-    PRICING_PLANS.find(p => p.id === PLAN_IDS.dealercore)!,
+    PRICING_PLANS.find(p => p.id === PLAN_IDS.core)!,
   ]
 
   return (

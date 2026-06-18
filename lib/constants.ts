@@ -93,8 +93,8 @@ export const APP_PHONE_2 = `+1 xxx xxxx` as string
 // ✅ Pricing
 export const STRIPE_PRICE_ID_basic = (process.env.STRIPE_PRICE_ID_basic || '') as string
 export const STRIPE_PRICE_ID_pro = (process.env.STRIPE_PRICE_ID_pro || '') as string
-export const STRIPE_PRICE_ID_dealercore = (process.env.STRIPE_PRICE_ID_dealercore || '') as string
-export const STRIPE_PRICE_ID_dealerplus = (process.env.STRIPE_PRICE_ID_dealerplus || '') as string
+export const STRIPE_PRICE_ID_core = (process.env.STRIPE_PRICE_ID_core || '') as string
+export const STRIPE_PRICE_ID_coreplus = (process.env.STRIPE_PRICE_ID_coreplus || '') as string
 
 // A new type definition for a pricing plan
 export const PRICE_HEADING = `Flexible plans, no hidden complexity` as string
@@ -102,15 +102,16 @@ export const PLAN_IDS = {
   free: 'free_plan',
   basic: 'basic_report',
   pro: 'pro_plan',
-  dealercore: 'dealer_core',
-  dealerplus: 'dealer_plus',
+  core: 'core_plan',
+  coreplus: 'coreplus_plan',
 } as const
 
 export const CREDITS_FREE: number = 0
+export const CREDITS_SIGNUP_BONUS: number = 1
 export const CREDITS_BASIC: number = 3
 export const CREDITS_PRO: number = 10
-export const CREDITS_DEALERCORE: number = 100
-export const CREDITS_DEALERPLUS: number = 200
+export const CREDITS_core: number = 100
+export const CREDITS_coreplus: number = 200
 
 export type PlanId = (typeof PLAN_IDS)[keyof typeof PLAN_IDS]
 
@@ -123,6 +124,7 @@ export type PricingPlan = {
   credits: number
   features: string[]
   stripePriceId?: string // Optional because 'Free' plan has no Stripe ID
+  hidden?: boolean       // When true, plan is hidden from all UI surfaces (existing subscribers unaffected)
 }
 
 // Define the plans using the pricing strategy
@@ -140,56 +142,64 @@ export const PRICING_PLANS: PricingPlan[] = [
   {
     id: PLAN_IDS.basic,
     title: 'Basic',
-    price: '29.99',
+    price: '9.99',
     priceSuffix: ' one-time',
     description: `Deep dive into few vehicles. Credits: ${CREDITS_BASIC}`,
     credits: CREDITS_BASIC,
-    features: ['vPIC VIN Decode', 'Market Anomalies', 'Local Market Band', 'FEMA Flood Zones', 'Basic Inspection Checklist'],
+    features: ['vPIC VIN Decode', 
+      'Baseline Health',
+      'Recalls', 
+      'Market Anomalies',
+      'NHTSA Safety Ratings',
+      'Powertrain Complexity & Maintenance Liability',
+      'Regional Corrosion & Environmental Stress',
+      'Geospatial Flood Forensics, FEMA Flood Zones', 
+      'Crime Statistics & Theft Risk',
+      'Visual & Auction Forensics',
+      'Reliability & Social Proof'
+    ],
     stripePriceId: STRIPE_PRICE_ID_basic,
   },
   {
     id: PLAN_IDS.pro,
     title: 'Pro',
-    price: '59.99',
+    price: '19.99',
     priceSuffix: '/mo',
     description: `For power buyers/flippers. Credits: ${CREDITS_PRO}`,
     credits: CREDITS_PRO,
     features: [
       'Everything in Basic',
-      'Title Branding & Salvage Records',
-      'Auction / Wholesale Data',
-      'Legal & Title Verification',
+      'More Reports',
     ],
     stripePriceId: STRIPE_PRICE_ID_pro,
   },
   {
-    id: PLAN_IDS.dealercore,
+    id: PLAN_IDS.core,
     title: 'Core',
     price: '199.99',
     priceSuffix: '/mo',
-    description: `For small used car lots. Credits: ${CREDITS_DEALERCORE}`,
-    credits: CREDITS_DEALERCORE,
+    description: `For small lots of used cars. Credits: ${CREDITS_core}`,
+    credits: CREDITS_core,
     features: [
       'Everything in Pro',
-      'Inventory Risk Scoring',
-      'Wholesale Signals',
+      'Suitable for Small Inventory Risk Scoring'
     ],
-    stripePriceId: STRIPE_PRICE_ID_dealercore,
+    stripePriceId: STRIPE_PRICE_ID_core,
   },
   {
-    id: PLAN_IDS.dealerplus,
+    id: PLAN_IDS.coreplus,
     title: 'Core Plus',
     price: '499.99',
     priceSuffix: '/mo',
-    description: `For franchise dealers. Credits: ${CREDITS_DEALERPLUS}`,
-    credits: CREDITS_DEALERPLUS,
+    description: `For franchise dealers. Credits: ${CREDITS_coreplus}`,
+    credits: CREDITS_coreplus,
     features: [
       'Everything in Core',
-      'Priority Title Checks',
-      'Full Predictive Engine',
+      'Suitable for Big Inventory Risk Scoring',
       'Depreciation Forecasts',
     ],
-    stripePriceId: STRIPE_PRICE_ID_dealerplus,
+    stripePriceId: STRIPE_PRICE_ID_coreplus,
+    hidden: true, // Hidden from all UI surfaces; existing subscribers are unaffected
   },
 ]
 

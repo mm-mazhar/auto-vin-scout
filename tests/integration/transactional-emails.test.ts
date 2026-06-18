@@ -76,10 +76,10 @@ describe('Transactional Emails', () => {
       expect(callArgs.finalCredits).toBe(CREDITS_FREE + 10)
     })
 
-    it('should send payment confirmation email with correct content for Dealer Plus plan', async () => {
+    it('should send payment confirmation email with correct content for Core Plus plan', async () => {
       const mockSendPaymentConfirmationEmail = vi.mocked(emailModule.sendPaymentConfirmationEmail)
       
-      // Simulate payment confirmation for Dealer Plus
+      // Simulate payment confirmation for Core Plus
       await emailModule.sendPaymentConfirmationEmail({
         to: testUser.email,
         name: testUser.name,
@@ -88,7 +88,7 @@ describe('Transactional Emails', () => {
         currency: 'usd',
         invoiceUrl: 'https://invoice.stripe.com/test',
         invoiceNumber: 'INV-002',
-        planTitle: 'Dealer Plus',
+        planTitle: 'Core Plus',
         periodEnd: Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60,
         finalCredits: CREDITS_FREE + 200,
       })
@@ -98,7 +98,7 @@ describe('Transactional Emails', () => {
       
       // Verify the parameters
       const callArgs = mockSendPaymentConfirmationEmail.mock.calls[0][0]
-      expect(callArgs.planTitle).toBe('Dealer Plus')
+      expect(callArgs.planTitle).toBe('Core Plus')
       expect(callArgs.amountPaid).toBe(49999)
       expect(callArgs.finalCredits).toBe(CREDITS_FREE + 200)
     })
