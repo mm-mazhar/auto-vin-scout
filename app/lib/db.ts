@@ -1,6 +1,6 @@
 // app/lib/db.ts
 
-import { DEFAULT_COLOR_SCHEME, DEFAULT_THEME_MODE } from '@/lib/constants'
+import { CREDITS_SIGNUP_BONUS, DEFAULT_COLOR_SCHEME, DEFAULT_THEME_MODE } from '@/lib/constants'
 import { PrismaPg } from '@prisma/adapter-pg'
 import { PrismaClient } from '@prisma/client'
 import { Pool } from 'pg'
@@ -166,6 +166,7 @@ export async function getData(userData?: UserData | string): Promise<DbUser | nu
                     name: defaultOrgName,
                     slug: `${orgSlugBase}-${idSuffix}`,
                     isPrimary: true,
+                    credits: CREDITS_SIGNUP_BONUS,
                     projects: {
                       create: {
                         name: defaultProjectName,

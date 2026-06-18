@@ -95,6 +95,13 @@ export default async function BillingPage() {
   const showNonSubscriptionUpgradeCards = !isSubActive
   const showBillingDetails = isSubActive || hasBasicCredits
 
+  // Dynamic grid class: 3 visible plans → 2-col on md, 3-col on lg so last card stretches full width on 2-col
+  const upgradeCardCount = [basicPlan, proPlan, corePlan, coreplusPlan].filter(Boolean).length
+  const upgradeGridCols =
+    upgradeCardCount === 3
+      ? 'grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3'
+      : 'grid grid-cols-1 gap-4 md:grid-cols-2'
+
   const currentForState: PlanId | null = isSubActive
     ? resolvedCurrent
     : hasBasicCredits
@@ -165,20 +172,20 @@ export default async function BillingPage() {
         ) : null}
 
         {showNonSubscriptionUpgradeCards ? (
-          <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
+          <div className={upgradeGridCols}>
             {basicPlan ? (
               <Card className='rounded-lg border'>
                 <CardHeader className='p-2'>
-                  <div className='flex items-center justify-between'>
-                    <div>
+                  <div className='flex items-center justify-between gap-3'>
+                    <div className='min-w-0'>
                       <CardTitle className='text-sm'>
                         {hasBasicCredits ? basicPlan.title : `Purchase ${basicPlan.title}`}
                       </CardTitle>
                       <CardDescription className='text-xs'>{basicPlan.description}</CardDescription>
                     </div>
-                    <div className='flex items-center gap-2'>
+                    <div className='flex items-center gap-2 shrink-0'>
                       {hasBasicCredits ? (
-                        <span className='text-[10px] px-2 py-0.5 rounded-full bg-primary/15 text-primary border border-primary/30'>
+                        <span className='text-[10px] px-2 py-0.5 rounded-full bg-primary/15 text-primary border border-primary/30 shrink-0 whitespace-nowrap'>
                           Current Plan
                         </span>
                       ) : null}

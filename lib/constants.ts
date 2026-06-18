@@ -144,9 +144,11 @@ export const PRICING_PLANS: PricingPlan[] = [
     title: 'Basic',
     price: '9.99',
     priceSuffix: ' one-time',
-    description: `Deep dive into few vehicles. Credits: ${CREDITS_BASIC}`,
+    description: `Deep dive into few vehicles. Credits: ${CREDITS_BASIC}.`,
     credits: CREDITS_BASIC,
-    features: ['vPIC VIN Decode', 
+    features: [
+      `Run ${CREDITS_SIGNUP_BONUS} free report on first sign up`,
+      'vPIC VIN Decode', 
       'Baseline Health',
       'Recalls', 
       'Market Anomalies',
