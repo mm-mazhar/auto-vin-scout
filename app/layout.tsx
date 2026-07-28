@@ -58,6 +58,11 @@ export const metadata: Metadata = {
   creator: NEXT_PUBLIC_SITE_NAME,
   publisher: NEXT_PUBLIC_SITE_NAME,
 
+  // Google Search Console verification
+  verification: {
+    google: 'OQPYVoC9X0u3-PvUfyou4jnnuZJrclo0PdQMGb9-lxw',
+  },
+
   // Robots meta tag
   robots: ISLAUNCHED
     ? { index: true, follow: true }
