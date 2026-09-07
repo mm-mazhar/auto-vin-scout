@@ -369,12 +369,15 @@ See `.env.example` for the full list. Key groups:
 ## Development
 
 ```bash
-pnpm run dev          # Start dev server (Turbopack)
-pnpm run build        # Production build
-pnpm run lint         # ESLint
-pnpm run type-check   # TypeScript strict check
-pnpm test             # Run all tests
-pnpm test tests/orpc  # Run oRPC API tests only
+pnpm run dev             # Start dev server (Turbopack)
+pnpm run build           # Production build
+pnpm run lint            # ESLint
+pnpm run type-check      # TypeScript strict check
+pnpm test                # Run all tests
+pnpm test:integration    # Integration tests
+pnpm test tests/orpc     # Run oRPC API tests only
+pnpm test:watch          # Watch mode
+pnpm type-check          # TypeScript strict check
 ```
 
 ### Stripe Local Webhooks
@@ -394,7 +397,20 @@ pnpm prisma studio                       # Visual DB browser
 
 ### Inngest Dev Server
 
-The Inngest dev server runs alongside `pnpm run dev` for local function testing and debugging.
+**Option 1 — Built-in (Recommended)**
+The Inngest dev server runs automatically when you start the dev server:
+```bash
+pnpm run dev
+```
+UI available at `http://localhost:3000/_inngest`
+
+**Option 2 — Standalone CLI (separate port)**
+```bash
+npx inngest dev -p 8288
+```
+UI available at `http://localhost:8288`
+
+Both options work for local function testing and debugging.
 
 ---
 
@@ -404,6 +420,14 @@ The oRPC layer provides a type-safe API with auto-generated OpenAPI documentatio
 
 - **OpenAPI Spec**: `/api/openapi.json`
 - **API Docs** (Scalar): `/docs/api`
+
+## Key Ports
+
+- Next.js	          http://localhost:3000
+- Inngest UI	      http://localhost:3000/_inngest
+- Stripe CLI	      http://localhost:3000/api/webhook/stripe
+- Prisma Studio	    http://localhost:5555
+
 
 ### Routers
 
