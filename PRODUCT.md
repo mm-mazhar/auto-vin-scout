@@ -38,7 +38,8 @@ Traditional history reports are static lookups against insurance and DMV records
 
 - **Risk vectors (8):** Baseline health & market anomalies (0.25), Safety ratings (0.05), Geospatial flood forensics (0.15), Powertrain complexity (0.10), Environmental corrosion (0.05), Theft & vandalism sentiment (0.05), Visual & auction forensics (0.20), Reliability & social proof (0.15). Composite = Σ score × weight, capped at 100.
 - **Score bands:** 0–30 Low, 31–70 Medium, 71–100 High. This terminology is canonical.
-- **Credits:** one full report costs one credit. The free tier gets the decode preview and search history only.
+- **Credits:** one full report costs one credit. A new account's first organization receives 1 signup credit (`CREDITS_SIGNUP_BONUS`); beyond that, the free tier gets the decode preview and search history.
+- **Public decode:** signed-out visitors can decode a VIN on the marketing home page (`vin.preview`: NHTSA vPIC identity plus the model-year recall count, rate-limited per IP). No risk score is shown without a full report.
 - **Surfaces:** marketing site (home, about, FAQs, contact, get-started, legal), authenticated dashboard, super-admin.
 - **Themes:** light and dark are both supported.
 - **Stage:** pre-launch, heading to paying customers. Stripe runs in sandbox.

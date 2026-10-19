@@ -3,8 +3,6 @@
 'use client'
 
 import { createClient } from '@/app/lib/supabase/client'
-import { Button } from '@/components/ui/button'
-
 import { useRouter } from 'next/navigation'
 
 export function LogoutButton() {
@@ -18,14 +16,13 @@ export function LogoutButton() {
   }
 
   return (
-    <Button
+    <button
+      type='button'
       onClick={handleLogout}
-      variant='default'
-      size='sm'
-      className='cursor-pointer'
+      className='nd-legend inline-flex h-10 cursor-pointer items-center rounded-md px-3 text-(--nd-print-2) transition-colors hover:text-(--nd-print)'
     >
-      Logout
-    </Button>
+      Log out
+    </button>
   )
 }
 

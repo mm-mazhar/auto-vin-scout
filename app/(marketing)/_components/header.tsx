@@ -1,21 +1,19 @@
 // app/(marketing)/_components/header.tsx
 
 'use client'
-import { Themetoggle } from '@/components/Themetoggle'
-import { MARKETING_SURFACE_MAX_WIDTH } from '@/components/page-section'
-import { Button } from '@/components/ui/button'
-import { ShineBorder } from '@/components/ui/shine-border'
+
 import { cn } from '@/lib/utils'
 import { type User } from '@supabase/supabase-js'
 import { Menu, X } from 'lucide-react'
 import Link from 'next/link'
 import React from 'react'
+import { Wordmark } from './dash/wordmark'
 import LogoutButton from './HeaderLogoutButton'
-import SiteLogo from './Sitelogo'
 
-const menuItems = [
-  { name: 'Features', href: '/#features' },
-  { name: 'How It Works', href: '/#how-it-works' },
+const MENU_ITEMS = [
+  { name: 'How it reads', href: '/#lamps' },
+  { name: 'Sample report', href: '/#sample' },
+  { name: 'Pricing', href: '/#pricing' },
   { name: 'FAQs', href: '/faqs' },
   { name: 'About', href: '/about' },
 ]
@@ -25,144 +23,102 @@ interface HeroHeaderProps {
 }
 
 export const HeroHeader = ({ initialUser }: HeroHeaderProps) => {
-  const [menuState, setMenuState] = React.useState(false)
-  const [isScrolled, setIsScrolled] = React.useState(false)
+  const [menuOpen, setMenuOpen] = React.useState(false)
+  const [scrolled, setScrolled] = React.useState(false)
 
   React.useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50)
-    }
-    window.addEventListener('scroll', handleScroll)
-    return () => window.removeEventListener('scroll', handleScroll)
+    const onScroll = () => setScrolled(window.scrollY > 24)
+    onScroll()
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
   }, [])
+
+  React.useEffect(() => {
+    if (!menuOpen) return
+    const onKey = (event: KeyboardEvent) => event.key === 'Escape' && setMenuOpen(false)
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [menuOpen])
+
+  const primaryAction = initialUser ? (
+    <Link
+      href='/dashboard'
+      className='nd-legend inline-flex h-10 items-center rounded-md bg-(--nd-emerald) px-4 font-semibold text-(--nd-emerald-ink) transition-colors hover:bg-(--nd-emerald-hover)'
+    >
+      Dashboard
+    </Link>
+  ) : (
+    <Link
+      href='/get-started'
+      className='nd-legend inline-flex h-10 items-center rounded-md border border-(--nd-rule-strong) px-4 text-(--nd-print) transition-colors hover:border-(--nd-vfd-dim)'
+    >
+      Sign in
+    </Link>
+  )
+
   return (
-    <header>
-      <nav
-        data-state={menuState && 'active'}
-        className='fixed z-20 w-full px-2'
-      >
-        <div
-          className={cn(
-            `mx-auto mt-1 px-5 rounded-2xl border border-transparent relative overflow-hidden ${MARKETING_SURFACE_MAX_WIDTH}`,
-            isScrolled && 'bg-background/50 backdrop-blur-lg border'
-          )}
-        >
-          {isScrolled ? (
-            <ShineBorder borderWidth={1} duration={20} shineColor={['var(--primary)']} />
-          ) : null}
-          <div className='relative flex flex-wrap items-center justify-between gap-6 py-2 lg:gap-0 lg:py-3'>
-            <div className='flex w-full justify-between lg:w-auto'>
-              <SiteLogo />
+    <header
+      className={cn(
+        'sticky top-0 z-40 border-b bg-(--nd-ground) transition-colors duration-300',
+        scrolled || menuOpen ? 'border-(--nd-rule)' : 'border-transparent'
+      )}
+    >
+      <nav aria-label='Main' className='mx-auto flex h-16 max-w-[1288px] items-center justify-between gap-6 px-4 sm:px-6 lg:h-[4.5rem]'>
+        <Wordmark />
 
-              <button
-                onClick={() => setMenuState(!menuState)}
-                aria-label={menuState == true ? 'Close Menu' : 'Open Menu'}
-                className='relative z-20 -m-2.5 -mr-4 block cursor-pointer p-2.5 lg:hidden'
+        <ul className='hidden items-center gap-8 lg:flex'>
+          {MENU_ITEMS.map((item) => (
+            <li key={item.href}>
+              <Link
+                href={item.href}
+                className='nd-legend text-(--nd-print-2) transition-colors hover:text-(--nd-print)'
               >
-                <Menu className='in-data-[state=active]:rotate-180 in-data-[state=active]:scale-0 in-data-[state=active]:opacity-0 m-auto size-6 duration-200' />
-                <X className='in-data-[state=active]:rotate-0 in-data-[state=active]:scale-100 in-data-[state=active]:opacity-100 absolute inset-0 m-auto size-6 -rotate-180 scale-0 opacity-0 duration-200' />
-              </button>
-            </div>
+                {item.name}
+              </Link>
+            </li>
+          ))}
+        </ul>
 
-            <div className='hidden flex-1 justify-center lg:flex'>
-              <ul className='flex gap-8 text-sm'>
-                {menuItems.map((item, index) => (
-                  <li key={index}>
-                    <Link
-                      href={item.href}
-                      className='text-muted-foreground hover:text-primary block duration-150'
-                    >
-                      <span>{item.name}</span>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <div className='bg-background in-data-[state=active]:block lg:in-data-[state=active]:flex mb-6 hidden w-full flex-wrap items-center justify-end space-y-8 rounded-3xl border p-6 shadow-2xl shadow-zinc-300/20 md:flex-nowrap lg:m-0 lg:flex lg:w-fit lg:gap-6 lg:space-y-0 lg:border-transparent lg:bg-transparent lg:p-0 lg:shadow-none dark:shadow-none dark:lg:bg-transparent'>
-              <div className='lg:hidden'>
-                <ul className='space-y-6 text-base'>
-                  {menuItems.map((item, index) => (
-                    <li key={index}>
-                      <Link
-                        href={item.href}
-                        className='text-muted-foreground hover:text-primary block duration-150'
-                      >
-                        <span>{item.name}</span>
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              <div className='flex w-full flex-col space-y-3 sm:flex-row sm:gap-3 sm:space-y-0 md:w-fit'>
-                  {initialUser ? (
-                    <>
-                      <Button
-                        asChild
-                        variant='default'
-                        size='sm'
-                        // className={cn(isScrolled && 'lg:hidden')}
-                        // className={cn('font-bold')}
-                      >
-                        <Link href='/dashboard'>
-                          <span>Dashboard</span>
-                        </Link>
-                      </Button>
-                      <LogoutButton />
-                      
-                      <Themetoggle isAuthenticated={true} />
-                    </>
-                  ) : (
-                    <>
-                     
-                      {/* <Button
-                  asChild
-                  variant='outline'
-                  size='sm'
-                  className={cn(isScrolled && 'lg:hidden')}
-                >
-                  <Link href='#'>
-                    <span>Login</span>
-                  </Link>
-                </Button> */}
-                      <Button
-                        asChild
-                        variant='default'
-                        size='sm'
-                        className={cn(isScrolled && 'lg:hidden', 'font-bold')}
-                      >
-                        <Link href='/get-started'>
-                          <span>Start VIN Check</span>
-                        </Link>
-                      </Button>
-                      {/* <Button
-                  asChild
-                  size='sm'
-                  className={cn(isScrolled && 'lg:hidden')}
-                >
-                  <Link href='#'>
-                    <span>Sign Up</span>
-                  </Link>
-                </Button> */}
-
-                      <Button
-                        asChild
-                        size='sm'
-                        variant='default'
-                        className={cn(isScrolled ? 'lg:inline-flex' : 'hidden', 'font-bold')}
-                      >
-                        <Link href='/get-started'>
-                          <span>Start VIN Check</span>
-                        </Link>
-                      </Button>
-                      <Themetoggle isAuthenticated={false} />
-                    </>
-                  )}
-                </div>
-            </div>
-          </div>
+        <div className='hidden items-center gap-3 lg:flex'>
+          {primaryAction}
+          {initialUser ? <LogoutButton /> : null}
         </div>
+
+        <button
+          type='button'
+          onClick={() => setMenuOpen((open) => !open)}
+          aria-expanded={menuOpen}
+          aria-controls='nd-mobile-menu'
+          aria-label={menuOpen ? 'Close menu' : 'Open menu'}
+          className='-mr-2 grid size-11 place-items-center rounded-md text-(--nd-print) lg:hidden'
+        >
+          {menuOpen ? <X className='size-6' /> : <Menu className='size-6' />}
+        </button>
       </nav>
+
+      <div
+        id='nd-mobile-menu'
+        hidden={!menuOpen}
+        className='border-t border-(--nd-rule) bg-(--nd-ground) px-4 pt-2 pb-6 sm:px-6 lg:hidden'
+      >
+        <ul className='flex flex-col'>
+          {MENU_ITEMS.map((item) => (
+            <li key={item.href}>
+              <Link
+                href={item.href}
+                onClick={() => setMenuOpen(false)}
+                className='nd-display block border-b border-(--nd-rule) py-4 text-[1.6rem] text-(--nd-print)'
+              >
+                {item.name}
+              </Link>
+            </li>
+          ))}
+        </ul>
+        <div className='mt-6 flex items-center gap-3'>
+          {primaryAction}
+          {initialUser ? <LogoutButton /> : null}
+        </div>
+      </div>
     </header>
   )
 }

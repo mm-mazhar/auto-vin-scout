@@ -1,344 +1,328 @@
 ---
 name: Auto VIN Scout
-description: AI risk intelligence for used-car buyers, laid out like a well-lit inspection bay.
+description: The car's instrument cluster at ignition. A VIN turns the key, the dash runs its lamp test, and only what is really wrong stays lit.
 colors:
-  bay-light-emerald: "oklch(0.696 0.17 162.48)"
-  mint-white: "oklch(0.982 0.018 155.826)"
-  focus-emerald: "oklch(0.527 0.154 150.069)"
-  shop-floor: "oklch(0.141 0.005 285.823)"
-  bench: "oklch(0.21 0.006 285.885)"
-  toolbox: "oklch(0.274 0.006 286.033)"
-  work-light-white: "oklch(0.985 0 0)"
-  stencil-gray: "oklch(0.705 0.015 286.067)"
-  bay-hairline: "oklch(1 0 0 / 10%)"
-  field-edge: "oklch(1 0 0 / 15%)"
-  fault-red: "oklch(0.704 0.191 22.216)"
-  risk-low: "oklch(0.696 0.17 162.48)"
-  risk-medium: "oklch(0.6 0.189 55)"
-  risk-high: "oklch(0.577 0.245 27.325)"
-  chart-blue: "oklch(0.488 0.243 264.376)"
-  chart-emerald: "oklch(0.696 0.17 162.48)"
-  chart-amber: "oklch(0.769 0.188 70.08)"
-  chart-violet: "oklch(0.627 0.265 303.9)"
-  chart-rose: "oklch(0.645 0.246 16.439)"
-  bay-light-emerald-day: "oklch(72.887% 0.21192 147.841)"
-  emerald-ink-day: "oklch(0.393 0.095 152.535)"
-  shop-floor-day: "oklch(1 0 0)"
-  toolbox-day: "oklch(0.967 0.001 286.375)"
-  ink-day: "oklch(14.077% 0.0044 285.776)"
-  stencil-gray-day: "oklch(0.552 0.016 285.938)"
-  bay-hairline-day: "oklch(0.92 0.004 286.32)"
-  fault-red-day: "oklch(0.577 0.245 27.325)"
+  ground: "oklch(0.135 0.008 175)"
+  cowl: "oklch(0.165 0.01 175)"
+  panel: "oklch(0.195 0.011 175)"
+  panel-raised: "oklch(0.23 0.012 175)"
+  screen-well: "oklch(0.1 0.012 170)"
+  rule: "oklch(0.93 0.01 160 / 0.1)"
+  rule-strong: "oklch(0.93 0.01 160 / 0.2)"
+  print: "oklch(0.94 0.008 150)"
+  print-2: "oklch(0.78 0.014 165)"
+  print-3: "oklch(0.64 0.014 165)"
+  vfd: "oklch(0.88 0.14 168)"
+  vfd-dim: "oklch(0.7 0.11 168)"
+  vfd-ghost: "oklch(0.88 0.14 168 / 0.09)"
+  vfd-unlit: "oklch(0.88 0.14 168 / 0.16)"
+  emerald: "oklch(0.696 0.17 162.48)"
+  emerald-hover: "oklch(0.76 0.16 162.48)"
+  emerald-ink: "oklch(0.2 0.05 165)"
+  amber: "oklch(0.8 0.16 75)"
+  red: "oklch(0.68 0.2 27)"
 typography:
   display:
-    fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif"
-    fontSize: "3rem"
-    fontWeight: 700
-    lineHeight: 1
-    letterSpacing: "normal"
-  headline:
-    fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif"
-    fontSize: "1.875rem"
-    fontWeight: 700
-    lineHeight: 1.2
-    letterSpacing: "-0.025em"
-  metric:
-    fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif"
-    fontSize: "1.5rem"
-    fontWeight: 700
-    lineHeight: 1.33
-  title:
-    fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif"
-    fontSize: "1rem"
+    fontFamily: "Barlow Condensed, ui-sans-serif, sans-serif"
+    fontSize: "4.1rem"
     fontWeight: 600
     lineHeight: 1
-  body:
-    fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif"
-    fontSize: "0.875rem"
+    letterSpacing: "-0.012em"
+  headline:
+    fontFamily: "Barlow Condensed, ui-sans-serif, sans-serif"
+    fontSize: "3.4rem"
+    fontWeight: 600
+    lineHeight: 1
+    letterSpacing: "-0.012em"
+  title:
+    fontFamily: "Barlow Condensed, ui-sans-serif, sans-serif"
+    fontSize: "1.55rem"
+    fontWeight: 600
+    lineHeight: 1
+    letterSpacing: "-0.012em"
+  body-lead:
+    fontFamily: "Barlow, ui-sans-serif, system-ui, sans-serif"
+    fontSize: "1.125rem"
     fontWeight: 400
     lineHeight: 1.625
-  body-marketing:
-    fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif"
-    fontSize: "1.125rem"
+  body:
+    fontFamily: "Barlow, ui-sans-serif, system-ui, sans-serif"
+    fontSize: "1rem"
     fontWeight: 400
     lineHeight: 1.55
   label:
-    fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif"
-    fontSize: "0.75rem"
+    fontFamily: "Barlow Semi Condensed, ui-sans-serif, sans-serif"
+    fontSize: "0.8125rem"
     fontWeight: 500
-    lineHeight: 1.33
-    letterSpacing: "0.05em"
-  button:
-    fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif"
-    fontSize: "0.875rem"
-    fontWeight: 500
-    lineHeight: 1.43
-  mono:
+    lineHeight: 1.2
+    letterSpacing: "0.14em"
+  vfd-numeral:
+    fontFamily: "DSEG7 Classic, ui-monospace, monospace"
+    fontWeight: 700
+    lineHeight: 1
+    fontFeature: "tnum"
+  vfd-text:
+    fontFamily: "Barlow Semi Condensed, ui-sans-serif, sans-serif"
+    fontWeight: 600
+    lineHeight: 1
+    letterSpacing: "0.07em"
+  vin-entry:
     fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace"
-    fontSize: "0.75rem"
-    fontWeight: 400
-    lineHeight: 1.33
+    fontSize: "1.25rem"
+    fontWeight: 600
+    letterSpacing: "0.08em"
 rounded:
-  sm: "calc(0.65rem - 4px)"
-  md: "calc(0.65rem - 2px)"
-  lg: "0.65rem"
-  xl: "calc(0.65rem + 4px)"
-  2xl: "calc(0.65rem + 8px)"
-  full: "9999px"
+  key: "7px"
+  lens: "7.7px"
+  frame: "14px"
+  bezel-frame: "15.4px"
 spacing:
-  "1": "0.25rem"
-  "2": "0.5rem"
-  "3": "0.75rem"
-  "4": "1rem"
-  "6": "1.5rem"
-  "8": "2rem"
+  gutter: "14px"
+  gutter-sm: "21px"
+  section: "84px"
+  section-lg: "112px"
+  heading-to-body: "49px"
 components:
   button-primary:
-    backgroundColor: "{colors.bay-light-emerald}"
-    textColor: "{colors.mint-white}"
-    typography: "{typography.button}"
-    rounded: "{rounded.md}"
-    padding: "0.5rem 1rem"
-    height: "2.25rem"
+    backgroundColor: "{colors.emerald}"
+    textColor: "{colors.emerald-ink}"
+    typography: "{typography.label}"
+    rounded: "{rounded.key}"
+    height: "42px"
+    padding: "0 14px"
   button-primary-hover:
-    backgroundColor: "oklch(0.696 0.17 162.48 / 0.9)"
-  button-outline:
-    backgroundColor: "oklch(1 0 0 / 4.5%)"
-    textColor: "{colors.work-light-white}"
-    typography: "{typography.button}"
-    rounded: "{rounded.md}"
-    padding: "0.5rem 1rem"
-    height: "2.25rem"
-  button-outline-hover:
-    backgroundColor: "oklch(1 0 0 / 7.5%)"
-  button-ghost:
+    backgroundColor: "{colors.emerald-hover}"
+  button-secondary:
     backgroundColor: "transparent"
-    textColor: "{colors.work-light-white}"
-    typography: "{typography.button}"
-    rounded: "{rounded.md}"
-    padding: "0.5rem 1rem"
-    height: "2.25rem"
-  button-ghost-hover:
-    backgroundColor: "oklch(0.274 0.006 286.033 / 0.5)"
-  card:
-    backgroundColor: "{colors.bench}"
-    textColor: "{colors.work-light-white}"
-    rounded: "{rounded.xl}"
-    padding: "1.5rem"
-  kpi-tile:
-    backgroundColor: "{colors.bench}"
-    textColor: "{colors.work-light-white}"
-    rounded: "{rounded.xl}"
-    padding: "1rem"
-  input:
-    backgroundColor: "oklch(1 0 0 / 4.5%)"
-    textColor: "{colors.work-light-white}"
-    typography: "{typography.body}"
-    rounded: "{rounded.md}"
-    padding: "0.25rem 0.75rem"
-    height: "2.25rem"
-  tabs-list:
-    backgroundColor: "{colors.toolbox}"
-    textColor: "{colors.stencil-gray}"
-    rounded: "{rounded.lg}"
-    padding: "3px"
-    height: "2.25rem"
-  tabs-trigger-active:
-    backgroundColor: "oklch(1 0 0 / 4.5%)"
-    textColor: "{colors.work-light-white}"
-    rounded: "{rounded.md}"
-  badge:
-    backgroundColor: "{colors.bay-light-emerald}"
-    textColor: "{colors.mint-white}"
+    textColor: "{colors.print}"
     typography: "{typography.label}"
-    rounded: "{rounded.md}"
-    padding: "0.125rem 0.5rem"
-  risk-pill-low:
-    backgroundColor: "{colors.risk-low}"
-    textColor: "#ffffff"
-    rounded: "{rounded.full}"
-    padding: "0.25rem 0.5rem"
-  risk-pill-medium:
-    backgroundColor: "{colors.risk-medium}"
-    textColor: "#ffffff"
-    rounded: "{rounded.full}"
-    padding: "0.25rem 0.5rem"
-  risk-pill-high:
-    backgroundColor: "{colors.risk-high}"
-    textColor: "#ffffff"
-    rounded: "{rounded.full}"
-    padding: "0.25rem 0.5rem"
-  chip-glass:
-    backgroundColor: "oklch(0.141 0.005 285.823 / 0.7)"
-    textColor: "{colors.stencil-gray}"
+    rounded: "{rounded.key}"
+    height: "42px"
+    padding: "0 14px"
+  input-vin:
+    backgroundColor: "{colors.screen-well}"
+    textColor: "{colors.vfd}"
+    typography: "{typography.vin-entry}"
+    rounded: "{rounded.key}"
+    height: "49px"
+    padding: "0 14px"
+  chip-demo-vin:
+    backgroundColor: "transparent"
+    textColor: "{colors.print-2}"
+    rounded: "{rounded.key}"
+    padding: "5.25px 10.5px"
+  nav-link:
+    textColor: "{colors.print-2}"
     typography: "{typography.label}"
-    rounded: "{rounded.full}"
-    padding: "0.5rem 0.75rem"
+  vfd-readout:
+    backgroundColor: "{colors.screen-well}"
+    textColor: "{colors.vfd}"
+    typography: "{typography.vfd-numeral}"
+  card-frame:
+    backgroundColor: "{colors.cowl}"
+    textColor: "{colors.print}"
+    rounded: "{rounded.frame}"
 ---
 
 # Design System: Auto VIN Scout
 
 ## Overview
 
-**Creative North Star: "The Inspection Bay"**
+**Creative North Star: "Night Dash"**
 
-Auto VIN Scout looks like a well-lit, methodical workshop. Every finding is laid out, labeled, and inspected under good light. The bay itself is dark and quiet: cool near-black floors, benches one tonal step up, and hairline edges instead of heavy frames. That keeps attention on what sits on the bench: a score, a reading, a flagged anomaly. The one work-light color, Bay Light Emerald, marks the active and the cleared. Amber and red show up only when a risk earns them.
+The product is read like a car's instrument cluster at night: smoked-acrylic near-black with a cool green tint, brushed and spun chrome around the instruments, printed dial numerals, and vacuum-fluorescent readouts that light over their own unlit segments. A VIN turns the key, the dash runs its lamp test, and only what is really wrong stays lit. Everything else on the page borrows the cluster's grammar: legends are instrument legends, numbers are readouts, risk states are telltale lamps.
 
-The system is dense by design. The root font size is 14px, so every rem-based measure (type, spacing, control height) comes out about 12% smaller than stock Tailwind. That lets a flipper scan a full report without scrolling through padding, while uppercase micro-labels and big bold readings keep it legible for a first-time buyer. Dark mode with the Green theme is the default and canonical expression. The light ("day") mode is a supported counterpart built from the same roles.
+Density is calm and editorial between instruments. Sections are wide, rule-separated bands with condensed display headlines and short paragraphs. The density lives in the instruments themselves. Light is scarce on purpose: one brand light (emerald), one readout light (VFD green), and amber and red appear only when a risk state has earned them, always next to a word.
 
-The system has two depth registers. The app (dashboard, report, settings, admin) is flat and border-defined: the inspection bay. Marketing pages are allowed to lift: frosted glass chips, soft blurred color glows, radial spotlights, and large shadows that draw a visitor in from the street.
+Night Dash is night-only. The marketing layout forces `.dark` and the world sets `color-scheme: dark`; there is no light variant (still an open product question, see Layout).
 
 **Key Characteristics:**
-- Dark-first; cool zinc-tinted near-black surfaces, never pure black.
-- One brand hue (Bay Light Emerald); status hue appears only as the Low/Medium/High risk trio.
-- Dense 14px base; uppercase tracked micro-labels over bold readings.
-- Flat, hairline-bordered panels in the app; glass and glow reserved for marketing.
-- Inter throughout; monospace only for machine strings (VINs, IDs).
+- Green-tinted near-black grounds (hue 175), never pure black.
+- Barlow family throughout: Condensed for display, Semi Condensed for legends and readout letters, regular Barlow for reading text.
+- Seven-segment DSEG7 numerals with ghost segments; no glow.
+- Authored ISO-style telltale glyphs, 1.6 stroke, round caps and joins.
+- A real-time 3D cluster (React Three Fiber, orthographic) as the hero, with an SVG fallback.
+- Hairline rules (10% and 20% print alpha) do the structural work; shadows are almost absent.
+
+### Migration status
+
+Rollout is staged. Night Dash currently renders only on the marketing home page (`app/(marketing)/page.tsx`) and the shared marketing header and footer. The other marketing pages (about, FAQs, contact, legal, get-started) and the authenticated app (dashboard, report, settings, admin) still render the legacy shadcn theme from `app/globals.css`. That legacy theme is outgoing and is not the system: new or reworked surfaces extend Night Dash. Its tokens are scoped to the `.nd` wrapper (`app/(marketing)/night-dash.css`, inside `@layer components`) with fonts from `app/(marketing)/fonts.ts`; extending to another route means wrapping it in `.dark` > `.nd` with `NIGHT_DASH_FONT_VARIABLES`.
 
 ## Colors
 
-A near-monochrome cool-graphite bay lit by a single emerald work light, with a strict three-step risk scale for findings.
+A cool, green-tinted night palette with two lights (brand emerald, readout VFD green) and two earned warnings.
 
 ### Primary
-- **Bay Light Emerald** (`bay-light-emerald`): primary buttons, active states, default badges, chart lines and dots, the left rule on executive-summary pull quotes, and highlighted states on the seller-location map. In day mode it becomes the brighter, yellower **Bay Light Emerald (Day)** (`bay-light-emerald-day`), with **Emerald Ink (Day)** text on it.
-- **Mint White** (`mint-white`): label color on emerald fills in dark mode.
-- **Focus Emerald** (`focus-emerald`): the focus ring (applied at 50% opacity, 3px).
+- **Ignition Emerald** (`emerald`): the single brand light. Primary action fills (Decode, Full report, Dashboard, the Basic rate card key), the LOW risk band and score-band swatch, the needle on the wordmark's dial mark, "Your plan" and "Sample report" tags, bullet dashes in the drivers lists, selection tint (at 35% alpha) and `accent-color`. Hovers lift to **Emerald Hover** (`emerald-hover`).
+- **Emerald Ink** (`emerald-ink`): text on emerald fills. Never use white or print on emerald.
 
-### Risk Scale
-The only sanctioned status hues. They are bound to the product's canonical score bands.
-- **Risk Low** (`risk-low`, 0–30): the same value as Bay Light Emerald, so "cleared" and "brand" read as one signal.
-- **Risk Medium** (`risk-medium`, 31–70): a deepened amber, tuned to carry white text.
-- **Risk High** (`risk-high`, 71–100): inspection-fail red. It is also the day-mode destructive color.
+### Secondary
+- **VFD Green** (`vfd`): lit readout segments, VIN text as it is typed, the caret, the focus ring, the current step in the trip log, and driver-card headlines. It is the "instrument is on" colour.
+- **VFD Dim** (`vfd-dim`): readouts powered but idle (unpowered vehicle readout, finished trip-log steps, the `$` before a price), and the hover border on every outlined control.
+- **VFD Ghost** (`vfd-ghost`): the unlit `8` segments drawn behind every seven-segment numeral, and the unlit cells of the weight gauge.
+- **VFD Unlit** (`vfd-unlit`): the dash row shown in an empty text readout.
+
+### Tertiary (earned states only)
+- **Telltale Amber** (`amber`): MEDIUM risk (31–70), the ignition lamp test, the trip computer's error state ("No signal", invalid-VIN lines and input border). Always paired with a word.
+- **Telltale Red** (`red`): HIGH risk (71–100) only. Always paired with a word.
 
 ### Neutral
-- **Shop Floor** (`shop-floor`): page background. The darkest surface; a cool, faintly violet-tinted near-black.
-- **Bench** (`bench`): cards, KPI tiles, popovers, sidebar. One step up from the floor.
-- **Toolbox** (`toolbox`): muted fills, tab tracks, secondary buttons, hover wash.
-- **Work-Light White** (`work-light-white`): primary text and readings.
-- **Stencil Gray** (`stencil-gray`): secondary text, micro-labels, axis ticks, descriptions.
-- **Bay Hairline** (`bay-hairline`): every border and divider (white at 10%).
-- **Field Edge** (`field-edge`): input borders and the active-tab edge (white at 15%).
-- **Fault Red** (`fault-red`): destructive actions and form errors in dark mode.
-- Day-mode counterparts: **Shop Floor (Day)**, **Toolbox (Day)**, **Ink (Day)**, **Stencil Gray (Day)**, **Bay Hairline (Day)**, **Fault Red (Day)**.
+- **Ground** (`ground`): page background, header and footer bars.
+- **Cowl** (`cowl`): alternate section bands (trip log, ignition) and the rate card body.
+- **Panel / Panel Raised** (`panel`, `panel-raised`): declared world steps for raised surfaces; no shipped surface consumes them yet.
+- **Screen Well** (`screen-well`): the recessed black of instrument screens: VIN inputs, the compact-layout trip computer and vehicle pods, the screenshot frame. Used as a literal in the build, not yet a CSS variable.
+- **Print** (`print`): primary text and headlines, the dial's major ticks.
+- **Print 2** (`print-2`): body copy, nav links, secondary labels.
+- **Print 3** (`print-3`): tertiary text, legends at rest, captions, footer meta, unlit telltale glyphs (at 40%).
+- **Rule / Rule Strong** (`rule`, `rule-strong`): hairline dividers; strong for control borders, frames and the trip-log track.
 
-### Data Series
-Multi-series charts use, in order, `chart-blue`, `chart-emerald`, `chart-amber`, `chart-violet`, `chart-rose`. Single-series report charts (odometer, price) use Bay Light Emerald alone.
+In the 3D scene and dial print, colours are hex literals that approximate these tokens (band LOW `#00bc7d`, MED and lamp amber `#f2ab3c`, HIGH and lamp red `#ef5a4c`, dial print `#e8eee9`, dial dim print `#99a5a0`).
 
 ### Named Rules
-**The One Work Light Rule.** Bay Light Emerald is the only brand hue. If something needs emphasis and isn't a risk finding, use weight, size, or Work-Light White, not a new color.
+**The Earned Lamp Rule.** Amber and red are risk states, not decoration. They appear only when a score, a lamp test or an error has earned them, and always beside a word (LOW / MED / HIGH, Medium, High, "No signal").
 
-**The Earned Alarm Rule.** Amber and red belong to the risk scale. Use `risk-medium` / `risk-high` (or `fault-red` for destructive UI), never raw palette classes like `amber-400`, `red-500`, or `emerald-400`. Existing raw usages are drift to migrate onto these tokens.
+**The One Brand Light Rule.** Emerald is the only brand colour. Readout green (VFD) means "instrument on", not "brand"; keep the two roles apart.
 
-**The Off-Black Rule.** Surfaces are tinted graphite (hue ≈286, chroma ≈0.005). Never `#000` and never neutral gray.
+**The Never Black Rule.** Grounds carry hue 175 and a trace of chroma. `#000` appears only inside the 3D scene's shadow and screen materials.
 
 ## Typography
 
-**Display Font:** Inter (with ui-sans-serif, system-ui)
-**Body Font:** Inter
-**Label/Mono Font:** system monospace (ui-monospace, SFMono-Regular, Menlo) for VINs and identifiers only
+**Display Font:** Barlow Condensed (500/600/700; fallback ui-sans-serif)
+**Body Font:** Barlow (400/500/600; fallback ui-sans-serif, system-ui)
+**Label Font:** Barlow Semi Condensed (500/600)
+**Readout Font:** DSEG7 Classic Bold (self-hosted woff2, OFL)
+**VIN Entry:** the system monospace stack
 
-**Character:** a single workhorse grotesk carries everything; hierarchy comes from weight and case, not font contrast. It reads like a well-labeled parts bin: small tracked caps naming each drawer, bold figures inside.
+**Character:** Barlow was drawn from highway and plate lettering, so the whole family reads as printed on a dash: condensed numerals and headlines, semi-condensed spaced-out legends, and a plain Barlow for reading.
 
-All sizes are rem on a 14px root (1rem = 14px).
+Root font-size is 14px, so 1rem = 14px. Sizes below are rem with px in parens.
 
 ### Hierarchy
-- **Display** (700, `3rem` → `4.5rem` at md → `5.25rem` at xl, line-height 1, `text-wrap: balance`): marketing hero headline only. Centered, max width about 56rem.
-- **Headline** (700, `1.875rem`, tracking −0.025em): app page titles ("Dashboard", report vehicle name).
-- **Metric** (700, `1.5rem`): KPI readings: mileage, listing counts, prices, day counts. May take a risk color when the reading itself is the finding.
-- **Title** (600, `1rem`, line-height 1): card titles, usually paired with a 16px Lucide icon.
-- **Body** (400, `0.875rem`, line-height 1.625): app prose, narratives, table cells. Keep narratives under about 75ch.
-- **Body Marketing** (400, `1.125rem`, Stencil Gray, balanced): hero and section sub-copy.
-- **Label** (500, `0.75rem`, tracking 0.05em, UPPERCASE, Stencil Gray): KPI tile headers, section eyebrows, column group heads. Marketing eyebrows widen to 0.2em tracking.
-- **Mono** (400, `0.75rem`): VIN strings and IDs, never prose.
+- **Display** (600, 2.7rem / 3.5rem at sm / 4.1rem at lg = 37.8 / 49 / 57.4px, line-height 1, -0.012em, balanced wrap): the hero headline only. The closing "Turn the key." runs 3rem / 4.4rem (42 / 61.6px).
+- **Headline** (600, 2.6rem / 3.4rem at sm = 36.4 / 47.6px, line-height 1): section headings, max width 14–18ch.
+- **Title** (600, 1.45–2.3rem = 20.3–32.2px): lamp names (sized by vector weight, 2rem down to 1.3rem), trip-log steps (1.55rem), driver headlines (2–2.3rem), limits terms (1.45rem), plan names (2rem, uppercase, 0.04em).
+- **Body Lead** (400, 1.125rem = 15.75px, relaxed leading): section intros, max 44–52ch. This is also the `.nd` root size (line-height 1.55).
+- **Body** (400, 1rem = 14px, relaxed leading): list items, step and lamp descriptions, footer links.
+- **Label / Legend** (500, 0.8125rem = 11.4px, 0.14em, uppercase, line-height 1.2): nav links, button labels, instrument legends, figure captions, footer column titles, data-source line. Buttons set it to 600.
+- **VFD numeral** (DSEG7 700, tabular): scores, years, prices (3.4rem), step numbers (1.5rem), weights (1.6rem).
+- **VFD text** (Semi Condensed 600, 0.07em, uppercase, single line with ellipsis): make, model and trip-computer status lines.
+- **VIN entry** (monospace 600, 0.08em; 1.25rem in the ignition form, 13px min in the cluster): typed VINs and demo VIN chips (0.875rem).
 
 ### Named Rules
-**The Parts-Bin Rule.** Every reading gets a tracked uppercase label above it and the bold figure below. Never a bold figure without its label.
+**The Segment Numerals Rule.** Numerals in readouts use DSEG7 with the unlit `8` of every cell ghosted behind; padded cells use DSEG's blank so columns stay aligned. Letters never use segment type (14-segment D reads as "]", V as "\/"); they use Semi Condensed in VFD green.
 
-**The Machine String Rule.** Monospace is reserved for strings a machine generated (VINs, IDs). Names, numbers, and prose stay in Inter.
+**The Unlit Row Rule.** An empty text readout is never blank: it shows a row of unlit en dashes (one per cell) in `vfd-unlit`. An empty numeral readout shows ghost segments only.
+
+**The Legible VIN Rule.** Anything a person types or copies as a VIN is set in monospace, not in segment or condensed type. Placeholders switch to the uppercase Semi Condensed legend in `print-3`.
 
 ## Layout
 
-App surfaces use a fixed left sidebar (collapsible, with icon rail) and a content column with a slim top bar for breadcrumbs and the theme toggle. Report content stacks full-width cards with a `1.5rem` (21px) vertical gap. Inside cards, data sits in responsive grids: identity rows go to 5 columns, configuration to 3, and KPI rows step 1 → 2 → 3 → 6 columns (sm / lg / xl) with a `1rem` gap. Charts pair two-up at lg and stack below.
-
-Report navigation is a full-width segmented tab bar under the vehicle header. In print, tabs collapse and every panel prints in sequence with an emerald-ruled section title. Print styles live in `globals.css` and must keep working.
-
-Marketing pages center on a narrow column for copy (max about 56rem) and widen to about 64rem for product imagery. Generous vertical rhythm there contrasts with the app's density.
-
-Spacing runs on the Tailwind 0.25rem step (3.5px at this root). The most-used steps are `0.5rem`, `1rem`, and `1.5rem`.
+- **Widths:** content sections max 1240px; header and footer max 1288px; the wide cluster max 1120px; hero headline max 62rem with lead max 46rem.
+- **Gutters:** 14px (px-4), 21px from sm (px-6). Tailwind v4 spacing steps are 0.25rem = 3.5px here.
+- **Section rhythm:** vertical padding 84px (py-24) rising to 112px (lg:py-32) or 98px (lg:py-28). Heading block to content: 49–56px (mt-14 / mt-16). Sections are separated by hairline `rule` borders, and the trip log and ignition sections switch to the `cowl` band.
+- **Section head pattern:** a two-column grid at lg, headline left and lead paragraph right-aligned to the bottom (`items-end`, `justify-self-end`). Single column below lg.
+- **Cluster:** the wide cluster renders from 900px up, in a 1240 x 560 design space (1 unit = 1px at full width) shared by the 3D scene and the HTML overlay, sized with container queries (`cqw`). Below 900px a compact layout takes over: a square dial (max 22rem), then stacked trip-computer and vehicle pods in `screen-well` frames, then a 4 x 2 lamp grid.
+- **Sticky header:** 56px tall (h-16), 63px at lg (4.5rem).
+- **Night only:** no light theme exists for Night Dash; whether one is ever offered is unresolved.
 
 ## Elevation & Depth
 
-The app is flat. Depth comes from tonal stepping (Shop Floor → Bench → Toolbox) and Bay Hairline borders, with at most a barely-there `shadow-sm` on cards and `shadow-xs` on outline controls. Marketing is the one place depth is staged: glass chips (`backdrop-filter: blur`) over the hero, large soft color glows (emerald, sky, and primary at about 10% opacity, `blur-3xl`), radial spotlights, and `shadow-lg` floating preview cards.
+Depth comes from the instruments, not from the page. Page surfaces are flat and tonal (ground, cowl, screen-well) separated by hairlines. Physical depth is reserved for the 3D cluster and the lens wells that echo it.
 
 ### Shadow Vocabulary
-- **Resting card** (`box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)`): app cards. Effectively invisible on dark; it gives a faint edge in day mode.
-- **Control** (`box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05)`): outline buttons and inputs.
-- **Marketing float** (`box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)`): glass preview cards on the hero.
+- **Screenshot lift** (`box-shadow: 0 24px 60px -20px rgb(0 0 0 / 0.7)`): only under the full-size report screenshot frame.
+- **Lens well** (`box-shadow: 0 0 0 3px oklch(0.12 0.008 175), 0 0 0 4px oklch(0.3 0.01 175), inset 0 1px 0 oklch(1 0 0 / 0.22), inset 0 -10px 18px oklch(0 0 0 / 0.6)`): a recessed glass telltale window with a dark gap and a thin chrome ring.
+
+### The 3D cluster
+- **Camera:** orthographic, fit so one design unit maps to one pixel of the container width; dpr capped at 1.75; frameloop pauses when the cluster leaves the viewport.
+- **Materials:** matte cowl rim (`#131918`, roughness 0.74); clear-coated face (`#090d0c`); a **spun-metal bezel** around the dial (conic highlight sweep texture, metalness 0.85); **brushed-metal pod frames** (banded texture, metalness 0.85); clear-coated near-black pod screens (`#030706`); lamp wells (`#050807`) in dark frames (`#1c2322`); an off-white needle (`#efebe2`) with an offset drop shadow at 40%; a chrome hub with a dark cap.
+- **Lighting:** an environment of soft rect lightformers (cool white and pale mint) plus thin vertical strips that streak the chrome rings; key light from upper left, a faint mint fill from lower right.
+- **Dial print:** a canvas texture with 2-unit ticks (major every 10), Barlow Condensed numerals every 10, and three band arcs, each carrying its word (LOW, MED, HIGH) in the legend face.
+- **Lamp light spill:** a lit lamp adds a soft additive radial glow on the lens behind its glyph (opacity eases to 0.55), in amber or red. This is light falling on the lens, not glow on type.
+- **Lens glare:** one fixed reflection gradient across the cluster face (white at 5% fading out by 42%).
+- **Fallback:** a flat SVG cluster (same geometry, chrome gradient strokes) renders until WebGL is ready and when it is unavailable.
 
 ### Named Rules
-**The Split Bay Rule.** In the app, a surface separates from its neighbor by a tonal step or a hairline, never by blur or a heavy shadow. Glass, glow, and lift are marketing-only.
+**The Instrument Depth Rule.** Only instruments are physical. Page sections, cards and frames stay flat; if something needs separation, use a rule or a tonal step, not a shadow.
+
+**The No Neon Rule.** Readouts never glow. A lit segment is set against its own ghost segments; light spill belongs on the lens, never as text-shadow or blur on type.
 
 ## Shapes
 
-The shapes are gently machined: a single base radius of `0.65rem` (about 9px) generates the scale. Controls (buttons, inputs, badges, tab triggers) use the smaller `md` step. Tab tracks use `lg`. Cards and KPI tiles use the softer `xl`. Marketing preview cards use `2xl`. Fully round forms are reserved for things that act as a marker or token: risk pills, status dots, avatars, marketing chips, and the circular risk gauge. Borders are always 1px hairlines.
+Gently rounded, machined forms. Keys and inputs use a small radius (`key`, 7px from the theme's 0.65rem radius), lens wells slightly more (`lens`, 7.7px), and large frames (rate card, compact pods, planned-features aside) 14px, the screenshot bezel 15.4px with a 9.8px inner image radius. In the 3D cluster, pod frames have an 18-unit outer radius and 7-unit chrome thickness, screens 11, lamp wells 10. The cowl is a single silhouette with a raised shoulder over the dial. Small marks: weight-gauge cells and band swatches are 1px-radius bars; "planned" list markers are hollow 5.25px rings; the planned-features aside uses a dashed `rule-strong` border to mark it as not shipped.
 
 ## Components
 
 ### Buttons
-Practical and quiet. A button looks like a labeled switch on the bench, not a call to arms.
-- **Shape:** gently rounded (`rounded.md`), height `2.25rem`, 16px icon slot with 0.5rem gap.
-- **Primary:** Bay Light Emerald fill, Mint White label, 500 weight.
-- **Hover / Focus:** fill drops to 90% opacity. Focus shows a 3px Focus Emerald ring at 50%. Disabled is 50% opacity with no pointer events.
-- **Outline:** a faint white wash with a Field Edge border, which brightens on hover.
-- **Ghost:** no fill; a Toolbox wash on hover. Used in toolbars and the sidebar.
-- **Destructive:** Fault Red at 60% fill in dark mode, white label.
-- **Known issue:** Mint White on Bay Light Emerald is low-contrast in dark mode. Check new primary-button text against WCAG AA before adding more.
+Keys on a dash: short, labelled in the legend face, never decorated.
+- **Shape:** small radius (`key`).
+- **Primary:** `emerald` fill, `emerald-ink` label, legend type at 600. Heights: 35px in the header (h-10), 42px on rate cards (h-12), 49px in the ignition form (h-14); cluster keys scale with the container.
+- **Hover / Focus:** fill lifts to `emerald-hover` via a colour transition. Focus everywhere is a 2px `vfd` outline at 3px offset. Disabled keys drop to 70% opacity with a progress cursor ("Decoding…").
+- **Secondary:** transparent with a 1px `rule-strong` border and `print` label; hover moves the border to `vfd-dim`.
+- **Text button:** `print-2` legend label, hover to `print` (Log out).
+
+### Chips
+- **Demo VIN chips:** transparent, 1px `rule` border, monospace 0.875rem (12.25px) VIN in `print-2`, optional emerald legend tag ("Sample report"). Hover: border `vfd-dim`, text `print`, tag `vfd`. Preceded by a `print-3` "Try" legend.
 
 ### Cards / Containers
-- **Corner Style:** `rounded.xl`.
-- **Background:** Bench on the Shop Floor.
-- **Shadow Strategy:** resting card only (see Elevation & Depth).
-- **Border:** Bay Hairline.
-- **Internal Padding:** `1.5rem` sides and vertical, with a `1.5rem` gap between header and content. The header pairs a Title with an optional Stencil Gray description.
-
-### KPI Tile (signature)
-The instrument reading. An uppercase Label with a 14px tinted icon sits on top, a Metric figure below, and a one-line Stencil Gray context line under that ("avg across 80 listings"). An optional warning line uses Risk Medium or Risk High with a ⚠ glyph. Tiles sit in tight 1rem-gap grids, `rounded.xl`, `1rem` padding.
-
-### Risk Gauge & Pills (signature)
-The report's verdict. A 128px circular SVG ring shows the composite score: a Toolbox track with the arc stroked in the band color, animating along its dash offset over about 1s with ease-out. The center holds the number in bold `1.875rem` above a Stencil Gray "/ 100". Below it is a fully round pill in the band color ("Medium Risk"), then a legend of three dots labeled 0–30 Low, 31–70 Medium, 71–100 High. Per-vector rows repeat the pill small ("Medium (45/100)").
+- **Corner Style:** 14px.
+- **Background:** `cowl` (rate card) or `screen-well` (instrument pods, screenshot frame) or transparent with a dashed border (planned list).
+- **Shadow Strategy:** flat; see Elevation.
+- **Border:** 1px `rule-strong`; internal divisions use `rule`.
+- **Internal Padding:** 14px (compact pods), 28px (aside), 28–35px column padding on rate cards.
 
 ### Inputs / Fields
-- **Style:** height `2.25rem`, `rounded.md`, Field Edge border, faint white wash fill in dark, transparent in day.
-- **Focus:** border shifts to Focus Emerald plus a 3px ring at 50%.
-- **Error / Disabled:** Fault Red border and a soft red ring. Disabled is 50% opacity.
-
-### Tabs
-Segmented control: a Toolbox track (`rounded.lg`, 3px inset). Inactive triggers are Stencil Gray. The active trigger gets the faint white wash, a Field Edge border, and Work-Light White text. Each trigger leads with a 16px Lucide icon. The report uses it full-width.
-
-### Badges
-Small (`0.75rem`, 500) and `rounded.md`. The default is an emerald fill. Source badges ("MarketCheck Enhanced") take a leading icon. Outline badges use only a Bay Hairline border.
+- **Style:** `screen-well` fill, 1px `rule-strong` border, `key` radius, monospace VIN in `vfd`, uppercase legend placeholder in `print-3`.
+- **Focus:** border becomes `vfd`; hover border `vfd-dim`.
+- **Error:** border becomes `amber`; the trip computer prints the reason in amber VFD lines ("17 CHARACTERS", "NO I, O OR Q") and an sr-only message is wired with `aria-describedby`.
 
 ### Navigation
-- **App:** left sidebar on Bench with a Bay Hairline edge. Groups are introduced by small Stencil Gray labels. Items are 16px icon plus `0.875rem` label. Hover and active use a Toolbox wash. The account block sits at the bottom. It collapses to an icon rail; on mobile it becomes a sheet.
-- **Marketing:** top header with the logo (light and dark variants), centered links, and an auth action.
+- **Header:** sticky solid `ground` bar (no blur), wordmark left, legend links in `print-2` (hover `print`) centred, Sign in (secondary) or Dashboard (primary) right. The bottom border is transparent at the top of the page and becomes `rule` after 24px of scroll or when the menu is open.
+- **Mobile:** below lg a 38.5px (size-11) menu toggle opens a full-width panel of display-face links (1.6rem) separated by `rule`, closed by Escape.
+- **Footer:** `ground`, top `rule`, a 1.4fr / 1fr / 1fr / 1fr grid at lg: wordmark plus a two-sentence description, then Product, Company and Legal columns with `print-3` legend titles. A bottom bar carries the data-source line in legend type, social brand icons (18px, `print-3`, hover `print`) and the copyright.
+- **Wordmark:** a dial mark (arc, ticks, emerald needle, which tilts -6deg on hover) beside "AUTOVINSCOUT" in uppercase Barlow Condensed 1.65rem with 0.04em tracking, "VIN" in `print-2`.
 
-### Glass Chip (marketing)
-A rounded-full pill on Shop Floor at 70% with a backdrop blur, Bay Hairline border at 60%, bold `0.75rem` Stencil Gray text. Used to tag hero claims. Marketing only.
+### VFD Readout (signature)
+Lit segments over ghost segments, in tones lit (`vfd`), dim (`vfd-dim`), amber or red (each with a matching 9% ghost). Numeral cells are fixed-width and right- or left-aligned; text readouts truncate with an ellipsis and keep the full value in `title` and an sr-only label. Readouts sit in `screen-well` pods or directly on the page as numbers (prices, weights, step numbers).
+
+### Telltale Glyphs (signature)
+An authored set of eight ISO-style dash symbols on a 24-unit grid: baseline (gauge), safety (seated occupant and belt), flood (car over waves), powertrain (engine outline), corrosion (car with drips), theft (car and padlock), forensics (camera), reliability (wrench). Stroke 1.6, `currentColor`, round caps and joins, no fill. Unlit at `print-3` 40%; amber for test and medium, red for high. Each lamp carries a caption below: lamp name in `print-2` and a state word (Clear in emerald, Medium in amber, High in red, "In report" or "Not scored" in `print-3`).
+
+### Lens Well
+The page-level echo of a cluster lamp, used in the lamp list: a rounded square (7.7px) sized by vector weight (2.9–4.6rem), filled with a dark radial gradient (oklch 0.24 to 0.06), a fixed 172deg glare band across the top third, a 1px oklch(0.38) border, the lens-well shadow stack, and the telltale glyph at 55% in `print` at 90% opacity.
+
+### Weight Gauge and Score Bands
+A DSEG7 percentage above a five-cell bar (lit cells `vfd`, unlit `vfd-ghost`). Score bands are 21 x 5.25px swatches (emerald / amber / red) each followed by the range and word in legend type and a plain-language gloss in `print-3`.
+
+### Trip Log
+An eight-step horizontal pipeline on a 1px `rule-strong` track: DSEG7 step numbers, the current step lit in `vfd` with its title in `vfd`, finished steps dim, upcoming steps at 50% opacity. Progress follows scroll.
+
+### Motion
+- **nd-rise** (900ms, `cubic-bezier(0.16, 1, 0.3, 1)`): opacity 0 to 1, 14px rise and a 6px blur clearing; the hero headline block only.
+- **nd-print-line** (260ms, `steps(12)`): a left-to-right clip reveal as each trip-computer line prints.
+- **Intro:** the 3D cluster tilts up from -0.62 rad and lifts from -60 units, easing to rest; it then follows the pointer by a few hundredths of a radian.
+- **Ignition lamp test:** on settle every lamp lights amber and the needle sweeps to 100, falls back to 0 at 900ms, and lamps settle one by one 110ms apart. Decoding repeats the test for at least 1300ms before results settle.
+- **Needle spring:** a damped spring (stiffness 70, damping 12) on fixed 1/120s substeps.
+- **Reduced motion:** CSS animations are removed, the needle jumps to its target, tilt, lift and pointer follow are disabled, sequence delays cap at 60ms and the minimum lamp test is skipped.
 
 ## Do's and Don'ts
 
 ### Do:
-- **Do** build every surface from the Shop Floor → Bench → Toolbox steps and Bay Hairline borders.
-- **Do** express risk only through `risk-low` / `risk-medium` / `risk-high`, bound to the 0–30 / 31–70 / 71–100 bands.
-- **Do** pair every reading with a tracked uppercase Label (the Parts-Bin Rule).
-- **Do** size everything in rem so the 14px root keeps the system dense and consistent.
-- **Do** design dark mode first, then confirm the day-mode counterpart and the print stylesheet still read correctly.
-- **Do** set VINs and identifiers in monospace.
+- **Do** set every readout number in DSEG7 with ghost segments, and every readout word in Semi Condensed VFD green.
+- **Do** pair amber and red with a word every time (LOW / MED / HIGH, Medium, High, "No signal").
+- **Do** fill empty text readouts with an unlit dash row instead of leaving them blank.
+- **Do** set typed or listed VINs in monospace for legibility.
+- **Do** separate sections with `rule` hairlines and the `cowl` band, and keep page surfaces flat.
+- **Do** use the authored telltale set (24 grid, 1.6 stroke) for risk vectors; draw new glyphs to the same spec.
+- **Do** keep emerald for the primary action and brand marks only; give every focusable element the 2px `vfd` outline.
+- **Do** label unfinished things plainly: placeholder prices, planned features in a dashed frame with "None of these are available today."
+- **Do** extend Night Dash, not the legacy shadcn theme, when a marketing page or app surface is reworked.
 
 ### Don't:
-- **Don't** introduce raw Tailwind palette colors (`amber-400`, `red-500`, `emerald-400`, `blue-400`) for status or emphasis; map them to tokens.
-- **Don't** add a second brand hue; Bay Light Emerald is the only work light.
-- **Don't** use glass, backdrop blur, color glows, or `shadow-lg` inside the app; they belong to marketing.
-- **Don't** use pure black (`#000`) or neutral gray surfaces; stay on the cool graphite tint.
-- **Don't** design for or document the Neutral theme; Green is the system.
-- **Don't** use monospace for prose, labels, or prices.
+- **Don't** use amber or red as decoration or without a word.
+- **Don't** add neon glow, text-shadow or blur to readouts; the ghost segments are the light.
+- **Don't** use glass or backdrop-blur decoration; the header is a solid `ground` bar.
+- **Don't** put eyebrow or kicker labels above headings. Legends belong on instruments, captions and footer columns, not over section headlines.
+- **Don't** use segment type for letters or for VINs.
+- **Don't** use pure black page grounds or a light theme.
+- **Don't** invent testimonials, customer counts, metrics or shipped status; show real sample reports and mark placeholders.

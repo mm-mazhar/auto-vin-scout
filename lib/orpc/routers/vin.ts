@@ -1,8 +1,11 @@
 // lib/orpc/routers/vin.ts
 
 import * as z from 'zod'
-import { orgProcedure, adminProcedure } from '../procedures'
+import { headers } from 'next/headers'
+import { orgProcedure, adminProcedure, publicProcedure } from '../procedures'
 import { ORPCError } from '../server'
+import { clientIpFromHeaders, createFixedWindowLimiter } from '@/lib/rate-limit'
+import { createVinPreviewService } from '@/lib/services/vin-preview'
 import { decodeVinForTier, needsMarketCheckUpgrade, type EnhancedVehicleData } from '@/lib/services/vin-decoder'
 import { inngest, analyzeReportEvent } from '@/lib/inngest/client'
 import type { PrismaClient } from '@prisma/client'
@@ -642,12 +645,64 @@ export const listingHistoryInputSchema = z.object({
  */
 export const listingHistoryOutputSchema = z.array(vehicleListingHistorySchema)
 
+export const previewInputSchema = z.object({
+  vin: vinSchema,
+})
+
+export const previewOutputSchema = z.object({
+  vin: z.string(),
+  year: z.number(),
+  make: z.string(),
+  model: z.string(),
+  trim: z.string().nullable(),
+  engineDesc: z.string().nullable(),
+  driveType: z.string().nullable(),
+  fuelTypePrimary: z.string().nullable(),
+  modelRecallCount: z.number().nullable(),
+})
+
+export type VinPreviewOutput = z.infer<typeof previewOutputSchema>
+
+const previewLimiter = createFixedWindowLimiter({ limit: 10, windowMs: 60_000 })
+const getVinPreview = createVinPreviewService()
+
 /**
  * VIN Router
  * Provides type-safe procedures for VIN analysis and report listing
  * Validates: Requirements 9.1, 9.2, 9.3
  */
 export const vinRouter = {
+  /**
+   * Signed-out decode for the marketing hero: NHTSA vPIC identity plus the
+   * model-year recall count. Free sources only; rate-limited per client IP.
+   */
+  preview: publicProcedure
+    .input(previewInputSchema)
+    .output(previewOutputSchema)
+    .route({
+      method: 'POST',
+      path: '/vin/preview',
+      summary: 'Preview VIN',
+      description: 'Free public decode with model-year recall count',
+    })
+    .handler(async ({ input }) => {
+      const { allowed, retryAfterSeconds } = previewLimiter.check(clientIpFromHeaders(await headers()))
+      if (!allowed) {
+        throw new ORPCError('TOO_MANY_REQUESTS', {
+          message: `Too many lookups. Try again in ${retryAfterSeconds} seconds.`,
+        })
+      }
+
+      const preview = await getVinPreview(input.vin)
+      if (!preview) {
+        throw new ORPCError('NOT_FOUND', {
+          message: 'NHTSA could not decode this VIN. Check the characters and try again.',
+        })
+      }
+
+      return preview
+    }),
+
   /**
    * Analyze a VIN and create a report
    * 

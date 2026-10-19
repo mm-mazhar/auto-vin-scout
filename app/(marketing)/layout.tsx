@@ -5,6 +5,9 @@ import { HeroHeader } from '@/app/(marketing)/_components/header'
 import { createClient } from '@/app/lib/supabase/server'
 import { ToastProvider } from '@/components/ToastProvider'
 import { QueryProvider } from '@/components/providers/query-provider'
+import { NIGHT_DASH_FONT_VARIABLES } from './fonts'
+
+import './night-dash.css'
 
 export default async function MarketingLayout({
   children,
@@ -19,10 +22,12 @@ export default async function MarketingLayout({
   return (
     <QueryProvider>
       <ToastProvider>
-        <div className='flex min-h-screen flex-col'>
-          <HeroHeader initialUser={user} />
-          <main>{children}</main>
-          <FooterSection isAuthenticated={!!user} />
+        <div className='dark'>
+          <div className={`theme-green nd ${NIGHT_DASH_FONT_VARIABLES} flex min-h-screen flex-col`}>
+            <HeroHeader initialUser={user} />
+            <main className='flex-1'>{children}</main>
+            <FooterSection />
+          </div>
         </div>
       </ToastProvider>
     </QueryProvider>

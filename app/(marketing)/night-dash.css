@@ -1,0 +1,178 @@
+/* app/(marketing)/night-dash.css — the Night Dash world, scoped to marketing */
+
+/* Layered so Tailwind utilities can override these defaults per element. */
+@layer components {
+  .nd {
+    --nd-ground: oklch(0.135 0.008 175);
+    --nd-cowl: oklch(0.165 0.01 175);
+    --nd-panel: oklch(0.195 0.011 175);
+    --nd-panel-raised: oklch(0.23 0.012 175);
+    --nd-rule: oklch(0.93 0.01 160 / 0.1);
+    --nd-rule-strong: oklch(0.93 0.01 160 / 0.2);
+    --nd-print: oklch(0.94 0.008 150);
+    --nd-print-2: oklch(0.78 0.014 165);
+    --nd-print-3: oklch(0.64 0.014 165);
+    --nd-vfd: oklch(0.88 0.14 168);
+    --nd-vfd-dim: oklch(0.7 0.11 168);
+    --nd-vfd-ghost: oklch(0.88 0.14 168 / 0.09);
+    --nd-emerald: oklch(0.696 0.17 162.48);
+    --nd-emerald-hover: oklch(0.76 0.16 162.48);
+    --nd-emerald-ink: oklch(0.2 0.05 165);
+    --nd-amber: oklch(0.8 0.16 75);
+    --nd-red: oklch(0.68 0.2 27);
+    --nd-chrome: oklch(0.8 0.008 200);
+
+    --nd-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+
+    background-color: var(--nd-ground);
+    color: var(--nd-print);
+    font-family: var(--font-nd-body), ui-sans-serif, system-ui, sans-serif;
+    font-size: 1.125rem;
+    line-height: 1.55;
+    color-scheme: dark;
+    caret-color: var(--nd-vfd);
+    accent-color: var(--nd-emerald);
+  }
+
+  .nd ::selection {
+    background: oklch(0.696 0.17 162.48 / 0.35);
+    color: var(--nd-print);
+  }
+
+  .nd :focus-visible {
+    outline: 2px solid var(--nd-vfd);
+    outline-offset: 3px;
+  }
+
+  .nd a {
+    text-underline-offset: 0.22em;
+    text-decoration-thickness: 1px;
+  }
+
+  html:has(.nd) {
+    scrollbar-color: oklch(0.35 0.012 175) var(--nd-ground, oklch(0.135 0.008 175));
+    background-color: oklch(0.135 0.008 175);
+  }
+
+  .nd-display {
+    font-family: var(--font-nd-display), ui-sans-serif, sans-serif;
+    font-weight: 600;
+    letter-spacing: -0.012em;
+    line-height: 1;
+    text-wrap: balance;
+  }
+
+  .nd-legend {
+    font-family: var(--font-nd-legend), ui-sans-serif, sans-serif;
+    font-weight: 500;
+    font-size: 0.8125rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    line-height: 1.2;
+  }
+
+  /* Vacuum-fluorescent readout: lit segments over their own unlit ghost. */
+  .nd-vfd {
+    position: relative;
+    display: inline-block;
+    font-family: var(--font-nd-seg7), ui-monospace, monospace;
+    font-weight: 700;
+    font-style: normal;
+    color: var(--nd-vfd);
+    white-space: pre;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+  }
+
+  .nd-vfd[data-face='text'] {
+    font-family: var(--font-nd-legend), ui-sans-serif, sans-serif;
+    font-weight: 600;
+    letter-spacing: 0.07em;
+    white-space: nowrap;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    vertical-align: bottom;
+  }
+
+  .nd-vfd[data-unlit] {
+    color: oklch(0.88 0.14 168 / 0.16);
+    letter-spacing: 0.18em;
+  }
+
+  .nd-vfd[data-ghost]::before {
+    content: attr(data-ghost);
+    position: absolute;
+    inset: 0;
+    color: var(--nd-vfd-ghost);
+    pointer-events: none;
+  }
+
+  .nd-vfd > span:not(.sr-only) {
+    position: relative;
+    user-select: none;
+  }
+
+  .nd-vfd[data-tone='dim'] {
+    color: var(--nd-vfd-dim);
+  }
+
+  .nd-vfd[data-tone='amber'] {
+    color: var(--nd-amber);
+  }
+
+  .nd-vfd[data-ghost][data-tone='amber']::before {
+    color: oklch(0.8 0.16 75 / 0.09);
+  }
+
+  .nd-vfd[data-tone='red'] {
+    color: var(--nd-red);
+  }
+
+  .nd-vfd[data-ghost][data-tone='red']::before {
+    color: oklch(0.68 0.2 27 / 0.09);
+  }
+
+  /* Lens glare over the instrument face: one fixed reflection, not decoration. */
+  .nd-lens-glare {
+    pointer-events: none;
+    background: linear-gradient(172deg, oklch(1 0 0 / 0.045) 0%, oklch(1 0 0 / 0.012) 22%, transparent 38%);
+  }
+
+  .nd-print-line {
+    animation: nd-print 260ms steps(12, end) both;
+  }
+
+  @keyframes nd-print {
+    from {
+      clip-path: inset(0 100% 0 0);
+    }
+    to {
+      clip-path: inset(0 0 0 0);
+    }
+  }
+
+  .nd-rise {
+    animation: nd-rise 900ms var(--nd-ease-out) both;
+  }
+
+  @keyframes nd-rise {
+    from {
+      opacity: 0;
+      transform: translateY(14px);
+      filter: blur(6px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+      filter: none;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .nd-print-line,
+    .nd-rise {
+      animation: none;
+    }
+  }
+}
