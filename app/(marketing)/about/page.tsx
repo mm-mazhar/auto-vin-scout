@@ -1,239 +1,155 @@
 // app/(marketing)/about/page.tsx
 
-'use client';
+import { ShopPageHead } from '@/app/(marketing)/_components/shop-page-head'
+import { NEXT_PUBLIC_SITE_NAME } from '@/lib/constants'
+import type { Metadata } from 'next'
+import Image from 'next/image'
+import Link from 'next/link'
 
-import { BorderBeam } from '@/app/(marketing)/_components/ui/border-beam';
-import { CardHoverEffect } from '@/app/(marketing)/_components/ui/pulse-card';
-import {
-  MARKETING_ALIGNED_CONTAINER_WIDTH,
-  MARKETING_ALIGNED_CONTENT_WIDTH,
-  MARKETING_CONTENT_SECTION_BOTTOM_SPACING,
-  MARKETING_CONTENT_SECTION_TOP_SPACING,
-  PageSection,
-} from '@/components/page-section';
-import { Badge } from '@/components/ui/badge';
-// Spotlight removed (background animation disabled)
-import { motion, useInView } from 'framer-motion';
-import {
-  Globe,
-  Heart,
-  Lightbulb,
-  Rocket,
-  Sparkles,
-  Target,
-  Users,
-} from 'lucide-react';
-import { useRef } from 'react';
-
-interface AboutUsProps {
-  title?: string;
-  subtitle?: string;
-  mission?: string;
-  vision?: string;
-  values?: Array<{
-    title: string;
-    description: string;
-    icon: keyof typeof iconComponents;
-  }>;
-  className?: string;
+export const metadata: Metadata = {
+  title: 'About',
+  description: `What ${NEXT_PUBLIC_SITE_NAME} is, where its data comes from, and what it is not.`,
 }
 
-const iconComponents = {
-  Users: Users,
-  Heart: Heart,
-  Lightbulb: Lightbulb,
-  Globe: Globe,
-  Sparkles: Sparkles,
-  Rocket: Rocket,
-  Target: Target,
-};
-
-const defaultValues: AboutUsProps['values'] = [
+const PRINCIPLES = [
   {
-    title: 'Innovation',
-    description:
-      'We constantly push boundaries and explore new possibilities to create cutting-edge solutions.',
-    icon: 'Lightbulb',
+    title: 'Evidence before verdict',
+    body: 'Every score shows the signals behind it, so you can judge the claim instead of trusting a number.',
   },
   {
-    title: 'Collaboration',
-    description:
-      'We believe in the power of teamwork and diverse perspectives to achieve extraordinary results.',
-    icon: 'Users',
+    title: 'Honest about what it is',
+    body: 'A probabilistic read of public signals, never an official history report. When a source is missing or a fallback was used, the report says so.',
   },
   {
-    title: 'Excellence',
-    description:
-      'We strive for perfection in everything we do, consistently delivering high-quality work.',
-    icon: 'Sparkles',
+    title: 'A decision in one sitting',
+    body: 'Standing at a listing, you should get to skip it, go see it, or here is what to ask, without reading everything.',
   },
   {
-    title: 'Impact',
-    description:
-      "We measure our success by the positive difference we make in people's lives and businesses.",
-    icon: 'Globe',
+    title: 'Leverage, not alarm',
+    body: 'Findings become calm, specific talking points you can use with a seller.',
   },
-];
+] as const
 
-export default function AboutUs1() {
-  const aboutData = {
-    title: 'About Us',
-    subtitle:
-      'Building the future of web development with beautiful, reusable components.',
-    mission:
-      'Our mission is to democratize web development by providing high-quality, customizable components that help developers build stunning websites quickly and efficiently.',
-    vision:
-      'We envision a world where creating beautiful websites is accessible to everyone, regardless of their design or development experience.',
-    values: defaultValues,
-    className: 'relative overflow-hidden py-20',
-  };
+const SOURCES = [
+  { name: 'NHTSA vPIC', use: 'VIN decode: make, model, engine, plant' },
+  { name: 'NHTSA Recalls', use: 'Open recall campaigns' },
+  { name: 'NHTSA NCAP', use: 'Crash ratings, complaints and investigations' },
+  { name: 'MarketCheck', use: 'Premium decode and marketplace listing history' },
+  { name: 'FEMA Open Data', use: 'Disaster declarations for flood exposure' },
+  { name: 'Open-Meteo', use: 'Historical rainfall to check flood timing' },
+  { name: 'Bright Data search', use: 'Auction and salvage forensics, theft reports, price signals' },
+  { name: 'Bright Data social', use: 'Owner-community reliability reports, mostly Reddit' },
+] as const
 
-  const missionRef = useRef(null);
-  const valuesRef = useRef(null);
-
-  const missionInView = useInView(missionRef, { once: true, amount: 0.3 });
-  const valuesInView = useInView(valuesRef, { once: true, amount: 0.3 });
-
+export default function AboutPage() {
   return (
-    <PageSection
-      className={`relative overflow-hidden ${MARKETING_CONTENT_SECTION_TOP_SPACING} ${MARKETING_CONTENT_SECTION_BOTTOM_SPACING}`}
-      containerClassName={MARKETING_ALIGNED_CONTAINER_WIDTH}
-    >
-
-      <div className="relative z-10 flex flex-col items-center space-y-6 px-4">
-        <Badge
-                  variant="outline"
-                  className="border-primary mb-4 px-3 py-1 text-xs font-medium tracking-wider uppercase"
-                >
-                  About
-                </Badge>
-        {/* Header Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: 'easeOut' }}
-          className="mx-auto mb-6 max-w-2xl text-center"
-        >
-          <h1 className="from-foreground/80 via-foreground to-foreground/80 mt-3 bg-gradient-to-r bg-clip-text text-4xl font-bold tracking-tight text-transparent sm:text-5xl md:text-6xl">
-            {aboutData.title}
-          </h1>
-          <p className="text-muted-foreground mt-4 text-xl">
-            {aboutData.subtitle}
+    <>
+      <ShopPageHead
+        title={`About ${NEXT_PUBLIC_SITE_NAME}`}
+        lede={
+          <p>
+            AI risk intelligence for used-car buyers. We read the public record around a car, so you
+            know what to look for before you spend a trip or a deposit on it.
           </p>
-        </motion.div>
+        }
+      />
 
-        {/* Mission & Vision Section */}
-        <div ref={missionRef} className={`relative mb-8 ${MARKETING_ALIGNED_CONTENT_WIDTH}`}>
-          <motion.div
-            initial={{ opacity: 0, y: 40 }}
-            animate={
-              missionInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 40 }
-            }
-            transition={{ duration: 0.8, delay: 0.2, ease: 'easeOut' }}
-            className="relative z-10 grid gap-12 md:grid-cols-2"
-          >
-            <motion.div
-              whileHover={{ y: -5, boxShadow: '0 20px 40px rgba(0,0,0,0.1)' }}
-              className="group border-border/40 relative block overflow-hidden rounded-2xl border bg-gradient-to-br p-10 backdrop-blur-3xl"
-            >
-              <BorderBeam
-                duration={8}
-                size={300}
-                className="via-primary/25 from-transparent to-transparent"
-              />
-
-              <div className="from-primary/12 to-primary/[0.03] mb-6 inline-flex aspect-square h-16 w-16 flex-1 items-center justify-center rounded-2xl bg-gradient-to-br backdrop-blur-sm">
-                <Rocket className="text-primary/85 h-8 w-8" />
-              </div>
-
-              <div className="space-y-4">
-                <h2 className="from-primary/75 to-primary/55 mb-4 bg-gradient-to-r bg-clip-text text-3xl font-bold text-transparent">
-                  Our Mission
-                </h2>
-
-                <p className="text-muted-foreground text-lg leading-relaxed">
-                  {aboutData.mission}
-                </p>
-              </div>
-            </motion.div>
-
-            <motion.div
-              whileHover={{ y: -5, boxShadow: '0 20px 40px rgba(0,0,0,0.1)' }}
-              className="group border-border/40 relative block overflow-hidden rounded-2xl border bg-gradient-to-br p-10 backdrop-blur-3xl"
-            >
-              <BorderBeam
-                duration={8}
-                size={300}
-                className="from-transparent via-primary/25 to-transparent"
-                reverse
-              />
-              <div className="mb-6 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-primary/12 to-primary/[0.03] backdrop-blur-sm">
-                <Target className="h-8 w-8 text-primary/85" />
-              </div>
-
-              <h2 className="mb-4 bg-gradient-to-r from-primary/75 to-primary/55 bg-clip-text text-3xl font-bold text-transparent">
-                Our Vision
-              </h2>
-
-              <p className="text-muted-foreground text-lg leading-relaxed">
-                {aboutData.vision}
-              </p>
-            </motion.div>
-          </motion.div>
-        </div>
-
-        <div ref={valuesRef} className={MARKETING_ALIGNED_CONTENT_WIDTH}>
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={
-              valuesInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }
-            }
-            transition={{ duration: 0.6, ease: 'easeOut' }}
-            className="text-center"
-          >
-            <h2 className="from-foreground/80 via-foreground to-foreground/80 bg-gradient-to-r bg-clip-text text-3xl font-bold tracking-tight text-transparent sm:text-4xl">
-              Our Core Values
+      <section aria-labelledby='why-title' className='px-4 pb-20 sm:px-8'>
+        <div className='mx-auto grid max-w-[76rem] gap-10 lg:grid-cols-[1fr_1fr] lg:items-center'>
+          <div>
+            <h2 id='why-title' className='shop-h3 text-[2rem]'>
+              Why it exists
             </h2>
-            <p className="text-muted-foreground mx-auto mt-6 max-w-2xl text-lg">
-              The principles that guide everything we do and every decision we
-              make.
-            </p>
-          </motion.div>
+            <div className='mt-5 space-y-4 text-[1.05rem] leading-relaxed text-[var(--shop-text-dim)]'>
+              <p>
+                The most useful vehicle records, DMV registrations and insurance claims, sit behind
+                privacy law and expensive paywalls. Static history reports leave buyers guessing about
+                everything they don&apos;t cover.
+              </p>
+              <p>
+                {NEXT_PUBLIC_SITE_NAME} works from what is public instead: federal safety data,
+                marketplace listing timelines, disaster declarations, auction traces and owner
+                communities. Eight inspectors score those signals and explain what they found.
+              </p>
+            </div>
+          </div>
+          <Image
+            src='/landing/shop-bay.jpg'
+            alt='A sedan raised on a yellow two-post lift in an empty repair bay at night'
+            width={2000}
+            height={1500}
+            sizes='(min-width: 1024px) 38rem, 100vw'
+            className='h-auto w-full rounded-[3px]'
+          />
+        </div>
+      </section>
 
-          <div className="grid gap-6 mt-6 md:grid-cols-2 xl:grid-cols-4">
-            {aboutData.values?.map((value, index) => {
-              const IconComponent = iconComponents[value.icon];
+      <section aria-labelledby='principles-title' className='bg-[var(--shop-floor-deep)] px-4 py-20 sm:px-8'>
+        <div className='mx-auto max-w-[76rem]'>
+          <h2 id='principles-title' className='shop-h3 text-[2rem]'>
+            How we build it
+          </h2>
+          <ul className='mt-8 grid gap-x-12 gap-y-8 md:grid-cols-2'>
+            {PRINCIPLES.map((p) => (
+              <li key={p.title} className='border-t-2 border-[var(--lift)] pt-4'>
+                <h3 className='text-[1.15rem] font-bold'>{p.title}</h3>
+                <p className='mt-2 max-w-[52ch] leading-relaxed text-[var(--shop-text-dim)]'>{p.body}</p>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
 
-              return (
-                <motion.div
-                  key={value.title}
-                  initial={{ opacity: 0, y: 30 }}
-                  animate={
-                    valuesInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }
-                  }
-                  transition={{
-                    duration: 0.6,
-                    delay: index * 0.1 + 0.2,
-                    ease: 'easeOut',
-                  }}
-                  whileHover={{ y: -5, scale: 1.02 }}
-                >
-                  <CardHoverEffect
-                    icon={<IconComponent className="h-6 w-6" />}
-                    title={value.title}
-                    description={value.description}
-                    variant={'theme'}
-                    className="[&>div:last-child]:opacity-60 [&>div:last-child>div]:blur-[52px]"
-                    glowEffect={false}
-                    size="lg"
-                    flat={false}
-                  />
-                </motion.div>
-              );
-            })}
+      <section aria-labelledby='sources-title' className='px-4 py-20 sm:px-8'>
+        <div className='mx-auto max-w-[76rem]'>
+          <h2 id='sources-title' className='shop-h3 text-[2rem]'>
+            Where the data comes from
+          </h2>
+          <div className='shop-paper mt-8'>
+            <table className='w-full text-left'>
+              <thead>
+                <tr className='shop-paper-rule shop-paper-print border-b-2'>
+                  <th scope='col' className='shop-stencil-label px-5 py-3 sm:px-8'>
+                    Source
+                  </th>
+                  <th scope='col' className='shop-stencil-label px-5 py-3 sm:px-8'>
+                    What it tells the inspectors
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {SOURCES.map((s) => (
+                  <tr key={s.name} className='shop-paper-rule border-b last:border-b-0'>
+                    <th scope='row' className='px-5 py-3 font-bold sm:px-8'>
+                      {s.name}
+                    </th>
+                    <td className='px-5 py-3 text-[#33363b] sm:px-8'>{s.use}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
-      </div>
-    </PageSection>
-  );
+      </section>
+
+      <section aria-labelledby='not-title' className='px-4 pb-24 sm:px-8'>
+        <div className='mx-auto grid max-w-[76rem] gap-8 rounded-[3px] bg-[var(--shop-floor-raised)] p-7 sm:p-10 lg:grid-cols-[1fr_auto] lg:items-center'>
+          <div>
+            <h2 id='not-title' className='shop-h3 text-[2rem]'>
+              What it is not
+            </h2>
+            <p className='mt-4 max-w-[60ch] leading-relaxed text-[var(--shop-text-dim)]'>
+              Not an official title or odometer record, and not a substitute for a mechanic. A high
+              flood score means the record makes flooding likely, not that the car was flooded. Use
+              the report to decide which cars deserve a closer look, and what to check when you get
+              there.
+            </p>
+          </div>
+          <Link href='/#inspect' className='shop-button'>
+            Inspect a VIN
+          </Link>
+        </div>
+      </section>
+    </>
+  )
 }

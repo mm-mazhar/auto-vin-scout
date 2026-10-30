@@ -3,7 +3,6 @@
 'use client'
 
 // import { Badge } from '@/components/ui/badge'
-import { cn } from '@/lib/utils'
 import { AnimatePresence, motion } from 'framer-motion'
 import { MinusIcon, PlusIcon } from 'lucide-react'
 import { useState } from 'react'
@@ -126,76 +125,57 @@ export function FaqList() {
 
   return (
     <>
-      {/* Category Tabs */}
-      <div className='flex flex-col items-center space-y-8 px-4'>
-        <div className='mt-8 flex flex-wrap justify-center gap-2'>
-          {categories.map((category) => (
-            <button
-              key={category.id}
-              onClick={() => setActiveCategory(category.id)}
-              className={cn(
-                'rounded-full px-4 py-2 text-sm font-medium transition-all',
-                activeCategory === category.id
-                  ? 'bg-primary text-primary-foreground'
-                  : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
-              )}
-            >
-              {category.label}
-            </button>
-          ))}
-        </div>
+      <div role='group' aria-label='Filter questions' className='flex flex-wrap gap-2'>
+        {categories.map((category) => (
+          <button
+            key={category.id}
+            type='button'
+            onClick={() => setActiveCategory(category.id)}
+            aria-pressed={activeCategory === category.id}
+            className='lift-chip'
+          >
+            {category.label}
+          </button>
+        ))}
       </div>
 
-      <div className='grid grid-cols-1 gap-6 mt-8 sm:grid-cols-2'>
-        <AnimatePresence initial={false}>
-          {filteredFaqs.map((faq, index) => (
-            <motion.div
-              key={faq.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.3, delay: index * 0.05 }}
-              className={cn(
-                'border-border h-fit overflow-hidden rounded-xl border',
-                expandedId === faq.id ? 'shadow-3xl bg-card/50' : 'bg-card/50'
-              )}
-              style={{ minHeight: '112px' }}
-            >
-              <button
-                onClick={() => toggleExpand(faq.id)}
-                className='flex w-full items-center justify-between p-6 text-left min-h-[112px]'
-              >
-                <h3 className='text-foreground text-lg font-medium'>
+      <ul className='mt-8 border-t-2 border-[var(--lift)]'>
+        {filteredFaqs.map((faq) => {
+          const open = expandedId === faq.id
+          return (
+            <li key={faq.id} className='border-b border-[var(--shop-rule)]'>
+              <h3>
+                <button
+                  type='button'
+                  onClick={() => toggleExpand(faq.id)}
+                  aria-expanded={open}
+                  aria-controls={`faq-${faq.id}`}
+                  className='flex w-full items-center justify-between gap-6 py-6 text-left text-[1.15rem] font-bold leading-snug hover:text-[var(--lift)]'
+                >
                   {faq.question}
-                </h3>
-                <div className='ml-4 flex-shrink-0'>
-                  {expandedId === faq.id ? (
-                    <MinusIcon className='text-primary h-5 w-5' />
-                  ) : (
-                    <PlusIcon className='text-primary h-5 w-5' />
-                  )}
-                </div>
-              </button>
-
+                  <span className='grid size-9 shrink-0 place-items-center rounded-[3px] bg-[var(--shop-floor-raised)] text-[var(--lift)]'>
+                    {open ? <MinusIcon aria-hidden className='size-5' /> : <PlusIcon aria-hidden className='size-5' />}
+                  </span>
+                </button>
+              </h3>
               <AnimatePresence initial={false}>
-                {expandedId === faq.id && (
+                {open ? (
                   <motion.div
+                    id={`faq-${faq.id}`}
                     initial={{ height: 0, opacity: 0 }}
                     animate={{ height: 'auto', opacity: 1 }}
                     exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.3 }}
+                    transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
                     className='overflow-hidden'
                   >
-                    <div className='border-border border-t px-6 pt-2 pb-6'>
-                      <p className='text-muted-foreground'>{faq.answer}</p>
-                    </div>
+                    <p className='max-w-[68ch] pb-7 leading-relaxed text-[var(--shop-text-dim)]'>{faq.answer}</p>
                   </motion.div>
-                )}
+                ) : null}
               </AnimatePresence>
-            </motion.div>
-          ))}
-        </AnimatePresence>
-      </div>
+            </li>
+          )
+        })}
+      </ul>
     </>
   )
 }

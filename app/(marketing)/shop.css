@@ -5,7 +5,8 @@
  * scoped under .shop so the dashboard keeps its own system.
  */
 
-.shop {
+.shop,
+.shop.dark {
   --shop-floor: #23272b;
   --shop-floor-raised: #2c3135;
   --shop-floor-deep: #1a1d20;
@@ -31,6 +32,26 @@
   --font-hand: var(--font-pen), cursive;
 
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* Shared UI parts (buttons, inputs, toasts) read these tokens. */
+  --background: var(--shop-floor);
+  --foreground: var(--shop-text);
+  --card: var(--shop-floor-raised);
+  --card-foreground: var(--shop-text);
+  --popover: var(--shop-floor-raised);
+  --popover-foreground: var(--shop-text);
+  --primary: var(--lift);
+  --primary-foreground: var(--lift-ink);
+  --secondary: #353a3f;
+  --secondary-foreground: var(--shop-text);
+  --muted: #30353a;
+  --muted-foreground: var(--shop-text-dim);
+  --accent: #383e44;
+  --accent-foreground: var(--shop-text);
+  --border: rgb(255 255 255 / 0.16);
+  --input: rgb(255 255 255 / 0.24);
+  --ring: var(--pen);
+  --radius: 0.3rem;
 
   color-scheme: dark;
   background-color: var(--shop-floor);

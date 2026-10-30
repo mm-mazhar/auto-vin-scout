@@ -1,64 +1,36 @@
 // app/(marketing)/faqs/page.tsx
 
-import { FaqList } from '@/app/(marketing)/_components/FaqList';
-import {
-  MARKETING_ALIGNED_CONTAINER_WIDTH,
-  MARKETING_ALIGNED_CONTENT_WIDTH,
-  MARKETING_CONTENT_SECTION_BOTTOM_SPACING,
-  MARKETING_CONTENT_SECTION_TOP_SPACING,
-  PageSection,
-} from '@/components/page-section';
-import { Badge } from '@/components/ui/badge';
-// import { cn } from '@/lib/utils';
-// import { AnimatePresence, motion } from 'framer-motion';
-// import { MinusIcon, PlusIcon } from 'lucide-react';
-// import { useState } from 'react';
+import { FaqList } from '@/app/(marketing)/_components/FaqList'
+import { ShopPageHead } from '@/app/(marketing)/_components/shop-page-head'
+import { NEXT_PUBLIC_SITE_NAME } from '@/lib/constants'
+import type { Metadata } from 'next'
+import Link from 'next/link'
 
-
+export const metadata: Metadata = {
+  title: 'FAQs',
+  description: `Answers about ${NEXT_PUBLIC_SITE_NAME} reports, data sources and accounts.`,
+}
 
 export default function FaqPage() {
   return (
-    <PageSection
-      className={`bg-background ${MARKETING_CONTENT_SECTION_TOP_SPACING} ${MARKETING_CONTENT_SECTION_BOTTOM_SPACING}`}
-      containerClassName={MARKETING_ALIGNED_CONTAINER_WIDTH}
-    >
-      <div className='flex flex-col items-center space-y-6 px-4'>
-        <Badge
-          variant='outline'
-          className='border-primary mb-4 px-3 py-1 text-xs font-medium tracking-wider uppercase'
-        >
-          FAQs
-        </Badge>
-
-        <h1 className='text-foreground mt-3 text-center text-4xl font-bold tracking-tight md:text-5xl'>
-          Frequently Asked Questions
-        </h1>
-
-        <p className='text-muted-foreground max-w-2xl text-center'>
-          Answers about reports, data sources, and how Auto VIN Scout fits into your buying process.
-        </p>
-      </div>
-
-      {/* 
-         The heavy interactive logic is isolated here. 
-         Ideally, wrap this in Suspense if it fetches data, 
-         but even as is, it decouples the header rendering from the JS load.
-      */}
-      <div className={MARKETING_ALIGNED_CONTENT_WIDTH}>
-        <FaqList />
-      </div>
-
-      <div className='mx-auto mt-6 w-full max-w-3xl text-center'>
-        <p className='text-muted-foreground mb-4'>
-          Need help with a specific VIN or report question?
-        </p>
-        <a
-          href='/contact'
-          className='border-primary text-foreground hover:bg-primary hover:text-primary-foreground mt-4 inline-flex items-center justify-center rounded-lg border-2 px-6 py-3 font-medium transition-colors'
-        >
-          Contact Us
-        </a>
-      </div>
-    </PageSection>
+    <>
+      <ShopPageHead
+        title='Questions at the counter'
+        lede={<p>Answers about reports, data sources, and where {NEXT_PUBLIC_SITE_NAME} fits in your buying process.</p>}
+      />
+      <section aria-label='Frequently asked questions' className='px-4 pb-16 sm:px-8'>
+        <div className='mx-auto max-w-[76rem]'>
+          <FaqList />
+        </div>
+      </section>
+      <section className='px-4 pb-24 sm:px-8'>
+        <div className='mx-auto flex max-w-[76rem] flex-col gap-5 rounded-[3px] bg-[var(--shop-floor-raised)] p-7 sm:flex-row sm:items-center sm:justify-between sm:p-9'>
+          <p className='text-[1.1rem]'>Need help with a specific VIN or report?</p>
+          <Link href='/contact' className='shop-button shop-button--quiet'>
+            Contact us
+          </Link>
+        </div>
+      </section>
+    </>
   )
 }

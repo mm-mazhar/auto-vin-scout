@@ -1,50 +1,28 @@
 // app/(marketing)/privacy-policy/page.tsx
 
-import {
-  MARKETING_ALIGNED_CONTAINER_WIDTH,
-  MARKETING_ALIGNED_PROSE_WIDTH,
-  MARKETING_CONTENT_SECTION_BOTTOM_SPACING,
-  MARKETING_CONTENT_SECTION_TOP_SPACING,
-  PageSection,
-} from '@/components/page-section'
-import { Badge } from '@/components/ui/badge'
+import { ShopPageHead } from '@/app/(marketing)/_components/shop-page-head'
 import { APP_EMAIL, NEXT_PUBLIC_SITE_NAME } from '@/lib/constants'
 
 const EFFECTIVE_DATE = 'April 23, 2026'
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <section className="space-y-3">
-      <h2 className="text-base font-semibold text-foreground">{title}</h2>
-      <div className="space-y-2 text-sm text-muted-foreground leading-relaxed">{children}</div>
+    <section className="space-y-3 border-t border-[var(--shop-rule)] pt-8">
+      <h2 className="text-[1.25rem] font-bold text-[var(--shop-text)]">{title}</h2>
+      <div className="space-y-3 leading-relaxed text-[var(--shop-text-dim)]">{children}</div>
     </section>
   )
 }
 
 export default function PrivacyPolicyPage() {
   return (
-    <PageSection
-      className={`${MARKETING_CONTENT_SECTION_TOP_SPACING} ${MARKETING_CONTENT_SECTION_BOTTOM_SPACING}`}
-      containerClassName={MARKETING_ALIGNED_CONTAINER_WIDTH}
-    >
-      <div className="flex flex-col items-center space-y-6 px-4">
-        <Badge
-          variant="outline"
-          className="border-primary mb-4 px-3 py-1 text-xs font-medium tracking-wider uppercase"
-        >
-          Privacy
-        </Badge>
-
-        <div className={`space-y-2 text-center ${MARKETING_ALIGNED_PROSE_WIDTH}`}>
-          <h1 className="text-3xl font-bold">Privacy Policy</h1>
-          <p className="text-xs text-muted-foreground">Effective date: {EFFECTIVE_DATE}</p>
-        </div>
-
-        <div
-          className={`mt-3 space-y-8 text-sm text-muted-foreground text-justify ${MARKETING_ALIGNED_PROSE_WIDTH}`}
-        >
+    <>
+      <ShopPageHead title="Privacy Policy" meta={<p>Effective date: {EFFECTIVE_DATE}</p>} />
+      <div className="px-4 pb-24 sm:px-8">
+        <div className="mx-auto max-w-[76rem]">
+          <div className="max-w-[70ch] space-y-8 text-[1rem] text-[var(--shop-text-dim)]">
           <p className="leading-relaxed">
-            <span className="font-medium text-foreground">{NEXT_PUBLIC_SITE_NAME}</span> ("we,"
+            <span className="font-medium text-[var(--shop-text)]">{NEXT_PUBLIC_SITE_NAME}</span> ("we,"
             "us," or "our") is committed to protecting your privacy. This Privacy Policy explains
             what information we collect, how we use it, and the choices you have. By using the
             Service, you agree to the practices described here.
@@ -52,29 +30,29 @@ export default function PrivacyPolicyPage() {
 
           <Section title="1. Information We Collect">
             <p>
-              <span className="font-medium text-foreground">Account Information.</span> When you
+              <span className="font-medium text-[var(--shop-text)]">Account Information.</span> When you
               register, we collect your email address, name, and a hashed password (or OAuth
               provider token). We do not store plaintext passwords.
             </p>
             <p>
-              <span className="font-medium text-foreground">Usage Data.</span> We automatically
+              <span className="font-medium text-[var(--shop-text)]">Usage Data.</span> We automatically
               collect information about how you interact with the Service, including VINs you
               submit, Reports you generate, pages visited, timestamps, IP addresses, browser type,
               and device identifiers.
             </p>
             <p>
-              <span className="font-medium text-foreground">Payment Information.</span> Payment
+              <span className="font-medium text-[var(--shop-text)]">Payment Information.</span> Payment
               card details are collected and processed directly by Stripe, our third-party payment
               processor. We receive only a tokenized reference and the last four digits of your
               card. We do not store full card numbers.
             </p>
             <p>
-              <span className="font-medium text-foreground">Communications.</span> If you contact
+              <span className="font-medium text-[var(--shop-text)]">Communications.</span> If you contact
               us by email or through a support form, we retain the content of that communication
               and your contact details.
             </p>
             <p>
-              <span className="font-medium text-foreground">Cookies & Tracking.</span> We use
+              <span className="font-medium text-[var(--shop-text)]">Cookies & Tracking.</span> We use
               first-party cookies and similar technologies to maintain session state, remember
               preferences, and analyze usage patterns. We do not sell data to advertising networks.
             </p>
@@ -110,19 +88,19 @@ export default function PrivacyPolicyPage() {
             </p>
             <ul className="list-disc pl-5 space-y-1">
               <li>
-                <span className="font-medium text-foreground">Contract performance</span> — to
+                <span className="font-medium text-[var(--shop-text)]">Contract performance</span> — to
                 provide the Service you have requested.
               </li>
               <li>
-                <span className="font-medium text-foreground">Legitimate interests</span> — to
+                <span className="font-medium text-[var(--shop-text)]">Legitimate interests</span> — to
                 improve the Service, prevent fraud, and ensure security.
               </li>
               <li>
-                <span className="font-medium text-foreground">Legal obligation</span> — to comply
+                <span className="font-medium text-[var(--shop-text)]">Legal obligation</span> — to comply
                 with applicable laws and regulations.
               </li>
               <li>
-                <span className="font-medium text-foreground">Consent</span> — for optional
+                <span className="font-medium text-[var(--shop-text)]">Consent</span> — for optional
                 marketing communications, which you may withdraw at any time.
               </li>
             </ul>
@@ -134,24 +112,24 @@ export default function PrivacyPolicyPage() {
               circumstances:
             </p>
             <p>
-              <span className="font-medium text-foreground">Service Providers.</span> We share data
+              <span className="font-medium text-[var(--shop-text)]">Service Providers.</span> We share data
               with trusted vendors who process it on our behalf (e.g., Stripe for payments,
               Supabase for database hosting, email delivery providers). These vendors are
               contractually bound to use your data only to provide services to us.
             </p>
             <p>
-              <span className="font-medium text-foreground">Data Providers.</span> To generate
+              <span className="font-medium text-[var(--shop-text)]">Data Providers.</span> To generate
               Reports, we submit VINs to third-party data sources (e.g., NHTSA, FEMA, market data
               feeds). These submissions contain only the VIN and no personally identifiable
               information.
             </p>
             <p>
-              <span className="font-medium text-foreground">Legal Requirements.</span> We may
+              <span className="font-medium text-[var(--shop-text)]">Legal Requirements.</span> We may
               disclose information if required by law, subpoena, court order, or to protect the
               rights, property, or safety of {NEXT_PUBLIC_SITE_NAME}, our users, or the public.
             </p>
             <p>
-              <span className="font-medium text-foreground">Business Transfers.</span> In the event
+              <span className="font-medium text-[var(--shop-text)]">Business Transfers.</span> In the event
               of a merger, acquisition, or sale of assets, your information may be transferred as
               part of that transaction. We will notify you via email or prominent notice on the
               Service before your data is transferred and becomes subject to a different privacy
@@ -189,33 +167,33 @@ export default function PrivacyPolicyPage() {
             <p>Depending on your jurisdiction, you may have the right to:</p>
             <ul className="list-disc pl-5 space-y-1">
               <li>
-                <span className="font-medium text-foreground">Access</span> the personal data we
+                <span className="font-medium text-[var(--shop-text)]">Access</span> the personal data we
                 hold about you.
               </li>
               <li>
-                <span className="font-medium text-foreground">Correct</span> inaccurate or
+                <span className="font-medium text-[var(--shop-text)]">Correct</span> inaccurate or
                 incomplete data.
               </li>
               <li>
-                <span className="font-medium text-foreground">Delete</span> your personal data
+                <span className="font-medium text-[var(--shop-text)]">Delete</span> your personal data
                 (subject to legal retention obligations).
               </li>
               <li>
-                <span className="font-medium text-foreground">Restrict or object</span> to certain
+                <span className="font-medium text-[var(--shop-text)]">Restrict or object</span> to certain
                 processing activities.
               </li>
               <li>
-                <span className="font-medium text-foreground">Data portability</span> — receive a
+                <span className="font-medium text-[var(--shop-text)]">Data portability</span> — receive a
                 copy of your data in a structured, machine-readable format.
               </li>
               <li>
-                <span className="font-medium text-foreground">Withdraw consent</span> for
+                <span className="font-medium text-[var(--shop-text)]">Withdraw consent</span> for
                 marketing communications at any time via the unsubscribe link in any email.
               </li>
             </ul>
             <p>
               To exercise any of these rights, contact us at{' '}
-              <a href={`mailto:${APP_EMAIL}`} className="text-primary underline underline-offset-2">
+              <a href={`mailto:${APP_EMAIL}`} className="text-[var(--lift)] underline">
                 {APP_EMAIL}
               </a>
               . We will respond within 30 days. We may need to verify your identity before
@@ -230,7 +208,7 @@ export default function PrivacyPolicyPage() {
               information; and the right to opt out of the sale of personal information. We do not
               sell personal information as defined under the CCPA. To submit a verifiable consumer
               request, contact us at{' '}
-              <a href={`mailto:${APP_EMAIL}`} className="text-primary underline underline-offset-2">
+              <a href={`mailto:${APP_EMAIL}`} className="text-[var(--lift)] underline">
                 {APP_EMAIL}
               </a>
               .
@@ -281,14 +259,15 @@ export default function PrivacyPolicyPage() {
             <p>
               If you have questions, concerns, or requests regarding this Privacy Policy, please
               contact us at{' '}
-              <a href={`mailto:${APP_EMAIL}`} className="text-primary underline underline-offset-2">
+              <a href={`mailto:${APP_EMAIL}`} className="text-[var(--lift)] underline">
                 {APP_EMAIL}
               </a>
               .
             </p>
           </Section>
+          </div>
         </div>
       </div>
-    </PageSection>
+    </>
   )
 }
