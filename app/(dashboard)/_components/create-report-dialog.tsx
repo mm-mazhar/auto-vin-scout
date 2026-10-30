@@ -3,6 +3,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { Plus, Car } from 'lucide-react'
 import {
   Dialog,
@@ -20,6 +21,8 @@ interface CreateReportDialogProps {
   open?: boolean
   onOpenChange?: (open: boolean) => void
   trigger?: React.ReactNode
+  /** Open with the VIN from `?vin=` (set by the landing page) already filled in. */
+  prefillFromQuery?: boolean
 }
 
 export function CreateReportDialog({
@@ -27,8 +30,12 @@ export function CreateReportDialog({
   open: controlledOpen,
   onOpenChange: controlledOnOpenChange,
   trigger,
+  prefillFromQuery = false,
 }: CreateReportDialogProps) {
-  const [internalOpen, setInternalOpen] = useState(false)
+  const searchParams = useSearchParams()
+  const queryVin = prefillFromQuery ? searchParams.get('vin')?.trim().toUpperCase() : undefined
+  const initialVin = queryVin && /^[A-HJ-NPR-Z0-9]{17}$/.test(queryVin) ? queryVin : undefined
+  const [internalOpen, setInternalOpen] = useState(Boolean(initialVin))
   const isControlled = controlledOpen !== undefined
   const open = isControlled ? controlledOpen : internalOpen
   const setOpen = (value: boolean) => {
@@ -64,7 +71,7 @@ export function CreateReportDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <CreateReportForm projectId={projectId} onSuccess={handleSuccess} />
+        <CreateReportForm projectId={projectId} onSuccess={handleSuccess} initialVin={initialVin} />
       </DialogContent>
     </Dialog>
   )

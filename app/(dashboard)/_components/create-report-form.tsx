@@ -15,10 +15,11 @@ import { useORPCMutation } from '@/hooks/use-orpc-mutation'
 interface CreateReportFormProps {
   projectId: string
   onSuccess?: () => void
+  initialVin?: string
 }
 
-export function CreateReportForm({ projectId, onSuccess }: CreateReportFormProps) {
-  const [vin, setVin] = useState('')
+export function CreateReportForm({ projectId, onSuccess, initialVin }: CreateReportFormProps) {
+  const [vin, setVin] = useState(initialVin ?? '')
   const [error, setError] = useState('')
   const router = useRouter()
   const { show } = useToast()

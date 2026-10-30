@@ -16,6 +16,7 @@ import { ShineBorder } from '@/components/ui/shine-border'
 import { formatPrice, PLAN_IDS, PRICING_PLANS, type PlanId, type PricingPlan } from '@/lib/constants'
 import { cn } from '@/lib/utils'
 import Link from 'next/link'
+import { marketingPlanCta } from '@/lib/pricing-cta'
 
 export type PricingComponentProps = {
   currentPlanId: PlanId | null
@@ -74,34 +75,10 @@ export default function PricingComponent({
     const isCurrent = currentPlanId === plan.id
 
     if (mode === 'marketing') {
-      if (!isAuthenticated) {
-        return (
-          <Button className={btnClass} asChild>
-            <Link href='/get-started?next=/dashboard/billing'>Subscribe</Link>
-          </Button>
-        )
-      }
-
-      if (isCurrent) {
-        return (
-          <Button className={btnClass} asChild>
-            <Link href='/dashboard/billing'>Current Plan</Link>
-          </Button>
-        )
-      }
-
-      if (currentPlanId === null || currentPlanId === PLAN_IDS.free) {
-        const label = plan.id === PLAN_IDS.basic ? 'Purchase, go to Billing' : 'Upgrade, go to Billing'
-        return (
-          <Button className={btnClass} asChild>
-            <Link href='/dashboard/billing'>{label}</Link>
-          </Button>
-        )
-      }
-
+      const cta = marketingPlanCta(plan, currentPlanId, isAuthenticated)
       return (
         <Button className={btnClass} asChild>
-          <Link href='/dashboard/billing'>Upgrade, go to Billing</Link>
+          <Link href={cta.href}>{cta.label}</Link>
         </Button>
       )
     }

@@ -1,21 +1,22 @@
 // app/(marketing)/_components/header.tsx
+//
+// Marketing navigation: a stencilled strip on lift-yellow steel.
 
 'use client'
-import { Themetoggle } from '@/components/Themetoggle'
-import { MARKETING_SURFACE_MAX_WIDTH } from '@/components/page-section'
-import { Button } from '@/components/ui/button'
-import { ShineBorder } from '@/components/ui/shine-border'
-import { cn } from '@/lib/utils'
+
+import { SITE_LOGO_LIGHT_PATH } from '@/app/(marketing)/_components/Sitelogo'
+import { NEXT_PUBLIC_SITE_NAME } from '@/lib/constants'
 import { type User } from '@supabase/supabase-js'
 import { Menu, X } from 'lucide-react'
 import Link from 'next/link'
-import React from 'react'
+import { usePathname } from 'next/navigation'
+import { useEffect, useState } from 'react'
 import LogoutButton from './HeaderLogoutButton'
-import SiteLogo from './Sitelogo'
 
 const menuItems = [
-  { name: 'Features', href: '/#features' },
-  { name: 'How It Works', href: '/#how-it-works' },
+  { name: 'What we inspect', href: '/#inspection' },
+  { name: 'How it works', href: '/#how-it-works' },
+  { name: 'Pricing', href: '/#pricing' },
   { name: 'FAQs', href: '/faqs' },
   { name: 'About', href: '/about' },
 ]
@@ -24,145 +25,106 @@ interface HeroHeaderProps {
   initialUser: User | null
 }
 
-export const HeroHeader = ({ initialUser }: HeroHeaderProps) => {
-  const [menuState, setMenuState] = React.useState(false)
-  const [isScrolled, setIsScrolled] = React.useState(false)
-
-  React.useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50)
-    }
-    window.addEventListener('scroll', handleScroll)
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
+export function ShopLogo({ size = 'md' }: { size?: 'md' | 'lg' }) {
+  const mark = size === 'lg' ? 'size-14' : 'size-10'
+  const word = size === 'lg' ? 'text-[2.2rem]' : 'text-[1.65rem]'
   return (
-    <header>
-      <nav
-        data-state={menuState && 'active'}
-        className='fixed z-20 w-full px-2'
-      >
-        <div
-          className={cn(
-            `mx-auto mt-1 px-5 rounded-2xl border border-transparent relative overflow-hidden ${MARKETING_SURFACE_MAX_WIDTH}`,
-            isScrolled && 'bg-background/50 backdrop-blur-lg border'
-          )}
+    <>
+      <span
+        aria-hidden
+        className={`${mark} shrink-0 bg-current`}
+        style={{
+          maskImage: `url(${SITE_LOGO_LIGHT_PATH})`,
+          WebkitMaskImage: `url(${SITE_LOGO_LIGHT_PATH})`,
+          maskSize: 'contain',
+          WebkitMaskSize: 'contain',
+          maskRepeat: 'no-repeat',
+          WebkitMaskRepeat: 'no-repeat',
+          maskPosition: 'center',
+          WebkitMaskPosition: 'center',
+        }}
+      />
+      <span className={`shop-display ${word} leading-none`}>{NEXT_PUBLIC_SITE_NAME}</span>
+    </>
+  )
+}
+
+const linkClass =
+  'text-[0.92rem] font-bold uppercase tracking-[0.05em] [font-variation-settings:"wdth"_80] decoration-2 underline-offset-[6px] hover:underline'
+
+export const HeroHeader = ({ initialUser }: HeroHeaderProps) => {
+  const [open, setOpen] = useState(false)
+  const pathname = usePathname()
+
+  useEffect(() => setOpen(false), [pathname])
+
+  const actions = initialUser ? (
+    <>
+      <Link href='/dashboard' className='shop-button shop-button--ink min-h-10 px-4 text-[0.9rem]'>
+        Dashboard
+      </Link>
+      <LogoutButton className={`${linkClass} cursor-pointer`} />
+    </>
+  ) : (
+    <>
+      <Link href='/get-started' className={linkClass}>
+        Sign in
+      </Link>
+      <Link href='/#inspect' className='shop-button shop-button--ink min-h-10 px-4 text-[0.9rem]'>
+        Inspect a VIN
+      </Link>
+    </>
+  )
+
+  return (
+    <header className='shop-band sticky top-0 z-40 shadow-[0_8px_18px_-10px_rgb(0_0_0/0.7)]'>
+      <nav aria-label='Main' className='mx-auto flex h-16 max-w-[92rem] items-center justify-between gap-6 px-4 sm:px-8'>
+        <Link href='/' aria-label={`${NEXT_PUBLIC_SITE_NAME} home`} className='flex items-center gap-2.5'>
+          <ShopLogo />
+        </Link>
+
+        <ul className='hidden items-center gap-7 lg:flex'>
+          {menuItems.map((item) => (
+            <li key={item.href}>
+              <Link href={item.href} className={linkClass}>
+                {item.name}
+              </Link>
+            </li>
+          ))}
+        </ul>
+
+        <div className='hidden items-center gap-5 lg:flex'>{actions}</div>
+
+        <button
+          type='button'
+          onClick={() => setOpen((v) => !v)}
+          aria-expanded={open}
+          aria-controls='shop-menu'
+          aria-label={open ? 'Close menu' : 'Open menu'}
+          className='-mr-2 grid size-11 place-items-center rounded lg:hidden'
         >
-          {isScrolled ? (
-            <ShineBorder borderWidth={1} duration={20} shineColor={['var(--primary)']} />
-          ) : null}
-          <div className='relative flex flex-wrap items-center justify-between gap-6 py-2 lg:gap-0 lg:py-3'>
-            <div className='flex w-full justify-between lg:w-auto'>
-              <SiteLogo />
-
-              <button
-                onClick={() => setMenuState(!menuState)}
-                aria-label={menuState == true ? 'Close Menu' : 'Open Menu'}
-                className='relative z-20 -m-2.5 -mr-4 block cursor-pointer p-2.5 lg:hidden'
-              >
-                <Menu className='in-data-[state=active]:rotate-180 in-data-[state=active]:scale-0 in-data-[state=active]:opacity-0 m-auto size-6 duration-200' />
-                <X className='in-data-[state=active]:rotate-0 in-data-[state=active]:scale-100 in-data-[state=active]:opacity-100 absolute inset-0 m-auto size-6 -rotate-180 scale-0 opacity-0 duration-200' />
-              </button>
-            </div>
-
-            <div className='hidden flex-1 justify-center lg:flex'>
-              <ul className='flex gap-8 text-sm'>
-                {menuItems.map((item, index) => (
-                  <li key={index}>
-                    <Link
-                      href={item.href}
-                      className='text-muted-foreground hover:text-primary block duration-150'
-                    >
-                      <span>{item.name}</span>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <div className='bg-background in-data-[state=active]:block lg:in-data-[state=active]:flex mb-6 hidden w-full flex-wrap items-center justify-end space-y-8 rounded-3xl border p-6 shadow-2xl shadow-zinc-300/20 md:flex-nowrap lg:m-0 lg:flex lg:w-fit lg:gap-6 lg:space-y-0 lg:border-transparent lg:bg-transparent lg:p-0 lg:shadow-none dark:shadow-none dark:lg:bg-transparent'>
-              <div className='lg:hidden'>
-                <ul className='space-y-6 text-base'>
-                  {menuItems.map((item, index) => (
-                    <li key={index}>
-                      <Link
-                        href={item.href}
-                        className='text-muted-foreground hover:text-primary block duration-150'
-                      >
-                        <span>{item.name}</span>
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              <div className='flex w-full flex-col space-y-3 sm:flex-row sm:gap-3 sm:space-y-0 md:w-fit'>
-                  {initialUser ? (
-                    <>
-                      <Button
-                        asChild
-                        variant='default'
-                        size='sm'
-                        // className={cn(isScrolled && 'lg:hidden')}
-                        // className={cn('font-bold')}
-                      >
-                        <Link href='/dashboard'>
-                          <span>Dashboard</span>
-                        </Link>
-                      </Button>
-                      <LogoutButton />
-                      
-                      <Themetoggle isAuthenticated={true} />
-                    </>
-                  ) : (
-                    <>
-                     
-                      {/* <Button
-                  asChild
-                  variant='outline'
-                  size='sm'
-                  className={cn(isScrolled && 'lg:hidden')}
-                >
-                  <Link href='#'>
-                    <span>Login</span>
-                  </Link>
-                </Button> */}
-                      <Button
-                        asChild
-                        variant='default'
-                        size='sm'
-                        className={cn(isScrolled && 'lg:hidden', 'font-bold')}
-                      >
-                        <Link href='/get-started'>
-                          <span>Start VIN Check</span>
-                        </Link>
-                      </Button>
-                      {/* <Button
-                  asChild
-                  size='sm'
-                  className={cn(isScrolled && 'lg:hidden')}
-                >
-                  <Link href='#'>
-                    <span>Sign Up</span>
-                  </Link>
-                </Button> */}
-
-                      <Button
-                        asChild
-                        size='sm'
-                        variant='default'
-                        className={cn(isScrolled ? 'lg:inline-flex' : 'hidden', 'font-bold')}
-                      >
-                        <Link href='/get-started'>
-                          <span>Start VIN Check</span>
-                        </Link>
-                      </Button>
-                      <Themetoggle isAuthenticated={false} />
-                    </>
-                  )}
-                </div>
-            </div>
-          </div>
-        </div>
+          {open ? <X className='size-7' strokeWidth={2.5} /> : <Menu className='size-7' strokeWidth={2.5} />}
+        </button>
       </nav>
+
+      {open ? (
+        <div id='shop-menu' className='border-t-2 border-[var(--lift-ink)] lg:hidden'>
+          <ul className='mx-auto flex max-w-[92rem] flex-col px-4 py-3 sm:px-8'>
+            {menuItems.map((item) => (
+              <li key={item.href}>
+                <Link
+                  href={item.href}
+                  onClick={() => setOpen(false)}
+                  className='shop-display block py-2.5 text-[2rem]'
+                >
+                  {item.name}
+                </Link>
+              </li>
+            ))}
+          </ul>
+          <div className='mx-auto flex max-w-[92rem] items-center gap-5 px-4 pb-5 sm:px-8'>{actions}</div>
+        </div>
+      ) : null}
     </header>
   )
 }

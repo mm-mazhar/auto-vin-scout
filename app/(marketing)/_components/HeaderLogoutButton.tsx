@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 
 import { useRouter } from 'next/navigation'
 
-export function LogoutButton() {
+export function LogoutButton({ className }: { className?: string }) {
   const router = useRouter()
 
   const handleLogout = async () => {
@@ -15,6 +15,14 @@ export function LogoutButton() {
     await supabase.auth.signOut()
     router.push('/')
     router.refresh()
+  }
+
+  if (className) {
+    return (
+      <button type='button' onClick={handleLogout} className={className}>
+        Log out
+      </button>
+    )
   }
 
   return (

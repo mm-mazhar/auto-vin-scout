@@ -157,7 +157,7 @@ export default async function ReportsPage() {
           </p>
         </div>
         <div>
-          <CreateReportDialog projectId={activeProjectId} />
+          <CreateReportDialog projectId={activeProjectId} prefillFromQuery />
         </div>
       </div>
 

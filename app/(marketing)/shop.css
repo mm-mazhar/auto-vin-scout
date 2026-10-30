@@ -1,0 +1,390 @@
+/* app/(marketing)/shop.css
+ *
+ * The marketing world: a working shop bay. Concrete floor, safety-yellow lift
+ * steel, carbonless work-order paper and paint-pen marks. Everything is
+ * scoped under .shop so the dashboard keeps its own system.
+ */
+
+.shop {
+  --shop-floor: #23272b;
+  --shop-floor-raised: #2c3135;
+  --shop-floor-deep: #1a1d20;
+  --shop-rule: rgb(255 255 255 / 0.12);
+  --shop-text: #eef0f1;
+  --shop-text-dim: #b6bdc4;
+
+  --lift: #f2c11b;
+  --lift-deep: #c99a06;
+  --lift-ink: #17181a;
+
+  --pen: #ff6b1a;
+  --pen-white: #f4f1e8;
+
+  --paper: #f5eab4;
+  --paper-shade: #e6d998;
+  --paper-print: #2b4a9a; /* carbonless forms are printed in blue */
+  --paper-ink: #17181a;
+
+  --font-display: var(--font-stencil), 'Arial Narrow', sans-serif;
+  --font-body: var(--font-archivo), system-ui, sans-serif;
+  --font-code: var(--font-vin), ui-monospace, monospace;
+  --font-hand: var(--font-pen), cursive;
+
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+
+  color-scheme: dark;
+  background-color: var(--shop-floor);
+  background-image:
+    linear-gradient(rgb(20 23 26 / 0.86), rgb(20 23 26 / 0.86)),
+    url('/landing/concrete-floor.jpg');
+  background-size: auto, 640px 640px;
+  color: var(--shop-text);
+  font-family: var(--font-body);
+  font-size: 1rem;
+  line-height: 1.6;
+  caret-color: var(--pen);
+  accent-color: var(--lift);
+  scrollbar-color: var(--lift-deep) var(--shop-floor-deep);
+}
+
+.shop ::selection {
+  background: var(--lift);
+  color: var(--lift-ink);
+}
+
+.shop :focus-visible {
+  outline: 3px solid var(--pen);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+.shop a {
+  text-underline-offset: 0.22em;
+  text-decoration-thickness: 1px;
+}
+
+/* ------------------------------------------------------------------ type */
+
+.shop-display {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-variation-settings: 'opsz' 72;
+  text-transform: uppercase;
+  letter-spacing: 0.005em;
+  line-height: 0.92;
+  text-wrap: balance;
+}
+
+.shop-h2 {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-variation-settings: 'opsz' 72;
+  text-transform: uppercase;
+  font-size: clamp(2.4rem, 1.4rem + 3.6vw, 4.6rem);
+  line-height: 0.94;
+  letter-spacing: 0.005em;
+  text-wrap: balance;
+}
+
+.shop-h3 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-variation-settings: 'opsz' 40;
+  text-transform: uppercase;
+  font-size: 1.6rem;
+  line-height: 1;
+  letter-spacing: 0.01em;
+}
+
+.shop-lede {
+  font-size: clamp(1.05rem, 0.98rem + 0.3vw, 1.2rem);
+  line-height: 1.6;
+  color: var(--shop-text-dim);
+  max-width: 62ch;
+  text-wrap: pretty;
+}
+
+.shop-stencil-label {
+  font-family: var(--font-body);
+  font-variation-settings: 'wdth' 75;
+  font-weight: 700;
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.shop-hand {
+  font-family: var(--font-hand);
+  font-weight: 400;
+  line-height: 1.05;
+  color: var(--pen);
+}
+
+/* -------------------------------------------------------- yellow steel */
+
+.shop-band {
+  background: var(--lift);
+  color: var(--lift-ink);
+}
+
+/* Hazard edge along a band, like the striping on lift posts. */
+.shop-hazard {
+  height: 10px;
+  background: repeating-linear-gradient(
+    -45deg,
+    var(--lift) 0 14px,
+    var(--lift-ink) 14px 28px
+  );
+}
+
+/* Heavy push button on lift-yellow steel. */
+.shop-button {
+  --press: 0px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  min-height: 3.25rem;
+  padding: 0 1.6rem;
+  border: 0;
+  border-radius: 6px;
+  background: linear-gradient(var(--lift), #e7b512);
+  color: var(--lift-ink);
+  font-family: var(--font-body);
+  font-variation-settings: 'wdth' 80;
+  font-weight: 800;
+  font-size: 1.05rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  text-decoration: none;
+  cursor: pointer;
+  box-shadow:
+    inset 0 -3px 0 rgb(0 0 0 / 0.22),
+    inset 0 1px 0 rgb(255 255 255 / 0.45),
+    0 6px 14px -4px rgb(0 0 0 / 0.55);
+  transform: translateY(var(--press));
+  transition:
+    transform 140ms var(--ease-out),
+    box-shadow 140ms var(--ease-out),
+    filter 140ms var(--ease-out);
+}
+.shop-button:hover {
+  filter: brightness(1.05);
+}
+.shop-button:active {
+  --press: 2px;
+  box-shadow:
+    inset 0 -1px 0 rgb(0 0 0 / 0.22),
+    inset 0 1px 0 rgb(255 255 255 / 0.35),
+    0 2px 6px -2px rgb(0 0 0 / 0.6);
+}
+.shop-button[disabled],
+.shop-button[aria-disabled='true'] {
+  cursor: not-allowed;
+  filter: grayscale(0.6) brightness(0.8);
+}
+
+.shop-button--quiet {
+  background: transparent;
+  color: var(--shop-text);
+  box-shadow: inset 0 0 0 2px rgb(255 255 255 / 0.35);
+}
+.shop-button--quiet:hover {
+  box-shadow: inset 0 0 0 2px var(--lift);
+  color: var(--lift);
+  filter: none;
+}
+
+.shop-button--ink {
+  background: var(--lift-ink);
+  color: var(--lift);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.12),
+    0 6px 14px -6px rgb(0 0 0 / 0.5);
+}
+
+/* ------------------------------------------------- work-order paper */
+
+.shop-paper {
+  position: relative;
+  background-color: var(--paper);
+  background-image: url('/landing/work-order-paper.jpg');
+  background-size: 512px 512px;
+  color: var(--paper-ink);
+  border-radius: 3px;
+  box-shadow:
+    0 1px 0 rgb(255 255 255 / 0.4) inset,
+    0 18px 40px -12px rgb(0 0 0 / 0.65),
+    0 3px 8px -2px rgb(0 0 0 / 0.4);
+}
+
+.shop-paper-print {
+  color: var(--paper-print);
+}
+
+.shop-paper-rule {
+  border-color: color-mix(in oklab, var(--paper-print) 55%, transparent);
+}
+
+/* Comb field: one printed box per VIN character. The wrapper is the size
+   container so each cell is exactly 1/17 of the field. */
+.shop-comb-wrap {
+  container-type: inline-size;
+}
+.shop-comb {
+  --cell: calc((100cqi - 4px) / 17);
+  display: block;
+  width: 100%;
+  height: 3.4rem;
+  padding: 0 0 0 calc((var(--cell) - 1ch) / 2);
+  border: 2px solid var(--paper-print);
+  border-radius: 2px;
+  background:
+    repeating-linear-gradient(
+      90deg,
+      transparent 0 calc(var(--cell) - 1px),
+      color-mix(in oklab, var(--paper-print) 40%, transparent) calc(var(--cell) - 1px) var(--cell)
+    ),
+    rgb(255 255 255 / 0.32);
+  color: var(--paper-ink);
+  font-family: var(--font-code);
+  font-weight: 600;
+  font-size: min(1.5rem, calc(var(--cell) * 0.95));
+  letter-spacing: calc(var(--cell) - 1ch);
+  text-transform: uppercase;
+  caret-color: var(--pen);
+}
+.shop-comb::placeholder {
+  color: color-mix(in oklab, var(--paper-print) 45%, transparent);
+}
+.shop-comb:focus-visible {
+  outline: 3px solid var(--pen);
+  outline-offset: 2px;
+}
+.shop-comb[aria-invalid='true'] {
+  border-color: #b3261e;
+}
+
+/* Price tag: card stock with a reinforced punch hole. */
+.shop-tag::before {
+  content: '';
+  position: absolute;
+  top: 16px;
+  left: 50%;
+  width: 14px;
+  height: 14px;
+  margin-left: -7px;
+  border-radius: 50%;
+  background: var(--shop-floor-deep);
+  box-shadow:
+    inset 0 2px 3px rgb(0 0 0 / 0.6),
+    0 0 0 5px var(--paper-shade);
+}
+
+/* --------------------------------------------------- paint-pen marks */
+
+.shop-mark-ring {
+  fill: none;
+  stroke: var(--pen);
+  stroke-width: 3.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 1px 1px rgb(0 0 0 / 0.6));
+}
+
+.shop-mark-label {
+  font-family: var(--font-hand);
+  color: var(--pen);
+  text-shadow:
+    0 1px 0 rgb(0 0 0 / 0.75),
+    0 0 12px rgb(0 0 0 / 0.75);
+}
+
+/* -------------------------------------------- hero marks and chips */
+
+.lift-mark {
+  --lit: 0;
+  position: absolute;
+  left: 0;
+  top: 0;
+  will-change: transform;
+}
+.lift-mark[data-onscreen='false'] {
+  display: none;
+}
+.lift-mark-ring {
+  position: absolute;
+  left: -60px;
+  top: -36px;
+  overflow: visible;
+}
+.lift-mark-ring path {
+  stroke-dasharray: 1;
+  stroke-dashoffset: calc(1 - var(--lit) * 0.65);
+  opacity: min(1, calc(var(--lit) * 1.6));
+}
+.lift-mark[data-found='true'] .lift-mark-ring path {
+  stroke-dashoffset: 0;
+  opacity: 1;
+  transition:
+    stroke-dashoffset 700ms var(--ease-out),
+    opacity 200ms linear;
+}
+.lift-mark-label {
+  position: absolute;
+  left: var(--label-x, 50px);
+  top: var(--label-y, -40px);
+  width: 230px;
+  opacity: 0;
+  translate: 0 6px;
+  transition:
+    opacity 260ms linear,
+    translate 420ms var(--ease-out);
+}
+.lift-mark[data-found='true'] .lift-mark-label {
+  opacity: 1;
+  translate: 0 0;
+  transition-delay: 220ms;
+}
+
+.lift-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-height: 2.6rem;
+  padding: 0 0.9rem;
+  border: 2px solid rgb(255 255 255 / 0.26);
+  border-radius: 4px;
+  background: rgb(20 23 26 / 0.72);
+  color: var(--shop-text);
+  font-family: var(--font-body);
+  font-variation-settings: 'wdth' 80;
+  font-weight: 700;
+  font-size: 0.86rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition:
+    background-color 160ms var(--ease-out),
+    border-color 160ms var(--ease-out),
+    color 160ms var(--ease-out);
+}
+.lift-chip:hover {
+  border-color: var(--lift);
+}
+.lift-chip[aria-pressed='true'] {
+  background: var(--lift);
+  border-color: var(--lift);
+  color: var(--lift-ink);
+}
+
+/* ------------------------------------------------------------ motion */
+
+@media (prefers-reduced-motion: reduce) {
+  .shop *,
+  .shop *::before,
+  .shop *::after {
+    transition-duration: 1ms !important;
+    animation-duration: 1ms !important;
+  }
+}
